@@ -282,56 +282,51 @@ const DashboardPage = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="page-container">
       <Toaster />
 
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-xl font-bold">Alumni Network</h1>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+        <h1 className="heading">Alumni Network</h1>
+
         <div>
-          <span className="mr-4">Welcome, {user?.first_name}!</span>
-          <button
-            onClick={logout}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg"
-          >
-            Logout
-          </button>
+          <span style={{ marginRight: 20 }}>Welcome, {user?.first_name}!</span>
+          <button onClick={logout} className="btn-danger">Logout</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="p-4 shadow rounded bg-white">
+      {/* Stats Cards */}
+      <div className="grid-3">
+        <div className="card">
           <p>Total Alumni</p>
-          <h2 className="text-2xl font-bold">{alumni.length}</h2>
+          <h2 className="heading">{alumni.length}</h2>
         </div>
 
-        <div className="p-4 shadow rounded bg-white">
+        <div className="card">
           <p>Active Jobs</p>
-          <h2 className="text-2xl font-bold">{jobs.length}</h2>
+          <h2 className="heading">{jobs.length}</h2>
         </div>
 
-        <div className="p-4 shadow rounded bg-white">
+        <div className="card">
           <p>Your Profile</p>
-          <h2 className="text-lg">{user?.headline || "Not set"}</h2>
-          <Link
-            to="/profile/edit"
-            className="text-blue-600 underline mt-2 inline-block"
-          >
+          <h3>{user?.headline || "Not set"}</h3>
+          <Link to="/profile/edit" className="text-blue">
             Edit Profile
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="p-4 bg-white rounded shadow">
-          <h2 className="font-bold mb-3">Recent Alumni</h2>
+      {/* Alumni + Jobs Sections */}
+      <div className="grid-2">
+        {/* Recent Alumni */}
+        <div className="card">
+          <h2 className="section-title">Recent Alumni</h2>
           {loading ? (
             <p>Loading...</p>
           ) : (
             alumni.map((p) => (
-              <div key={p.id} className="border-b py-2">
-                <p className="font-bold">
-                  {p.first_name} {p.last_name}
-                </p>
+              <div key={p.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 10 }}>
+                <p className="section-title">{p.first_name} {p.last_name}</p>
                 <p>{p.headline || "Alumni"}</p>
                 <p>Class of {p.passout_year}</p>
               </div>
@@ -339,14 +334,15 @@ const DashboardPage = () => {
           )}
         </div>
 
-        <div className="p-4 bg-white rounded shadow">
-          <h2 className="font-bold mb-3">Latest Jobs</h2>
+        {/* Latest Jobs */}
+        <div className="card">
+          <h2 className="section-title">Latest Jobs</h2>
           {loading ? (
             <p>Loading...</p>
           ) : (
             jobs.slice(0, 5).map((job) => (
-              <div key={job.id} className="border-b py-2">
-                <p className="font-bold">{job.title}</p>
+              <div key={job.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 10 }}>
+                <p className="section-title">{job.title}</p>
                 <p>{job.company}</p>
                 <p>{job.location}</p>
               </div>
@@ -357,7 +353,6 @@ const DashboardPage = () => {
     </div>
   );
 };
-
 // Main App Component
 function App() {
   return (
@@ -393,4 +388,5 @@ function App() {
 }
 
 export default App;
+
 
