@@ -157,8 +157,13 @@ const RegisterPage = () => {
     e.preventDefault();
     try {
       await register(formData);
-      toast.success("Registration successful! Please login.");
-      window.location.href = "/login";
+
+    // store email temporarily
+    localStorage.setItem("pendingEmail", formData.email);
+
+    toast.success("OTP sent! Please verify.");
+    window.location.href = "/verify-otp";
+
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed");
     }
@@ -364,7 +369,7 @@ function App() {
               </PrivateRoute>
             }
           />
-
+          <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
@@ -376,6 +381,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
