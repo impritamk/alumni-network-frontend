@@ -9,7 +9,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 axios.defaults.baseURL = API_URL;
 
 // Auth Context
-export const useAuth = () => React.useContext(AuthContext);
+const useAuth = () => React.useContext(AuthContext);
 
 
 const AuthProvider = ({ children }) => {
@@ -374,6 +374,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
