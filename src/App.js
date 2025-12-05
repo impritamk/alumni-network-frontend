@@ -57,230 +57,193 @@ const AuthProvider = ({ children }) => {
   };
 
   return (
-    
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
-    
+    </AuthContext.Provider>
   );
 };
 
 const useAuth = () => React.useContext(AuthContext);
 
-// Login Page Component
+// Protected Route
+const PrivateRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+
+  return user ? children : <Navigate to="/login" replace />;
+};
+
+// Login Page
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
       await login(email, password);
       toast.success('Login successful!');
-      navigate('/');
+      window.location.href = '/';
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    
-      
-        
-          
-            
-          
-          Alumni Network
-          Welcome back! Please login to continue
-        
-        
-        
-          
-            
-              Email Address
-            
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      <Toaster />
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-4">Alumni Network</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              placeholder="your.email@college.edu"
+              className="w-full px-4 py-2 border rounded-lg"
               required
             />
-          
-          
-          
-            
-              Password
-            
+          </div>
+
+          <div>
+            <label>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              placeholder="Enter your password"
+              className="w-full px-4 py-2 border rounded-lg"
               required
             />
-          
-          
-          
-            {loading ? (
-              <>Logging in...</>
-            ) : (
-              <>Login</>
-            )}
-          
-        
-        
-        
-          
-            Don't have an account?{' '}
-            
-              Register here
-            
-          
-        
-      
-    
+          </div>
+
+          <button className="w-full bg-blue-600 text-white py-2 rounded-lg">
+            Login
+          </button>
+        </form>
+
+        <p className="mt-4 text-center">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-blue-600">
+            Register
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 };
 
-// Register Page Component
+// Register Page
 const RegisterPage = () => {
+  const { register } = useAuth();
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    confirmPassword: '',
     firstName: '',
     lastName: '',
-    passoutYear: new Date().getFullYear()
+    passoutYear: new Date().getFullYear(),
   });
-  const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value});
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match!');
-      return;
-    }
-    
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters!');
-      return;
-    }
-    
-    setLoading(true);
     try {
       await register(formData);
       toast.success('Registration successful! Please login.');
-      navigate('/login');
+      window.location.href = '/login';
     } catch (error) {
       toast.error(error.response?.data?.message || 'Registration failed');
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    
-      
-        
-          
-            
-          
-          Join Alumni Network
-          Create your account and connect with alumni
-        
-        
-        
-          
-            
-              
-                First Name
-              
-              
-            
-            
-            
-              
-                Last Name
-              
-              
-            
-          
-          
-          
-            
-              Email Address
-            
-            
-          
-          
-          
-            
-              
-                Password
-              
-              
-            
-            
-            
-              
-                Confirm Password
-              
-              
-            
-          
-          
-          
-            
-              Passout Year
-            
-            
-          
-          
-          
-            {loading ? (
-              <>Creating Account...</>
-            ) : (
-              <>Create Account</>
-            )}
-          
-        
-        
-        
-          
-            Already have an account?{' '}
-            
-              Login here
-            
-          
-        
-      
-    
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+      <Toaster />
+      <div className="bg-white p-6 shadow-lg rounded-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-4">Create Account</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+
+          <div>
+            <label>First Name</label>
+            <input
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              className="w-full px-4 py-2 border rounded-lg"
+              required
+            />
+          </div>
+
+          <div>
+            <label>Last Name</label>
+            <input
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              className="w-full px-4 py-2 border rounded-lg"
+              required
+            />
+          </div>
+
+          <div>
+            <label>Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-4 py-2 border rounded-lg"
+              required
+            />
+          </div>
+
+          <div>
+            <label>Password</label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="w-full px-4 py-2 border rounded-lg"
+              required
+            />
+          </div>
+
+          <div>
+            <label>Passout Year</label>
+            <input
+              type="number"
+              value={formData.passoutYear}
+              onChange={(e) => setFormData({ ...formData, passoutYear: e.target.value })}
+              className="w-full px-4 py-2 border rounded-lg"
+              required
+            />
+          </div>
+
+          <button className="w-full bg-blue-600 text-white py-2 rounded-lg">
+            Register
+          </button>
+        </form>
+
+        <p className="mt-4 text-center">
+          Already have an account?{' '}
+          <Link to="/login" className="text-blue-600">
+            Login
+          </Link>
+        </p>
+      </div>
+    </div>
   );
 };
 
-// Dashboard Page Component
+// Dashboard Page
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const [alumni, setAlumni] = useState([]);
   const [jobs, setJobs] = useState([]);
-  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -290,269 +253,103 @@ const DashboardPage = () => {
     try {
       const [alumniRes, jobsRes] = await Promise.all([
         axios.get('/api/users/directory?limit=10'),
-        axios.get('/api/jobs')
+        axios.get('/api/jobs'),
       ]);
-      setAlumni(alumniRes.data.users || []);
-      setJobs(jobsRes.data.jobs || []);
-    } catch (error) {
-      console.error('Failed to load data:', error);
+      setAlumni(alumniRes.data.users);
+      setJobs(jobsRes.data.jobs);
+    } catch {
       toast.error('Failed to load data');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    if (!searchTerm.trim()) return;
-    
-    try {
-      const response = await axios.get(`/api/users/directory?search=${searchTerm}`);
-      setAlumni(response.data.users || []);
-      toast.success(`Found ${response.data.users?.length || 0} alumni`);
-    } catch (error) {
-      toast.error('Search failed');
-    }
-  };
-
   return (
-    
-      {/* Navigation */}
-      
-        
-          
-            
-              
-                
-              
-              
-                Alumni Network
-              
-            
-            
-            
-              
-                Welcome, {user?.first_name}!
-              
-              
-                
-                Logout
-              
-            
-          
-        
-      
+    <div className="p-6">
+      <Toaster />
 
-      {/* Main Content */}
-      
-        {/* Stats Cards */}
-        
-          
-            
-              
-                Total Alumni
-                {alumni.length}
-              
-              
-                
-              
-            
-          
-          
-          
-            
-              
-                Active Jobs
-                {jobs.length}
-              
-              
-                
-              
-            
-          
-          
-          
-            
-              
-                Your Profile
-                {user?.headline || 'Complete your profile'}
-              
-              
-                
-              
-            
-          
-        
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-xl font-bold">Alumni Network</h1>
+        <div>
+          <span className="mr-4">Welcome, {user?.first_name}!</span>
+          <button onClick={logout} className="bg-red-500 text-white px-4 py-2 rounded-lg">
+            Logout
+          </button>
+        </div>
+      </div>
 
-        {/* Search Bar */}
-        
-          
-            
-              
-                
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search alumni by name or email..."
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                />
-              
-            
-            
-              Search
-            
-          
-        
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="p-4 shadow rounded bg-white">
+          <p>Total Alumni</p>
+          <h2 className="text-2xl font-bold">{alumni.length}</h2>
+        </div>
 
-        {/* Content Grid */}
-        
-          {/* Alumni Directory */}
-          
-            
-              
-                
-                Recent Alumni
-              
-            
-            
-            
-              {loading ? (
-                
-                  
-                  Loading alumni...
-                
-              ) : alumni.length === 0 ? (
-                
-                  
-                  No alumni found
-                
-              ) : (
-                
-                  {alumni.map(person => (
-                    
-                      
-                        
-                          
-                            {person.first_name?.[0]}{person.last_name?.[0]}
-                          
-                        
-                        
-                          
-                            {person.first_name} {person.last_name}
-                          
-                          {person.headline || 'Alumni Member'}
-                          
-                            
-                              
-                              Class of {person.passout_year}
-                            
-                            {person.current_company && (
-                              
-                                
-                                {person.current_company}
-                              
-                            )}
-                          
-                        
-                      
-                    
-                  ))}
-                
-              )}
-            
-          
+        <div className="p-4 shadow rounded bg-white">
+          <p>Active Jobs</p>
+          <h2 className="text-2xl font-bold">{jobs.length}</h2>
+        </div>
 
-          {/* Job Board */}
-          
-            
-              
-                
-                Latest Jobs
-              
-            
-            
-            
-              {loading ? (
-                
-                  
-                  Loading jobs...
-                
-              ) : jobs.length === 0 ? (
-                
-                  
-                  No jobs available
-                
-              ) : (
-                
-                  {jobs.slice(0, 10).map(job => (
-                    
-                      {job.title}
-                      {job.company}
-                      
-                        {job.location && (
-                          
-                            
-                            {job.location}
-                          
-                        )}
-                        {job.job_type && (
-                          
-                            {job.job_type}
-                          
-                        )}
-                        {job.salary_range && (
-                          
-                            {job.salary_range}
-                          
-                        )}
-                      
-                    
-                  ))}
-                
-              )}
-            
-          
-        
-      
-    
+        <div className="p-4 shadow rounded bg-white">
+          <p>Your Profile</p>
+          <h2 className="text-lg">{user?.headline || 'Not set'}</h2>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-6">
+        <div className="p-4 bg-white rounded shadow">
+          <h2 className="font-bold mb-3">Recent Alumni</h2>
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            alumni.map((p) => (
+              <div key={p.id} className="border-b py-2">
+                <p className="font-bold">{p.first_name} {p.last_name}</p>
+                <p>{p.headline || 'Alumni'}</p>
+                <p>Class of {p.passout_year}</p>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="p-4 bg-white rounded shadow">
+          <h2 className="font-bold mb-3">Latest Jobs</h2>
+          {loading ? (
+            <p>Loading...</p>
+          ) : (
+            jobs.slice(0, 5).map((job) => (
+              <div key={job.id} className="border-b py-2">
+                <p className="font-bold">{job.title}</p>
+                <p>{job.company}</p>
+                <p>{job.location}</p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
   );
-};
-
-// Protected Route
-const PrivateRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return (
-      
-        
-          
-          Loading...
-        
-      
-    );
-  }
-  
-  return user ? children : ;
 };
 
 // Main App
 function App() {
   return (
-    
-      
-        
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={
+            <PrivateRoute>
+              <DashboardPage />
+            </PrivateRoute>
           } />
-          } />
-          
-              
-            
-          } />
-        
-        
-      
-    
+
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Redirect unknown routes */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 
