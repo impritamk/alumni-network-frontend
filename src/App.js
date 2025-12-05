@@ -291,9 +291,16 @@ const DashboardPage = () => {
         </div>
 
         <div className="p-4 shadow rounded bg-white">
-          <p>Your Profile</p>
-          <h2 className="text-lg">{user?.headline || 'Not set'}</h2>
-        </div>
+  <p>Your Profile</p>
+  <h2 className="text-lg">{user?.headline || 'Not set'}</h2>
+  <Link
+    to="/profile/edit"
+    className="text-blue-600 underline mt-2 inline-block"
+  >
+    Edit Profile
+  </Link>
+</div>
+
       </div>
 
       <div className="grid grid-cols-2 gap-6">
@@ -366,4 +373,5 @@ function App() {
 }
 
 export default App;
+
 
