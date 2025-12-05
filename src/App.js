@@ -1,3 +1,4 @@
+import EditProfile from "./pages/EditProfile";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -336,21 +337,33 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={
-            <PrivateRoute>
-              <DashboardPage />
-            </PrivateRoute>
-          } />
+  <Route path="/" element={
+    <PrivateRoute>
+      <DashboardPage />
+    </PrivateRoute>
+  } />
 
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+  {/* 👇 ADD THIS ROUTE */}
+  <Route
+    path="/profile/edit"
+    element={
+      <PrivateRoute>
+        <EditProfile />
+      </PrivateRoute>
+    }
+  />
 
-          {/* Redirect unknown routes */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+  <Route path="/login" element={<LoginPage />} />
+  <Route path="/register" element={<RegisterPage />} />
+
+  {/* Redirect unknown routes */}
+  <Route path="*" element={<Navigate to="/" replace />} />
+</Routes>
+
       </AuthProvider>
     </Router>
   );
 }
 
 export default App;
+
