@@ -1,3 +1,5 @@
+import "./styles.css";
+
 import EditProfile from "./pages/EditProfile";
 import React, { useState, useEffect } from "react";
 import {
@@ -391,3 +393,4 @@ function App() {
 }
 
 export default App;
+
