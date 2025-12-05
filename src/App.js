@@ -99,42 +99,41 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+    <div className="page-container" style={{ maxWidth: 450 }}>
       <Toaster />
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">Alumni Network</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            />
-          </div>
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>
+          Alumni Network Login
+        </h2>
 
-          <div>
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <label>Email</label>
+          <input
+            type="email"
+            className="input-box"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-          <button className="w-full bg-blue-600 text-white py-2 rounded-lg">
+          <label>Password</label>
+          <input
+            type="password"
+            className="input-box"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <button className="btn-primary" style={{ width: "100%", marginTop: 10 }}>
             Login
           </button>
         </form>
 
-        <p className="mt-4 text-center">
+        <p style={{ marginTop: 15, textAlign: "center" }}>
           Don't have an account?{" "}
-          <Link to="/register" className="text-blue-600">
+          <Link to="/register" className="text-blue">
             Register
           </Link>
         </p>
@@ -142,7 +141,6 @@ const LoginPage = () => {
     </div>
   );
 };
-
 // Register Page
 const RegisterPage = () => {
   const { register } = useAuth();
@@ -167,85 +165,76 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
+    <div className="page-container" style={{ maxWidth: 450 }}>
       <Toaster />
-      <div className="bg-white p-6 shadow-lg rounded-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-4">Create Account</h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label>First Name</label>
-            <input
-              type="text"
-              value={formData.firstName}
-              onChange={(e) =>
-                setFormData({ ...formData, firstName: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            />
-          </div>
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>
+          Create Account
+        </h2>
 
-          <div>
-            <label>Last Name</label>
-            <input
-              type="text"
-              value={formData.lastName}
-              onChange={(e) =>
-                setFormData({ ...formData, lastName: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <label>First Name</label>
+          <input
+            className="input-box"
+            value={formData.firstName}
+            onChange={(e) =>
+              setFormData({ ...formData, firstName: e.target.value })
+            }
+            required
+          />
 
-          <div>
-            <label>Email</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            />
-          </div>
+          <label>Last Name</label>
+          <input
+            className="input-box"
+            value={formData.lastName}
+            onChange={(e) =>
+              setFormData({ ...formData, lastName: e.target.value })
+            }
+            required
+          />
 
-          <div>
-            <label>Password</label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            />
-          </div>
+          <label>Email</label>
+          <input
+            type="email"
+            className="input-box"
+            value={formData.email}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
+            required
+          />
 
-          <div>
-            <label>Passout Year</label>
-            <input
-              type="number"
-              value={formData.passoutYear}
-              onChange={(e) =>
-                setFormData({ ...formData, passoutYear: e.target.value })
-              }
-              className="w-full px-4 py-2 border rounded-lg"
-              required
-            />
-          </div>
+          <label>Password</label>
+          <input
+            type="password"
+            className="input-box"
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            required
+          />
 
-          <button className="w-full bg-blue-600 text-white py-2 rounded-lg">
+          <label>Passout Year</label>
+          <input
+            type="number"
+            className="input-box"
+            value={formData.passoutYear}
+            onChange={(e) =>
+              setFormData({ ...formData, passoutYear: e.target.value })
+            }
+            required
+          />
+
+          <button className="btn-primary" style={{ width: "100%", marginTop: 10 }}>
             Register
           </button>
         </form>
 
-        <p className="mt-4 text-center">
+        <p style={{ marginTop: 15, textAlign: "center" }}>
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600">
+          <Link to="/login" className="text-blue">
             Login
           </Link>
         </p>
@@ -253,7 +242,6 @@ const RegisterPage = () => {
     </div>
   );
 };
-
 // Dashboard Page
 const DashboardPage = () => {
   const { user, logout } = useAuth();
@@ -388,5 +376,6 @@ function App() {
 }
 
 export default App;
+
 
 
