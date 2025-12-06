@@ -1,6 +1,7 @@
 import "./styles.css";
 
 import EditProfile from "./pages/EditProfile";
+import VerifyOtp from "./pages/VerifyOtp";   // ✅ Added
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -18,7 +19,6 @@ axios.defaults.baseURL = API_URL;
 
 // Auth Context
 const AuthContext = React.createContext();
-
 export const useAuth = () => React.useContext(AuthContext);
 
 const AuthProvider = ({ children }) => {
@@ -37,9 +37,9 @@ const AuthProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const response = await axios.get("/api/auth/me");
-      setUser(response.data.user);
-    } catch (error) {
+      const res = await axios.get("/api/auth/me");
+      setUser(res.data.user);
+    } catch {
       localStorage.removeItem("token");
       delete axios.defaults.headers.common["Authorization"];
     } finally {
@@ -48,17 +48,19 @@ const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await axios.post("/api/auth/login", { email, password });
-    const { token, user } = response.data;
+    const res = await axios.post("/api/auth/login", { email, password });
+    const { token, user } = res.data;
+
     localStorage.setItem("token", token);
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     setUser(user);
+
     return user;
   };
 
-  const register = async (userData) => {
-    const response = await axios.post("/api/auth/register", userData);
-    return response.data;
+  const register = async (data) => {
+    const res = await axios.post("/api/auth/register", data);
+    return res.data;
   };
 
   const logout = () => {
@@ -74,7 +76,7 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-// Protected Route
+// Protected routes
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div>Loading...</div>;
@@ -83,35 +85,35 @@ const PrivateRoute = ({ children }) => {
 
 // Login Page
 const LoginPage = () => {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login } = useAuth();
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     try {
       await login(email, password);
-      toast.success("Login successful!");
+      toast.success("Login successful");
       window.location.href = "/";
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed");
     }
   };
 
   return (
     <div className="page-container" style={{ maxWidth: 450 }}>
       <Toaster />
-
       <div className="card" style={{ marginTop: 60 }}>
+
         <h2 className="heading" style={{ textAlign: "center" }}>
           Alumni Network Login
         </h2>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={submit}>
           <label>Email</label>
           <input
-            type="email"
             className="input-box"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -119,19 +121,19 @@ const LoginPage = () => {
 
           <label>Password</label>
           <input
-            type="password"
             className="input-box"
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
 
-          <button className="btn-primary" style={{ width: "100%", marginTop: 10 }}>
+          <button className="btn-primary" style={{ width: "100%" }}>
             Login
           </button>
         </form>
 
-        <p style={{ marginTop: 15, textAlign: "center" }}>
+        <p style={{ textAlign: "center", marginTop: 10 }}>
           Don't have an account?{" "}
           <Link to="/register" className="text-blue">
             Register
@@ -141,11 +143,11 @@ const LoginPage = () => {
     </div>
   );
 };
+
 // Register Page
 const RegisterPage = () => {
   const { register } = useAuth();
-
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     email: "",
     password: "",
     firstName: "",
@@ -153,19 +155,19 @@ const RegisterPage = () => {
     passoutYear: new Date().getFullYear(),
   });
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
+
     try {
-      await register(formData);
+      await register(form);
 
-    // store email temporarily
-    localStorage.setItem("pendingEmail", formData.email);
+      localStorage.setItem("pendingEmail", form.email);
 
-    toast.success("OTP sent! Please verify.");
-    window.location.href = "/verify-otp";
+      toast.success("OTP sent! Please verify.");
+      window.location.href = "/verify-otp";
 
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Registration failed");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Registration failed");
     }
   };
 
@@ -178,66 +180,58 @@ const RegisterPage = () => {
           Create Account
         </h2>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={submit}>
           <label>First Name</label>
           <input
             className="input-box"
-            value={formData.firstName}
-            onChange={(e) =>
-              setFormData({ ...formData, firstName: e.target.value })
-            }
+            value={form.firstName}
+            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
             required
           />
 
           <label>Last Name</label>
           <input
             className="input-box"
-            value={formData.lastName}
-            onChange={(e) =>
-              setFormData({ ...formData, lastName: e.target.value })
-            }
+            value={form.lastName}
+            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
             required
           />
 
           <label>Email</label>
           <input
-            type="email"
             className="input-box"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
             required
           />
 
           <label>Password</label>
           <input
-            type="password"
             className="input-box"
-            value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
+            type="password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
           />
 
           <label>Passout Year</label>
           <input
-            type="number"
             className="input-box"
-            value={formData.passoutYear}
+            type="number"
+            value={form.passoutYear}
             onChange={(e) =>
-              setFormData({ ...formData, passoutYear: e.target.value })
+              setForm({ ...form, passoutYear: e.target.value })
             }
             required
           />
 
-          <button className="btn-primary" style={{ width: "100%", marginTop: 10 }}>
+          <button className="btn-primary" style={{ width: "100%" }}>
             Register
           </button>
         </form>
 
-        <p style={{ marginTop: 15, textAlign: "center" }}>
+        <p style={{ textAlign: "center", marginTop: 10 }}>
           Already have an account?{" "}
           <Link to="/login" className="text-blue">
             Login
@@ -247,30 +241,28 @@ const RegisterPage = () => {
     </div>
   );
 };
+
 // Dashboard Page
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const [alumni, setAlumni] = useState([]);
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData();
+    load();
   }, []);
 
-  const fetchData = async () => {
+  const load = async () => {
     try {
-      const [alumniRes, jobsRes] = await Promise.all([
+      const [a, j] = await Promise.all([
         axios.get("/api/users/directory?limit=10"),
         axios.get("/api/jobs"),
       ]);
 
-      setAlumni(alumniRes.data.users);
-      setJobs(jobsRes.data.jobs);
+      setAlumni(a.data.users);
+      setJobs(j.data.jobs);
     } catch {
       toast.error("Failed to load data");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -278,102 +270,86 @@ const DashboardPage = () => {
     <div className="page-container">
       <Toaster />
 
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
         <h1 className="heading">Alumni Network</h1>
 
         <div>
-          <span style={{ marginRight: 20 }}>Welcome, {user?.first_name}!</span>
-          <button onClick={logout} className="btn-danger">Logout</button>
+          <span style={{ marginRight: 15 }}>
+            Welcome, {user?.first_name}!
+          </span>
+
+          <button className="btn-danger" onClick={logout}>
+            Logout
+          </button>
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid-3">
         <div className="card">
           <p>Total Alumni</p>
-          <h2 className="heading">{alumni.length}</h2>
+          <h2>{alumni.length}</h2>
         </div>
 
         <div className="card">
           <p>Active Jobs</p>
-          <h2 className="heading">{jobs.length}</h2>
+          <h2>{jobs.length}</h2>
         </div>
 
         <div className="card">
           <p>Your Profile</p>
           <h3>{user?.headline || "Not set"}</h3>
-          <Link to="/profile/edit" className="text-blue">
+          <Link className="text-blue" to="/profile/edit">
             Edit Profile
           </Link>
         </div>
       </div>
 
-      {/* Alumni + Jobs Sections */}
       <div className="grid-2">
-        {/* Recent Alumni */}
         <div className="card">
-          <h2 className="section-title">Recent Alumni</h2>
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            alumni.map((p) => (
-              <div key={p.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 10 }}>
-                <p className="section-title">{p.first_name} {p.last_name}</p>
-                <p>{p.headline || "Alumni"}</p>
-                <p>Class of {p.passout_year}</p>
-              </div>
-            ))
-          )}
+          <h2>Recent Alumni</h2>
+          {alumni.map((p) => (
+            <div key={p.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 8 }}>
+              {p.first_name} {p.last_name}
+            </div>
+          ))}
         </div>
 
-        {/* Latest Jobs */}
         <div className="card">
-          <h2 className="section-title">Latest Jobs</h2>
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            jobs.slice(0, 5).map((job) => (
-              <div key={job.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 10 }}>
-                <p className="section-title">{job.title}</p>
-                <p>{job.company}</p>
-                <p>{job.location}</p>
-              </div>
-            ))
-          )}
+          <h2>Latest Jobs</h2>
+          {jobs.map((job) => (
+            <div key={job.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 8 }}>
+              {job.title} – {job.company}
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 };
-// Main App Component
+
+// App
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <DashboardPage />
-              </PrivateRoute>
-            }
-          />
 
-          <Route
-            path="/profile/edit"
-            element={
-              <PrivateRoute>
-                <EditProfile />
-              </PrivateRoute>
-            }
-          />
+          <Route path="/" element={
+            <PrivateRoute><DashboardPage /></PrivateRoute>
+          } />
+
+          <Route path="/profile/edit" element={
+            <PrivateRoute><EditProfile /></PrivateRoute>
+          } />
+
           <Route path="/verify-otp" element={<VerifyOtp />} />
+
           <Route path="/login" element={<LoginPage />} />
+
           <Route path="/register" element={<RegisterPage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
       </AuthProvider>
     </Router>
@@ -381,7 +357,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
