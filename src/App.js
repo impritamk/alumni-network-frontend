@@ -1,7 +1,8 @@
 import "./styles.css";
 
 import EditProfile from "./pages/EditProfile";
-import VerifyOtp from "./pages/VerifyOtp";   // ✅ Added
+import VerifyOtp from "./pages/VerifyOtp"; // ✅ OTP PAGE
+
 import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -10,14 +11,21 @@ import {
   Navigate,
   Link,
 } from "react-router-dom";
+
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
-// Configure axios
+
+// ==============================
+// AXIOS CONFIG
+// ==============================
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 axios.defaults.baseURL = API_URL;
 
-// Auth Context
+
+// ==============================
+// AUTH CONTEXT
+// ==============================
 const AuthContext = React.createContext();
 export const useAuth = () => React.useContext(AuthContext);
 
@@ -25,6 +33,7 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Auto login if token exists
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -47,6 +56,7 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  // LOGIN
   const login = async (email, password) => {
     const res = await axios.post("/api/auth/login", { email, password });
     const { token, user } = res.data;
@@ -58,11 +68,13 @@ const AuthProvider = ({ children }) => {
     return user;
   };
 
-  const register = async (data) => {
-    const res = await axios.post("/api/auth/register", data);
+  // REGISTER
+  const register = async (formData) => {
+    const res = await axios.post("/api/auth/register", formData);
     return res.data;
   };
 
+  // LOGOUT
   const logout = () => {
     localStorage.removeItem("token");
     delete axios.defaults.headers.common["Authorization"];
@@ -76,14 +88,20 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-// Protected routes
+
+// ==============================
+// PRIVATE ROUTE PROTECTION
+// ==============================
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div>Loading...</div>;
   return user ? children : <Navigate to="/login" replace />;
 };
 
-// Login Page
+
+// ==============================
+// LOGIN PAGE
+// ==============================
 const LoginPage = () => {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
@@ -93,7 +111,7 @@ const LoginPage = () => {
     e.preventDefault();
     try {
       await login(email, password);
-      toast.success("Login successful");
+      toast.success("Login successful!");
       window.location.href = "/";
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
@@ -103,11 +121,9 @@ const LoginPage = () => {
   return (
     <div className="page-container" style={{ maxWidth: 450 }}>
       <Toaster />
-      <div className="card" style={{ marginTop: 60 }}>
 
-        <h2 className="heading" style={{ textAlign: "center" }}>
-          Alumni Network Login
-        </h2>
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Login</h2>
 
         <form onSubmit={submit}>
           <label>Email</label>
@@ -134,19 +150,21 @@ const LoginPage = () => {
         </form>
 
         <p style={{ textAlign: "center", marginTop: 10 }}>
-          Don't have an account?{" "}
-          <Link to="/register" className="text-blue">
-            Register
-          </Link>
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-blue">Register</Link>
         </p>
       </div>
     </div>
   );
 };
 
-// Register Page
+
+// ==============================
+// REGISTER PAGE
+// ==============================
 const RegisterPage = () => {
   const { register } = useAuth();
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -161,11 +179,11 @@ const RegisterPage = () => {
     try {
       await register(form);
 
+      // Save email for OTP verification
       localStorage.setItem("pendingEmail", form.email);
 
-      toast.success("OTP sent! Please verify.");
+      toast.success("OTP sent! Verify your email.");
       window.location.href = "/verify-otp";
-
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     }
@@ -176,9 +194,7 @@ const RegisterPage = () => {
       <Toaster />
 
       <div className="card" style={{ marginTop: 60 }}>
-        <h2 className="heading" style={{ textAlign: "center" }}>
-          Create Account
-        </h2>
+        <h2 className="heading" style={{ textAlign: "center" }}>Create Account</h2>
 
         <form onSubmit={submit}>
           <label>First Name</label>
@@ -220,9 +236,7 @@ const RegisterPage = () => {
             className="input-box"
             type="number"
             value={form.passoutYear}
-            onChange={(e) =>
-              setForm({ ...form, passoutYear: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, passoutYear: e.target.value })}
             required
           />
 
@@ -233,16 +247,17 @@ const RegisterPage = () => {
 
         <p style={{ textAlign: "center", marginTop: 10 }}>
           Already have an account?{" "}
-          <Link to="/login" className="text-blue">
-            Login
-          </Link>
+          <Link to="/login" className="text-blue">Login</Link>
         </p>
       </div>
     </div>
   );
 };
 
-// Dashboard Page
+
+// ==============================
+// DASHBOARD
+// ==============================
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const [alumni, setAlumni] = useState([]);
@@ -327,21 +342,27 @@ const DashboardPage = () => {
   );
 };
 
-// App
+
+// ==============================
+// MAIN APP
+// ==============================
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
 
-          <Route path="/" element={
-            <PrivateRoute><DashboardPage /></PrivateRoute>
-          } />
+          <Route
+            path="/"
+            element={<PrivateRoute><DashboardPage /></PrivateRoute>}
+          />
 
-          <Route path="/profile/edit" element={
-            <PrivateRoute><EditProfile /></PrivateRoute>
-          } />
+          <Route
+            path="/profile/edit"
+            element={<PrivateRoute><EditProfile /></PrivateRoute>}
+          />
 
+          {/* OTP PAGE */}
           <Route path="/verify-otp" element={<VerifyOtp />} />
 
           <Route path="/login" element={<LoginPage />} />
