@@ -527,43 +527,31 @@ const AlumniProfile = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      console.log("Fetching user with ID:", id);
+      console.log("🔍 Fetching user with ID:", id);
       setLoading(true);
       setError(null);
       
       try {
-        // Try the main endpoint first
-        const res = await axios.get(`/api/users/${id}`);
-        console.log("✅ User loaded from /api/users/{id}:", res.data);
-        setUser(res.data.user || res.data);
-      } catch (err) {
-        console.error("❌ Failed to fetch from /api/users/{id}, trying alternatives...", err.response?.status);
+        // Fetch all users from directory
+        console.log("📋 Fetching from directory...");
+        const res = await axios.get("/api/users/directory");
+        const allUsers = res.data.users || [];
+        console.log("📊 Total users in directory:", allUsers.length);
         
-        // Try alternative endpoint: /api/users/profile/{id}
-        try {
-          const res = await axios.get(`/api/users/profile/${id}`);
-          console.log("✅ User loaded from /api/users/profile/{id}:", res.data);
-          setUser(res.data.user || res.data);
-        } catch (err2) {
-          console.error("❌ Failed to fetch from /api/users/profile/{id}", err2.response?.status);
-          
-          // Try fetching from directory and filter by ID
-          try {
-            const res = await axios.get("/api/users/directory");
-            const foundUser = (res.data.users || []).find(u => u.id === id);
-            
-            if (foundUser) {
-              console.log("✅ User found in directory:", foundUser);
-              setUser(foundUser);
-            } else {
-              console.error("❌ User not found in directory");
-              setError("User not found");
-            }
-          } catch (err3) {
-            console.error("❌ Failed to fetch directory:", err3);
-            setError("Failed to load user profile");
-          }
+        // Find the user by ID
+        const foundUser = allUsers.find(u => u.id === id);
+        
+        if (foundUser) {
+          console.log("✅ User found:", foundUser);
+          setUser(foundUser);
+        } else {
+          console.error("❌ User with ID", id, "not found in directory");
+          console.log("Available IDs:", allUsers.map(u => u.id));
+          setError("User not found");
         }
+      } catch (err) {
+        console.error("❌ Failed to fetch directory:", err);
+        setError("Failed to load user profile");
       } finally {
         setLoading(false);
       }
@@ -588,8 +576,13 @@ const AlumniProfile = () => {
         <Toaster />
         <div className="card">
           <h2>User Not Found</h2>
-          <p style={{ color: "#6b7280" }}>{error || "This user profile could not be found."}</p>
-          <Link to="/alumni" className="btn-primary" style={{ display: "inline-block", marginTop: 15 }}>
+          <p style={{ color: "#6b7280", marginBottom: 15 }}>
+            {error || "This user profile could not be found."}
+          </p>
+          <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: 15 }}>
+            Searched for ID: <code>{id}</code>
+          </p>
+          <Link to="/alumni" className="btn-primary" style={{ display: "inline-block", textDecoration: "none" }}>
             Back to Alumni List
           </Link>
         </div>
@@ -602,23 +595,45 @@ const AlumniProfile = () => {
       <Toaster />
       <div className="card">
         <h2>{user.first_name} {user.last_name}</h2>
-        <p style={{ color: "#6b7280", fontSize: "16px" }}>{user.headline || "Alumni"}</p>
-        <p><b>Batch:</b> {user.passout_year || "N/A"}</p>
-        {user.company && <p><b>Company:</b> {user.company}</p>}
-        {user.location && <p><b>Location:</b> {user.location}</p>}
-        {user.bio && <p style={{ marginTop: 15 }}>{user.bio}</p>}
+        <p style={{ color: "#6b7280", fontSize: "18px", marginTop: 5 }}>
+          {user.headline || "Alumni"}
+        </p>
         
-        <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
-          <button className="btn-primary" onClick={() => toast.success("Connect feature coming soon!")}>
+        <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #eee" }}>
+          <p><b>Batch:</b> {user.passout_year || "N/A"}</p>
+          {user.email && <p><b>Email:</b> {user.email}</p>}
+          {user.company && <p><b>Company:</b> {user.company}</p>}
+          {user.location && <p><b>Location:</b> {user.location}</p>}
+        </div>
+        
+        {user.bio && (
+          <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #eee" }}>
+            <h3 style={{ marginTop: 0 }}>About</h3>
+            <p style={{ color: "#4b5563", lineHeight: 1.6 }}>{user.bio}</p>
+          </div>
+        )}
+        
+        <div style={{ marginTop: 25, display: "flex", gap: 10 }}>
+          <button 
+            className="btn-primary" 
+            onClick={() => toast.success("Connect feature coming soon!")}
+          >
             Connect
           </button>
-          <button className="btn-secondary" onClick={() => toast.success("Messaging feature coming soon!")}>
+          <button 
+            className="btn-secondary" 
+            onClick={() => toast.success("Messaging feature coming soon!")}
+          >
             Message
           </button>
         </div>
       </div>
       
-      <Link to="/alumni" className="text-blue" style={{ display: "inline-block", marginTop: 15 }}>
+      <Link 
+        to="/alumni" 
+        className="text-blue" 
+        style={{ display: "inline-block", marginTop: 20, fontSize: "16px" }}
+      >
         ← Back to Alumni List
       </Link>
     </div>
