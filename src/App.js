@@ -287,20 +287,7 @@ const DashboardPage = () => {
     <div className="page-container">
       <Toaster />
 
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <h1 className="heading">Alumni Network</h1>
-
-        <div>
-          <span style={{ marginRight: 15 }}>
-            Welcome, {user?.first_name}!
-          </span>
-
-          <button className="btn-danger" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      </div>
-
+      
       <div className="grid-3">
         <div className="card">
           <p>Total Alumni</p>
@@ -448,6 +435,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
