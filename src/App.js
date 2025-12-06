@@ -716,6 +716,349 @@ const EditProfile = () => {
 };
 
 // ==============================
+// JOBS LIST PAGE
+// ==============================
+const JobsPage = () => {
+  console.log("💼 JobsPage rendering");
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  useEffect(() => {
+    loadJobs();
+  }, []);
+
+  const loadJobs = async () => {
+    try {
+      const res = await axios.get("/api/jobs");
+      console.log("📊 Jobs loaded:", res.data.jobs?.length);
+      setJobs(res.data.jobs || []);
+    } catch (err) {
+      console.error("❌ Failed to load jobs:", err);
+      toast.error("Failed to load jobs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="page-container">Loading jobs...</div>;
+  }
+
+  return (
+    <div className="page-container">
+      <Toaster />
+      
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h1>Job Board</h1>
+        <button 
+          className="btn-primary"
+          onClick={() => setShowCreateModal(true)}
+        >
+          + Post a Job
+        </button>
+      </div>
+
+      {showCreateModal && (
+        <CreateJobModal 
+          onClose={() => setShowCreateModal(false)} 
+          onSuccess={() => {
+            setShowCreateModal(false);
+            loadJobs();
+          }}
+        />
+      )}
+
+      {jobs.length === 0 ? (
+        <div className="card">
+          <p style={{ textAlign: "center", color: "#6b7280" }}>
+            No jobs posted yet. Be the first to post a job!
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+          {jobs.map((job) => (
+            <JobCard key={job.id} job={job} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ==============================
+// JOB CARD COMPONENT
+// ==============================
+const JobCard = ({ job }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="card">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ marginTop: 0, marginBottom: 5 }}>{job.title}</h3>
+          <p style={{ color: "#6b7280", marginBottom: 10, fontSize: "16px" }}>
+            <strong>{job.company}</strong>
+            {job.location && ` • ${job.location}`}
+          </p>
+          
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+            {job.job_type && (
+              <span style={{ 
+                background: "#e0f2fe", 
+                color: "#0369a1", 
+                padding: "4px 12px", 
+                borderRadius: "6px",
+                fontSize: "14px"
+              }}>
+                {job.job_type}
+              </span>
+            )}
+            {job.experience_level && (
+              <span style={{ 
+                background: "#f3e8ff", 
+                color: "#7c3aed", 
+                padding: "4px 12px", 
+                borderRadius: "6px",
+                fontSize: "14px"
+              }}>
+                {job.experience_level}
+              </span>
+            )}
+            {job.salary_range && (
+              <span style={{ 
+                background: "#dcfce7", 
+                color: "#15803d", 
+                padding: "4px 12px", 
+                borderRadius: "6px",
+                fontSize: "14px"
+              }}>
+                {job.salary_range}
+              </span>
+            )}
+          </div>
+
+          {expanded && (
+            <div style={{ marginTop: 15, paddingTop: 15, borderTop: "1px solid #eee" }}>
+              <h4 style={{ marginTop: 0 }}>Description</h4>
+              <p style={{ color: "#4b5563", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                {job.description}
+              </p>
+              
+              {job.requirements && (
+                <>
+                  <h4 style={{ marginTop: 15 }}>Requirements</h4>
+                  <p style={{ color: "#4b5563", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                    {job.requirements}
+                  </p>
+                </>
+              )}
+              
+              <p style={{ color: "#6b7280", fontSize: "14px", marginTop: 15 }}>
+                Posted by: {job.first_name} {job.last_name}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
+        <button 
+          className="btn-primary"
+          onClick={() => toast.success("Apply feature coming soon!")}
+        >
+          Apply Now
+        </button>
+        <button 
+          className="btn-secondary"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? "Show Less" : "View Details"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// CREATE JOB MODAL
+// ==============================
+const CreateJobModal = ({ onClose, onSuccess }) => {
+  const [form, setForm] = useState({
+    title: "",
+    company: "",
+    description: "",
+    requirements: "",
+    location: "",
+    salaryRange: "",
+    jobType: "Full-time",
+    experienceLevel: "Mid-level"
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      await axios.post("/api/jobs", form);
+      toast.success("Job posted successfully!");
+      onSuccess();
+    } catch (err) {
+      console.error("Failed to post job:", err);
+      toast.error("Failed to post job");
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "20px"
+    }}>
+      <div className="card" style={{ 
+        maxWidth: 600, 
+        width: "100%", 
+        maxHeight: "90vh", 
+        overflow: "auto" 
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <h2 style={{ margin: 0 }}>Post a Job</h2>
+          <button 
+            onClick={onClose}
+            style={{ 
+              background: "none", 
+              border: "none", 
+              fontSize: "24px", 
+              cursor: "pointer",
+              color: "#6b7280"
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <label>Job Title *</label>
+          <input
+            className="input-box"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            required
+            placeholder="e.g. Senior Software Engineer"
+          />
+
+          <label>Company *</label>
+          <input
+            className="input-box"
+            value={form.company}
+            onChange={(e) => setForm({ ...form, company: e.target.value })}
+            required
+            placeholder="e.g. Tech Corp"
+          />
+
+          <label>Location</label>
+          <input
+            className="input-box"
+            value={form.location}
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
+            placeholder="e.g. San Francisco, CA / Remote"
+          />
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15 }}>
+            <div>
+              <label>Job Type *</label>
+              <select
+                className="input-box"
+                value={form.jobType}
+                onChange={(e) => setForm({ ...form, jobType: e.target.value })}
+                required
+              >
+                <option value="Full-time">Full-time</option>
+                <option value="Part-time">Part-time</option>
+                <option value="Contract">Contract</option>
+                <option value="Internship">Internship</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Experience Level *</label>
+              <select
+                className="input-box"
+                value={form.experienceLevel}
+                onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })}
+                required
+              >
+                <option value="Entry-level">Entry-level</option>
+                <option value="Mid-level">Mid-level</option>
+                <option value="Senior">Senior</option>
+                <option value="Lead">Lead</option>
+                <option value="Executive">Executive</option>
+              </select>
+            </div>
+          </div>
+
+          <label>Salary Range</label>
+          <input
+            className="input-box"
+            value={form.salaryRange}
+            onChange={(e) => setForm({ ...form, salaryRange: e.target.value })}
+            placeholder="e.g. $80k - $120k"
+          />
+
+          <label>Job Description *</label>
+          <textarea
+            className="input-box"
+            rows={5}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            required
+            placeholder="Describe the role, responsibilities, and what you're looking for..."
+          />
+
+          <label>Requirements</label>
+          <textarea
+            className="input-box"
+            rows={4}
+            value={form.requirements}
+            onChange={(e) => setForm({ ...form, requirements: e.target.value })}
+            placeholder="List required skills, qualifications, and experience..."
+          />
+
+          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+            <button 
+              type="submit" 
+              className="btn-primary" 
+              style={{ flex: 1 }}
+              disabled={submitting}
+            >
+              {submitting ? "Posting..." : "Post Job"}
+            </button>
+            <button 
+              type="button"
+              className="btn-secondary" 
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
 // MAIN APP
 // ==============================
 function App() {
@@ -734,7 +1077,7 @@ function App() {
           <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
           <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
           <Route path="/messages" element={<PrivateRoute><PrivateLayout><div className="page-container">Messages coming soon</div></PrivateLayout></PrivateRoute>} />
-          <Route path="/jobs" element={<PrivateRoute><PrivateLayout><div className="page-container">Jobs page</div></PrivateLayout></PrivateRoute>} />
+          <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
