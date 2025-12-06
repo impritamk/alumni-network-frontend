@@ -3,7 +3,7 @@ import Navbar from "./components/Navbar";
 import EditProfile from "./pages/EditProfile";
 import AlumniList from "./pages/AlumniList";
 import AlumniProfile from "./pages/AlumniProfile";
-import VerifyOtp from "./pages/VerifyOtp"; // ✅ OTP PAGE
+import VerifyOtp from "./pages/VerifyOtp";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -17,13 +17,11 @@ import {
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 
-
 // ==============================
 // AXIOS CONFIG
 // ==============================
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 axios.defaults.baseURL = API_URL;
-
 
 // ==============================
 // AUTH CONTEXT
@@ -90,7 +88,6 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-
 // ==============================
 // PRIVATE ROUTE PROTECTION
 // ==============================
@@ -99,7 +96,6 @@ const PrivateRoute = ({ children }) => {
   if (loading) return <div>Loading...</div>;
   return user ? children : <Navigate to="/login" replace />;
 };
-
 
 // ==============================
 // LOGIN PAGE
@@ -152,14 +148,13 @@ const LoginPage = () => {
         </form>
 
         <p style={{ textAlign: "center", marginTop: 10 }}>
-          Don’t have an account?{" "}
+          Don't have an account?{" "}
           <Link to="/register" className="text-blue">Register</Link>
         </p>
       </div>
     </div>
   );
 };
-
 
 // ==============================
 // REGISTER PAGE
@@ -256,12 +251,11 @@ const RegisterPage = () => {
   );
 };
 
-
 // ==============================
 // DASHBOARD
 // ==============================
 const DashboardPage = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [alumni, setAlumni] = useState([]);
   const [jobs, setJobs] = useState([]);
 
@@ -287,9 +281,9 @@ const DashboardPage = () => {
     <div className="page-container">
       <Toaster />
 
-<Link to="/alumni" className="btn-primary" style={{ marginBottom: 20 }}>
-  Browse Alumni
-</Link>
+      <Link to="/alumni" className="btn-primary" style={{ marginBottom: 20, display: "inline-block" }}>
+        Browse Alumni
+      </Link>
       
       <div className="grid-3">
         <div className="card">
@@ -334,7 +328,9 @@ const DashboardPage = () => {
   );
 };
 
-
+// ==============================
+// PRIVATE LAYOUT (FIXED!)
+// ==============================
 const PrivateLayout = ({ children }) => (
   <>
     <Navbar />
@@ -344,10 +340,6 @@ const PrivateLayout = ({ children }) => (
   </>
 );
 
-
-
-
-
 // ==============================
 // MAIN APP
 // ==============================
@@ -356,81 +348,79 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-
-          {/* OTP PAGE */}
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-          <Route
-  path="/"
-  element={
-    <PrivateRoute>
-      <PrivateLayout>
-        <DashboardPage />
-      </PrivateLayout>
-    </PrivateRoute>
-  }
-/>
-
-<Route
-  path="/alumni"
-  element={
-    <PrivateRoute>
-      <PrivateLayout>
-        <AlumniList />
-      </PrivateLayout>
-    </PrivateRoute>
-  }
-/>
-
-<Route
-  path="/alumni/:id"
-  element={
-    <PrivateRoute>
-      <PrivateLayout>
-        <AlumniProfile />
-      </PrivateLayout>
-    </PrivateRoute>
-  }
-/>
-
-<Route
-  path="/profile/edit"
-  element={
-    <PrivateRoute>
-      <PrivateLayout>
-        <EditProfile />
-      </PrivateLayout>
-    </PrivateRoute>
-  }
-/>
-
-
+          {/* PUBLIC ROUTES */}
           <Route path="/login" element={<LoginPage />} />
-<Route
-  path="/messages"
-  element={
-    <PrivateRoute>
-      <PrivateLayout>
-        <div className="page-container">Messages coming soon</div>
-      </PrivateLayout>
-    </PrivateRoute>
-  }
-/>
-
-<Route
-  path="/jobs"
-  element={
-    <PrivateRoute>
-      <PrivateLayout>
-        <div className="page-container">Jobs page</div>
-      </PrivateLayout>
-    </PrivateRoute>
-  }
-/>
-
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+
+          {/* PRIVATE ROUTES */}
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <PrivateLayout>
+                  <DashboardPage />
+                </PrivateLayout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/alumni"
+            element={
+              <PrivateRoute>
+                <PrivateLayout>
+                  <AlumniList />
+                </PrivateLayout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/alumni/:id"
+            element={
+              <PrivateRoute>
+                <PrivateLayout>
+                  <AlumniProfile />
+                </PrivateLayout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/profile/edit"
+            element={
+              <PrivateRoute>
+                <PrivateLayout>
+                  <EditProfile />
+                </PrivateLayout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/messages"
+            element={
+              <PrivateRoute>
+                <PrivateLayout>
+                  <div className="page-container">Messages coming soon</div>
+                </PrivateLayout>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/jobs"
+            element={
+              <PrivateRoute>
+                <PrivateLayout>
+                  <div className="page-container">Jobs page</div>
+                </PrivateLayout>
+              </PrivateRoute>
+            }
+          />
 
           <Route path="*" element={<Navigate to="/" replace />} />
-
         </Routes>
       </AuthProvider>
     </Router>
@@ -438,9 +428,3 @@ function App() {
 }
 
 export default App;
-
-
-
-
-
-
