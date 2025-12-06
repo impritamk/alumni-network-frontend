@@ -1,60 +1,35 @@
-// src/components/AlumniList.js
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
-function AlumniList() {
-  const [alumni, setAlumni] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function AlumniList() {
+  const [list, setList] = useState([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    axios
-      .get("/api/alumni", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        // adjust if your backend uses res.data.alumni, etc.
-        setAlumni(res.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching alumni:", err.response?.data || err.message);
-      })
-      .finally(() => setLoading(false));
+    axios.get("/api/users/directory")
+      .then(res => setList(res.data.users))
+      .catch(() => alert("Failed to load alumni"));
   }, []);
 
-  if (loading) return <p className="mt-6 text-center">Loading alumni...</p>;
-
   return (
-    <div className="max-w-5xl mx-auto mt-6">
-      <h1 className="text-2xl font-semibold mb-4">Alumni</h1>
+    <div className="page-container">
+      <h2 className="heading">Alumni Directory</h2>
 
-      <div className="bg-white shadow rounded-lg divide-y">
-        {alumni.length === 0 && (
-          <p className="px-4 py-3 text-sm text-gray-500">
-            No alumni found.
-          </p>
-        )}
-
-        {alumni.map((alum) => (
-          <Link
-            key={alum.id}
-            to={`/alumni/${alum.id}`}
-            className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-          >
-            <div>
-              <p className="font-medium">{alum.name}</p>
-              <p className="text-sm text-gray-500">
-                {alum.headline || `Batch of ${alum.passout_year}`}
-              </p>
+      <div className="card">
+        {list.map(u => (
+          <div key={u.id} style={{
+            padding: 10,
+            borderBottom: "1px solid #eee"
+          }}>
+            <Link to={`/alumni/${u.id}`}>
+              <strong>{u.first_name} {u.last_name}</strong>
+            </Link>
+            <div style={{ fontSize: 13, color: "#666" }}>
+              {u.headline || `Batch of ${u.passout_year}`}
             </div>
-            <span className="text-sm text-indigo-600">View Profile →</span>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
   );
 }
-
-export default AlumniList;
