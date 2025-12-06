@@ -171,12 +171,12 @@ const PrivateRoute = ({ children }) => {
 const PrivateLayout = ({ children }) => {
   console.log("📄 PrivateLayout rendering");
   return (
-    <>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <div className="app-content">
+      <div className="app-content" style={{ flex: 1 }}>
         {children}
       </div>
-    </>
+    </div>
   );
 };
 
@@ -522,35 +522,105 @@ const AlumniProfile = () => {
   console.log("👤 AlumniProfile rendering");
   const { id } = useParams();
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    console.log("Fetching user:", id);
-    axios.get(`/api/users/${id}`)
-      .then(res => {
-        console.log("User loaded:", res.data.user);
-        setUser(res.data.user);
-      })
-      .catch(err => {
-        console.error("Failed to load user:", err);
-        alert("User not found");
-      });
+    const fetchUser = async () => {
+      console.log("Fetching user with ID:", id);
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Try the main endpoint first
+        const res = await axios.get(`/api/users/${id}`);
+        console.log("✅ User loaded from /api/users/{id}:", res.data);
+        setUser(res.data.user || res.data);
+      } catch (err) {
+        console.error("❌ Failed to fetch from /api/users/{id}, trying alternatives...", err.response?.status);
+        
+        // Try alternative endpoint: /api/users/profile/{id}
+        try {
+          const res = await axios.get(`/api/users/profile/${id}`);
+          console.log("✅ User loaded from /api/users/profile/{id}:", res.data);
+          setUser(res.data.user || res.data);
+        } catch (err2) {
+          console.error("❌ Failed to fetch from /api/users/profile/{id}", err2.response?.status);
+          
+          // Try fetching from directory and filter by ID
+          try {
+            const res = await axios.get("/api/users/directory");
+            const foundUser = (res.data.users || []).find(u => u.id === id);
+            
+            if (foundUser) {
+              console.log("✅ User found in directory:", foundUser);
+              setUser(foundUser);
+            } else {
+              console.error("❌ User not found in directory");
+              setError("User not found");
+            }
+          } catch (err3) {
+            console.error("❌ Failed to fetch directory:", err3);
+            setError("Failed to load user profile");
+          }
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUser();
   }, [id]);
 
-  if (!user) return <div className="page-container">Loading profile...</div>;
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="card">
+          <p>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="page-container">
+        <Toaster />
+        <div className="card">
+          <h2>User Not Found</h2>
+          <p style={{ color: "#6b7280" }}>{error || "This user profile could not be found."}</p>
+          <Link to="/alumni" className="btn-primary" style={{ display: "inline-block", marginTop: 15 }}>
+            Back to Alumni List
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
       <Toaster />
       <div className="card">
         <h2>{user.first_name} {user.last_name}</h2>
-        <p>{user.headline}</p>
-        <p><b>Batch:</b> {user.passout_year}</p>
-        <p>{user.bio}</p>
-        <div style={{ marginTop: 15 }}>
-          <button className="btn-primary">Connect</button>
-          <button style={{ marginLeft: 10 }} className="btn-secondary">Message</button>
+        <p style={{ color: "#6b7280", fontSize: "16px" }}>{user.headline || "Alumni"}</p>
+        <p><b>Batch:</b> {user.passout_year || "N/A"}</p>
+        {user.company && <p><b>Company:</b> {user.company}</p>}
+        {user.location && <p><b>Location:</b> {user.location}</p>}
+        {user.bio && <p style={{ marginTop: 15 }}>{user.bio}</p>}
+        
+        <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
+          <button className="btn-primary" onClick={() => toast.success("Connect feature coming soon!")}>
+            Connect
+          </button>
+          <button className="btn-secondary" onClick={() => toast.success("Messaging feature coming soon!")}>
+            Message
+          </button>
         </div>
       </div>
+      
+      <Link to="/alumni" className="text-blue" style={{ display: "inline-block", marginTop: 15 }}>
+        ← Back to Alumni List
+      </Link>
     </div>
   );
 };
