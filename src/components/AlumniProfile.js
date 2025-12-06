@@ -21,7 +21,6 @@ export default function AlumniProfile() {
         <p>{user.headline}</p>
         <p><b>Batch:</b> {user.passout_year}</p>
         <p>{user.bio}</p>
-
         <div style={{ marginTop: 15 }}>
           <button className="btn-primary">Connect</button>
           <button style={{ marginLeft: 10 }} className="btn-secondary">
