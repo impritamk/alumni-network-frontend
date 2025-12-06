@@ -1,48 +1,34 @@
-// src/components/Navbar.js
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../App";
 
-function Navbar() {
+export default function Navbar() {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userEmail");
+  const doLogout = () => {
+    logout();
     navigate("/login");
   };
 
-  const linkClass = ({ isActive }) =>
-    "px-3 py-2 text-sm font-medium " +
-    (isActive ? "underline" : "text-gray-900");
-
   return (
-    <nav className="bg-white shadow-sm">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="text-xl font-semibold">Alumni Network</div>
+    <div style={{
+      display: "flex",
+      justifyContent: "space-between",
+      padding: "10px 20px",
+      borderBottom: "1px solid #ddd",
+      background: "#fff"
+    }}>
+      <strong>Alumni Network</strong>
 
-        <div className="flex gap-3 items-center">
-          <NavLink to="/alumni" className={linkClass}>
-            Alumni
-          </NavLink>
-          <NavLink to="/messages" className={linkClass}>
-            Messages
-          </NavLink>
-          <NavLink to="/jobs" className={linkClass}>
-            Jobs
-          </NavLink>
-          <NavLink to="/profile" className={linkClass}>
-            Profile
-          </NavLink>
+      <div style={{ display: "flex", gap: 15, alignItems: "center" }}>
+        <Link to="/alumni">Alumni</Link>
+        <Link to="/messages">Messages</Link>
+        <Link to="/jobs">Jobs</Link>
+        <Link to="/profile/edit">Profile</Link>
 
-          <button
-            onClick={handleLogout}
-            className="px-3 py-2 rounded-md text-sm font-medium bg-red-500 text-white"
-          >
-            Logout
-          </button>
-        </div>
+        <span>Hi, {user?.first_name}</span>
+        <button className="btn-danger" onClick={doLogout}>Logout</button>
       </div>
-    </nav>
+    </div>
   );
 }
-
-export default Navbar;
