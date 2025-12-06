@@ -335,7 +335,7 @@ const DashboardPage = () => {
 };
 
 
-cconst PrivateLayout = ({ children }) => (
+const PrivateLayout = ({ children }) => (
   <>
     <Navbar />
     <div className="app-content">
@@ -438,6 +438,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
