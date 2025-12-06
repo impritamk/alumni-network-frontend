@@ -345,13 +345,15 @@ const DashboardPage = () => {
 };
 
 
-const PrivateRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+cconst PrivateLayout = ({ children }) => (
+  <>
+    <Navbar />
+    <div className="app-content">
+      {children}
+    </div>
+  </>
+);
 
-  if (loading) return <div className="page-container">Checking session...</div>;
-
-  return user ? children : <Navigate to="/login" replace />;
-};
 
 
 
@@ -446,5 +448,6 @@ function App() {
 }
 
 export default App;
+
 
 
