@@ -1,5 +1,5 @@
 import "./styles.css";
-
+import Navbar from "./components/Navbar";
 import EditProfile from "./pages/EditProfile";
 import AlumniList from "./pages/AlumniList";
 import AlumniProfile from "./pages/AlumniProfile";
@@ -343,14 +343,16 @@ const DashboardPage = () => {
     </div>
   );
 };
-import Navbar from "./components/Navbar";
 
-const PrivateLayout = ({ children }) => (
-  <>
-    <Navbar />
-    {children}
-  </>
-);
+
+const PrivateRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div className="page-container">Checking session...</div>;
+
+  return user ? children : <Navigate to="/login" replace />;
+};
+
 
 
 
@@ -362,16 +364,6 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-
-          <Route
-            path="/"
-            element={<PrivateRoute><DashboardPage /></PrivateRoute>}
-          />
-
-          <Route
-            path="/profile/edit"
-            element={<PrivateRoute><EditProfile /></PrivateRoute>}
-          />
 
           {/* OTP PAGE */}
           <Route path="/verify-otp" element={<VerifyOtp />} />
@@ -454,4 +446,5 @@ function App() {
 }
 
 export default App;
+
 
