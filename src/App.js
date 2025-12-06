@@ -287,6 +287,9 @@ const DashboardPage = () => {
     <div className="page-container">
       <Toaster />
 
+<Link to="/alumni" className="btn-primary" style={{ marginBottom: 20 }}>
+  Browse Alumni
+</Link>
       
       <div className="grid-3">
         <div className="card">
@@ -435,6 +438,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
