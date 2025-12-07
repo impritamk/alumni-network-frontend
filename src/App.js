@@ -96,8 +96,6 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  console.log("👤 Navbar user:", user);
-
   const doLogout = () => {
     logout();
     navigate("/login");
@@ -139,10 +137,7 @@ const Navbar = () => {
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
-  console.log("🔒 PrivateRoute - loading:", loading, "user:", user);
-  
   if (loading) {
-    console.log("⏳ Still loading...");
     return (
       <div style={{ 
         display: 'flex', 
@@ -156,12 +151,6 @@ const PrivateRoute = ({ children }) => {
     );
   }
   
-  if (!user) {
-    console.log("❌ No user, redirecting to login");
-  } else {
-    console.log("✅ User authenticated, showing content");
-  }
-  
   return user ? children : <Navigate to="/login" replace />;
 };
 
@@ -169,7 +158,6 @@ const PrivateRoute = ({ children }) => {
 // PRIVATE LAYOUT
 // ==============================
 const PrivateLayout = ({ children }) => {
-  console.log("📄 PrivateLayout rendering");
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
@@ -184,7 +172,6 @@ const PrivateLayout = ({ children }) => {
 // LOGIN PAGE
 // ==============================
 const LoginPage = () => {
-  console.log("🔐 LoginPage rendering");
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -251,7 +238,6 @@ const LoginPage = () => {
 // REGISTER PAGE
 // ==============================
 const RegisterPage = () => {
-  console.log("📝 RegisterPage rendering");
   const { register } = useAuth();
   const [form, setForm] = useState({
     email: "",
@@ -334,7 +320,6 @@ const RegisterPage = () => {
 // VERIFY OTP PAGE
 // ==============================
 const VerifyOtp = () => {
-  console.log("✉️ VerifyOtp rendering");
   const [otp, setOtp] = useState("");
   const navigate = useNavigate();
 
@@ -382,7 +367,6 @@ const VerifyOtp = () => {
 // DASHBOARD
 // ==============================
 const DashboardPage = () => {
-  console.log("🏠 DashboardPage rendering");
   const { user } = useAuth();
   const [alumni, setAlumni] = useState([]);
   const [jobs, setJobs] = useState([]);
@@ -397,11 +381,10 @@ const DashboardPage = () => {
         axios.get("/api/users/directory?limit=10"),
         axios.get("/api/jobs"),
       ]);
-      console.log("📊 Data loaded - Alumni:", a.data.users?.length, "Jobs:", j.data.jobs?.length);
       setAlumni(a.data.users || []);
       setJobs(j.data.jobs || []);
     } catch (err) {
-      console.error("❌ Failed to load data:", err);
+      console.error("Failed to load data:", err);
     }
   };
 
@@ -463,7 +446,6 @@ const DashboardPage = () => {
 // ALUMNI LIST
 // ==============================
 const AlumniList = () => {
-  console.log("👥 AlumniList rendering");
   const [alumni, setAlumni] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -474,10 +456,8 @@ const AlumniList = () => {
   const loadAlumni = async () => {
     try {
       const res = await axios.get("/api/users/directory");
-      console.log("📋 Alumni loaded:", res.data.users?.length);
       setAlumni(res.data.users || []);
     } catch (err) {
-      console.error("❌ Failed to load alumni:", err);
       toast.error("Failed to load alumni");
     } finally {
       setLoading(false);
@@ -519,7 +499,6 @@ const AlumniList = () => {
 // ALUMNI PROFILE
 // ==============================
 const AlumniProfile = () => {
-  console.log("👤 AlumniProfile rendering");
   const { id } = useParams();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -527,30 +506,20 @@ const AlumniProfile = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      console.log("🔍 Fetching user with ID:", id);
       setLoading(true);
       setError(null);
       
       try {
-        // Fetch all users from directory
-        console.log("📋 Fetching from directory...");
         const res = await axios.get("/api/users/directory");
         const allUsers = res.data.users || [];
-        console.log("📊 Total users in directory:", allUsers.length);
-        
-        // Find the user by ID
         const foundUser = allUsers.find(u => u.id === id);
         
         if (foundUser) {
-          console.log("✅ User found:", foundUser);
           setUser(foundUser);
         } else {
-          console.error("❌ User with ID", id, "not found in directory");
-          console.log("Available IDs:", allUsers.map(u => u.id));
           setError("User not found");
         }
       } catch (err) {
-        console.error("❌ Failed to fetch directory:", err);
         setError("Failed to load user profile");
       } finally {
         setLoading(false);
@@ -578,9 +547,6 @@ const AlumniProfile = () => {
           <h2>User Not Found</h2>
           <p style={{ color: "#6b7280", marginBottom: 15 }}>
             {error || "This user profile could not be found."}
-          </p>
-          <p style={{ color: "#6b7280", fontSize: "14px", marginBottom: 15 }}>
-            Searched for ID: <code>{id}</code>
           </p>
           <Link to="/alumni" className="btn-primary" style={{ display: "inline-block", textDecoration: "none" }}>
             Back to Alumni List
@@ -644,7 +610,6 @@ const AlumniProfile = () => {
 // EDIT PROFILE
 // ==============================
 const EditProfile = () => {
-  console.log("✏️ EditProfile rendering");
   const { user } = useAuth();
   const [form, setForm] = useState({
     headline: "",
@@ -670,7 +635,6 @@ const EditProfile = () => {
       await axios.put("/api/users/profile", form);
       toast.success("Profile updated!");
     } catch (err) {
-      console.error("Failed to update profile:", err);
       toast.error("Failed to update profile");
     }
   };
@@ -716,7 +680,7 @@ const EditProfile = () => {
 };
 
 // ==============================
-// JOBS LIST PAGE
+// JOBS PAGE
 // ==============================
 const JobsPage = () => {
   console.log("💼 JobsPage rendering");
@@ -970,120 +934,4 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
           <input
             className="input-box"
             value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-            placeholder="e.g. San Francisco, CA / Remote"
-          />
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15 }}>
-            <div>
-              <label>Job Type *</label>
-              <select
-                className="input-box"
-                value={form.jobType}
-                onChange={(e) => setForm({ ...form, jobType: e.target.value })}
-                required
-              >
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
-                <option value="Internship">Internship</option>
-              </select>
-            </div>
-
-            <div>
-              <label>Experience Level *</label>
-              <select
-                className="input-box"
-                value={form.experienceLevel}
-                onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })}
-                required
-              >
-                <option value="Entry-level">Entry-level</option>
-                <option value="Mid-level">Mid-level</option>
-                <option value="Senior">Senior</option>
-                <option value="Lead">Lead</option>
-                <option value="Executive">Executive</option>
-              </select>
-            </div>
-          </div>
-
-          <label>Salary Range</label>
-          <input
-            className="input-box"
-            value={form.salaryRange}
-            onChange={(e) => setForm({ ...form, salaryRange: e.target.value })}
-            placeholder="e.g. $80k - $120k"
-          />
-
-          <label>Job Description *</label>
-          <textarea
-            className="input-box"
-            rows={5}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            required
-            placeholder="Describe the role, responsibilities, and what you're looking for..."
-          />
-
-          <label>Requirements</label>
-          <textarea
-            className="input-box"
-            rows={4}
-            value={form.requirements}
-            onChange={(e) => setForm({ ...form, requirements: e.target.value })}
-            placeholder="List required skills, qualifications, and experience..."
-          />
-
-          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-            <button 
-              type="submit" 
-              className="btn-primary" 
-              style={{ flex: 1 }}
-              disabled={submitting}
-            >
-              {submitting ? "Posting..." : "Post Job"}
-            </button>
-            <button 
-              type="button"
-              className="btn-secondary" 
-              onClick={onClose}
-              disabled={submitting}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// ==============================
-// MAIN APP
-// ==============================
-function App() {
-  console.log("🚀 App component rendering");
-  
-  return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-          
-          <Route path="/" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
-          <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
-          <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
-          <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
-          <Route path="/messages" element={<PrivateRoute><PrivateLayout><div className="page-container">Messages coming soon</div></PrivateLayout></PrivateRoute>} />
-          <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
-          
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
-    </Router>
-  );
-}
-
-export default App;
+            onChange={(e) => setForm({
