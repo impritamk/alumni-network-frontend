@@ -845,7 +845,7 @@ const JobCard = ({ job }) => {
 };
 
 // ==============================
-// CREATE JOB MODAL
+// CREATE JOB MODAL (COMPLETE)
 // ==============================
 const CreateJobModal = ({ onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -934,4 +934,120 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
           <input
             className="input-box"
             value={form.location}
-            onChange={(e) => setForm({
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
+            placeholder="e.g. Remote, New York, etc."
+          />
+
+          <label>Job Type *</label>
+          <select
+            className="input-box"
+            value={form.jobType}
+            onChange={(e) => setForm({ ...form, jobType: e.target.value })}
+            required
+          >
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Internship">Internship</option>
+          </select>
+
+          <label>Experience Level *</label>
+          <select
+            className="input-box"
+            value={form.experienceLevel}
+            onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })}
+            required
+          >
+            <option value="Entry-level">Entry-level</option>
+            <option value="Mid-level">Mid-level</option>
+            <option value="Senior">Senior</option>
+            <option value="Lead">Lead</option>
+            <option value="Executive">Executive</option>
+          </select>
+
+          <label>Salary Range</label>
+          <input
+            className="input-box"
+            value={form.salaryRange}
+            onChange={(e) => setForm({ ...form, salaryRange: e.target.value })}
+            placeholder="e.g. $80K - $120K"
+          />
+
+          <label>Job Description *</label>
+          <textarea
+            className="input-box"
+            rows={5}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            required
+            placeholder="Describe the role, responsibilities, and what makes this opportunity great..."
+          />
+
+          <label>Requirements</label>
+          <textarea
+            className="input-box"
+            rows={4}
+            value={form.requirements}
+            onChange={(e) => setForm({ ...form, requirements: e.target.value })}
+            placeholder="List the required skills, qualifications, and experience..."
+          />
+
+          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+            <button 
+              type="submit" 
+              className="btn-primary" 
+              style={{ flex: 1 }}
+              disabled={submitting}
+            >
+              {submitting ? "Posting..." : "Post Job"}
+            </button>
+            <button 
+              type="button" 
+              className="btn-secondary" 
+              style={{ flex: 1 }}
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+// ==============================
+// MAIN APP
+// ==============================
+function App() {
+  console.log("🚀 App component rendering");
+  
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          
+          <Route path="/" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
+          <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
+          <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
+          <Route path="/messages" element={<PrivateRoute><PrivateLayout><div className="page-container">Messages coming soon</div></PrivateLayout></PrivateRoute>} />
+          <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
+  );
+}
+
+export default App;
+
+// ==============================
+// UPDATE YOUR MAIN APP ROUTES
+// ==============================
+// Replace the jobs route in your App component with:
+// <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
