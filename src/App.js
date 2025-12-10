@@ -856,7 +856,7 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
     location: "",
     salaryRange: "",
     jobType: "Full-time",
-    experienceLevel: "Mid-level"
+    experienceLevel: "Mid-level",
     expiresAt: ""
   });
   const [submitting, setSubmitting] = useState(false);
@@ -875,7 +875,7 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
       location: form.location,
       salaryRange: form.salaryRange,
       jobType: form.jobType,
-      experienceLevel: form.experienceLevel
+      experienceLevel: form.experienceLevel,
       expiresAt: form.expiresAt || null
     };
     
@@ -1077,5 +1077,6 @@ export default App;
 // ==============================
 // Replace the jobs route in your App component with:
 // <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
+
 
 
