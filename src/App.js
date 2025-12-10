@@ -861,20 +861,33 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
+  e.preventDefault();
+  setSubmitting(true);
 
-    try {
-      await axios.post("/api/jobs", form);
-      toast.success("Job posted successfully!");
-      onSuccess();
-    } catch (err) {
-      console.error("Failed to post job:", err);
-      toast.error("Failed to post job");
-      setSubmitting(false);
-    }
-  };
-
+  try {
+    // Map frontend field names to backend field names
+    const payload = {
+      title: form.title,
+      company: form.company,
+      description: form.description,
+      requirements: form.requirements,
+      location: form.location,
+      salaryRange: form.salaryRange,
+      jobType: form.jobType,
+      experienceLevel: form.experienceLevel
+    };
+    
+    console.log("Posting job with payload:", payload);
+    await axios.post("/api/jobs", payload);
+    toast.success("Job posted successfully!");
+    onSuccess();
+  } catch (err) {
+    console.error("Failed to post job:", err);
+    console.error("Error response:", err.response?.data);
+    toast.error(err.response?.data?.message || "Failed to post job");
+    setSubmitting(false);
+  }
+};
   return (
     <div style={{
       position: "fixed",
@@ -1051,3 +1064,4 @@ export default App;
 // ==============================
 // Replace the jobs route in your App component with:
 // <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
+
