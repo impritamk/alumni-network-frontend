@@ -857,6 +857,7 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
     salaryRange: "",
     jobType: "Full-time",
     experienceLevel: "Mid-level"
+    expiresAt: ""
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -875,6 +876,7 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
       salaryRange: form.salaryRange,
       jobType: form.jobType,
       experienceLevel: form.experienceLevel
+      expiresAt: form.expiresAt || null
     };
     
     console.log("Posting job with payload:", payload);
@@ -985,6 +987,17 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
             onChange={(e) => setForm({ ...form, salaryRange: e.target.value })}
             placeholder="e.g. $80K - $120K"
           />
+          <label>Expiration Date</label>
+            <input
+              className="input-box"
+              type="date"
+              value={form.expiresAt}
+              onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+              min={new Date().toISOString().split('T')[0]}
+            />
+            <p style={{ fontSize: "12px", color: "#6b7280", marginTop: -8 }}>
+              Job will automatically close after this date
+            </p>
 
           <label>Job Description *</label>
           <textarea
@@ -1064,4 +1077,5 @@ export default App;
 // ==============================
 // Replace the jobs route in your App component with:
 // <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
+
 
