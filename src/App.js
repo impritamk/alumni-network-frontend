@@ -857,39 +857,38 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
     salaryRange: "",
     jobType: "Full-time",
     experienceLevel: "Mid-level",
-    expiresAt: ""
+    expiresAt: ""  // ← Added comma before this
   });
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setSubmitting(true);
+    e.preventDefault();
+    setSubmitting(true);
 
-  try {
-    // Map frontend field names to backend field names
-    const payload = {
-      title: form.title,
-      company: form.company,
-      description: form.description,
-      requirements: form.requirements,
-      location: form.location,
-      salaryRange: form.salaryRange,
-      jobType: form.jobType,
-      experienceLevel: form.experienceLevel,
-      expiresAt: form.expiresAt || null
-    };
-    
-    console.log("Posting job with payload:", payload);
-    await axios.post("/api/jobs", payload);
-    toast.success("Job posted successfully!");
-    onSuccess();
-  } catch (err) {
-    console.error("Failed to post job:", err);
-    console.error("Error response:", err.response?.data);
-    toast.error(err.response?.data?.message || "Failed to post job");
-    setSubmitting(false);
-  }
-};
+    try {
+      const payload = {
+        title: form.title,
+        company: form.company,
+        description: form.description,
+        requirements: form.requirements,
+        location: form.location,
+        salaryRange: form.salaryRange,
+        jobType: form.jobType,
+        experienceLevel: form.experienceLevel,
+        expiresAt: form.expiresAt || null  // ← Added comma before this
+      };
+      
+      console.log("Posting job with payload:", payload);
+      await axios.post("/api/jobs", payload);
+      toast.success("Job posted successfully!");
+      onSuccess();
+    } catch (err) {
+      console.error("Failed to post job:", err);
+      toast.error(err.response?.data?.message || "Failed to post job");
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div style={{
       position: "fixed",
@@ -987,17 +986,18 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
             onChange={(e) => setForm({ ...form, salaryRange: e.target.value })}
             placeholder="e.g. $80K - $120K"
           />
+
           <label>Expiration Date</label>
-            <input
-              className="input-box"
-              type="date"
-              value={form.expiresAt}
-              onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-              min={new Date().toISOString().split('T')[0]}
-            />
-            <p style={{ fontSize: "12px", color: "#6b7280", marginTop: -8 }}>
-              Job will automatically close after this date
-            </p>
+          <input
+            className="input-box"
+            type="date"
+            value={form.expiresAt}
+            onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+            min={new Date().toISOString().split('T')[0]}
+          />
+          <p style={{ fontSize: "12px", color: "#6b7280", marginTop: -8 }}>
+            Job will automatically close after this date
+          </p>
 
           <label>Job Description *</label>
           <textarea
@@ -1077,6 +1077,7 @@ export default App;
 // ==============================
 // Replace the jobs route in your App component with:
 // <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
+
 
 
 
