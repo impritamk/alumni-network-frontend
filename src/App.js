@@ -496,7 +496,7 @@ const AlumniList = () => {
 };
 
 // ==============================
-// ALUMNI PROFILE
+// ALUMNI PROFILE (FIXED VERSION)
 // ==============================
 const AlumniProfile = () => {
   const { id } = useParams();
@@ -510,17 +510,12 @@ const AlumniProfile = () => {
       setError(null);
       
       try {
-        const res = await axios.get("/api/users/directory");
-        const allUsers = res.data.users || [];
-        const foundUser = allUsers.find(u => u.id === id);
-        
-        if (foundUser) {
-          setUser(foundUser);
-        } else {
-          setError("User not found");
-        }
+        // 🆕 FIXED: Use the proper endpoint for single user
+        const res = await axios.get(`/api/users/${id}`);
+        setUser(res.data.user);
       } catch (err) {
-        setError("Failed to load user profile");
+        console.error("Failed to load user:", err);
+        setError(err.response?.data?.message || "Failed to load user profile");
       } finally {
         setLoading(false);
       }
@@ -605,7 +600,6 @@ const AlumniProfile = () => {
     </div>
   );
 };
-
 // ==============================
 // EDIT PROFILE
 // ==============================
@@ -1077,6 +1071,7 @@ export default App;
 // ==============================
 // Replace the jobs route in your App component with:
 // <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
+
 
 
 
