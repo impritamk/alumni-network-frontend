@@ -95,6 +95,7 @@ const Navbar = () => {
   console.log("🎨 Navbar rendering");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const doLogout = () => {
     logout();
@@ -110,13 +111,15 @@ const Navbar = () => {
       borderBottom: "1px solid #e0e7ff",
       background: "#ffffff",
       boxShadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
-      minHeight: "60px"
+      minHeight: "60px",
+      position: "relative"
     }}>
       <Link to="/" style={{ textDecoration: "none", color: "#2563eb", fontSize: "20px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
         <span style={{ fontSize: "28px" }}>🎓</span>
         <span style={{ fontFamily: "'Poppins', sans-serif" }}>Alumni Hub</span>
       </Link>
       
+      {/* Desktop Menu */}
       <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
         <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Home</Link>
         <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
@@ -144,6 +147,60 @@ const Navbar = () => {
           Logout
         </button>
       </div>
+
+      {/* Mobile Hamburger Button */}
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        style={{
+          display: "none",
+          background: "none",
+          border: "none",
+          fontSize: "24px",
+          cursor: "pointer",
+          color: "#2563eb",
+          padding: "8px"
+        }}
+      >
+        {menuOpen ? "✕" : "☰"}
+      </button>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "#ffffff",
+          border: "1px solid #e0e7ff",
+          padding: "12px 0",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          zIndex: 999
+        }}>
+          <Link to="/" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "10px 30px", color: "#6b7280", textDecoration: "none" }}>Home</Link>
+          <Link to="/alumni" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "10px 30px", color: "#6b7280", textDecoration: "none" }}>Alumni</Link>
+          <Link to="/messages" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "10px 30px", color: "#6b7280", textDecoration: "none" }}>Messages</Link>
+          <Link to="/jobs" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "10px 30px", color: "#6b7280", textDecoration: "none" }}>Jobs</Link>
+          <Link to="/profile/edit" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "10px 30px", color: "#6b7280", textDecoration: "none" }}>Profile</Link>
+          <button 
+            onClick={() => { doLogout(); setMenuOpen(false); }}
+            style={{
+              display: "block",
+              width: "calc(100% - 60px)",
+              margin: "10px 30px",
+              padding: "10px",
+              background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontWeight: "600"
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      )}
     </div>
   );
 };
