@@ -89,9 +89,10 @@ const AuthProvider = ({ children }) => {
 };
 
 // ==============================
-// MODERN MOBILE-FIRST NAVBAR
+// NAVBAR COMPONENT
 // ==============================
 const Navbar = () => {
+  console.log("🎨 Navbar rendering");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -101,51 +102,32 @@ const Navbar = () => {
   };
 
   return (
-    <nav style={{
-      background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
-      padding: "12px 16px",
-      boxShadow: "0 10px 30px rgba(37, 99, 235, 0.2)",
-      position: "sticky",
-      top: 0,
-      zIndex: 1000
+    <div style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "15px 30px",
+      borderBottom: "2px solid #ddd",
+      background: "#fff",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+      minHeight: "60px"
     }}>
-      <div style={{
-        maxWidth: "1400px",
-        margin: "0 auto",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
-      }}>
-        <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ fontSize: "24px" }}>🎓</div>
-          <div style={{ fontSize: "16px", fontWeight: "700", color: "white", fontFamily: "'Poppins', sans-serif" }}>
-            Alumni
-          </div>
-        </Link>
-        
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <span style={{ color: "white", fontWeight: "500", fontSize: "12px" }}>
-            {user?.first_name}
-          </span>
-          <button 
-            onClick={doLogout}
-            style={{
-              background: "rgba(255,255,255,0.2)",
-              color: "white",
-              border: "none",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: "600",
-              transition: "all 0.3s",
-              fontSize: "12px"
-            }}
-          >
-            Logout
-          </button>
-        </div>
+      <Link to="/" style={{ textDecoration: "none", color: "#000", fontSize: "18px" }}>
+        <strong>🎓 Alumni Network</strong>
+      </Link>
+      
+      <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+        <Link to="/" className="text-blue">Home</Link>
+        <Link to="/alumni" className="text-blue">Alumni</Link>
+        <Link to="/messages" className="text-blue">Messages</Link>
+        <Link to="/jobs" className="text-blue">Jobs</Link>
+        <Link to="/profile/edit" className="text-blue">Profile</Link>
+        <span style={{ color: "#6b7280", fontWeight: "500" }}>
+          Hi, {user?.first_name || user?.firstName || "User"}
+        </span>
+        <button className="btn-danger" onClick={doLogout}>Logout</button>
       </div>
-    </nav>
+    </div>
   );
 };
 
@@ -162,8 +144,7 @@ const PrivateRoute = ({ children }) => {
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '100vh',
-        fontSize: '20px',
-        background: "linear-gradient(135deg, #f5f7fa 0%, #e0e7ff 100%)"
+        fontSize: '20px'
       }}>
         Loading...
       </div>
@@ -178,367 +159,17 @@ const PrivateRoute = ({ children }) => {
 // ==============================
 const PrivateLayout = ({ children }) => {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: "#f5f7fa" }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <div style={{ flex: 1, padding: "16px", paddingBottom: "80px" }}>
+      <div className="app-content" style={{ flex: 1 }}>
         {children}
       </div>
-      <MobileBottomNav />
     </div>
   );
 };
 
 // ==============================
-// MOBILE BOTTOM NAVIGATION
-// ==============================
-const MobileBottomNav = () => {
-  const navigate = useNavigate();
-
-  const navItems = [
-    { icon: "fas fa-home", label: "Home", path: "/" },
-    { icon: "fas fa-users", label: "Alumni", path: "/alumni" },
-    { icon: "fas fa-briefcase", label: "Jobs", path: "/jobs" },
-    { icon: "fas fa-user", label: "Profile", path: "/profile/edit" }
-  ];
-
-  return (
-    <div style={{
-      position: "fixed",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      background: "white",
-      borderTop: "1px solid #e5e7eb",
-      boxShadow: "0 -5px 20px rgba(0,0,0,0.1)",
-      display: "flex",
-      justifyContent: "space-around",
-      padding: "8px 0",
-      zIndex: 999
-    }}>
-      {navItems.map(item => (
-        <button
-          key={item.path}
-          onClick={() => navigate(item.path)}
-          style={{
-            background: "none",
-            border: "none",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "4px",
-            padding: "8px 12px",
-            cursor: "pointer",
-            color: "#6b7280",
-            transition: "all 0.3s",
-            fontSize: "12px",
-            fontWeight: "600",
-            flex: 1
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = "#2563eb";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "#6b7280";
-          }}
-        >
-          <i style={{ fontSize: "20px" }} className={item.icon}></i>
-          <span>{item.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-};
-
-// ==============================
-// MODERN DASHBOARD
-// ==============================
-const DashboardPage = () => {
-  const { user } = useAuth();
-  const [alumni, setAlumni] = useState([]);
-  const [jobs, setJobs] = useState([]);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    load();
-  }, []);
-
-  const load = async () => {
-    try {
-      const [a, j] = await Promise.all([
-        axios.get("/api/users/directory?limit=10"),
-        axios.get("/api/jobs"),
-      ]);
-      setAlumni(a.data.users || []);
-      setJobs(j.data.jobs || []);
-    } catch (err) {
-      console.error("Failed to load data:", err);
-    }
-  };
-
-  return (
-    <div>
-      <Toaster />
-      
-      {/* Hero Section */}
-      <div style={{
-        background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
-        borderRadius: "16px",
-        padding: "32px 20px",
-        color: "white",
-        marginBottom: "24px",
-        textAlign: "center",
-        boxShadow: "0 20px 50px rgba(37, 99, 235, 0.2)"
-      }}>
-        <h1 style={{ fontSize: "28px", marginBottom: "8px", color: "#ffffff" }}>
-          Welcome, {user?.first_name}! 👋
-        </h1>
-        <p style={{ fontSize: "14px", color: "#f0f4ff", marginBottom: "24px", lineHeight: "1.6" }}>
-          Connect with alumni, discover opportunities
-        </p>
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-          <button 
-            onClick={() => navigate("/alumni")}
-            style={{
-              background: "white",
-              color: "#2563eb",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              border: "none",
-              fontWeight: "700",
-              cursor: "pointer",
-              transition: "all 0.3s",
-              fontSize: "13px"
-            }}
-          >
-            <i style={{ marginRight: "6px" }} className="fas fa-search"></i>
-            Browse Alumni
-          </button>
-          <button 
-            onClick={() => navigate("/jobs")}
-            style={{
-              background: "rgba(255,255,255,0.2)",
-              color: "white",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              border: "2px solid white",
-              fontWeight: "700",
-              cursor: "pointer",
-              transition: "all 0.3s",
-              fontSize: "13px"
-            }}
-          >
-            <i style={{ marginRight: "6px" }} className="fas fa-briefcase"></i>
-            Jobs
-          </button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "24px" }}>
-        <div style={{
-          background: "white",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          border: "1px solid #e5e7eb"
-        }}>
-          <div style={{ fontSize: "32px" }}>👥</div>
-          <div>
-            <div style={{ fontSize: "24px", fontWeight: "700", color: "#2563eb" }}>
-              {alumni.length}
-            </div>
-            <div style={{ color: "#6b7280", fontWeight: "600", fontSize: "12px" }}>Alumni Connected</div>
-          </div>
-        </div>
-
-        <div style={{
-          background: "white",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          border: "1px solid #e5e7eb"
-        }}>
-          <div style={{ fontSize: "32px" }}>💼</div>
-          <div>
-            <div style={{ fontSize: "24px", fontWeight: "700", color: "#7c3aed" }}>
-              {jobs.length}
-            </div>
-            <div style={{ color: "#6b7280", fontWeight: "600", fontSize: "12px" }}>Active Jobs</div>
-          </div>
-        </div>
-
-        <div style={{
-          background: "white",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-          display: "flex",
-          alignItems: "center",
-          gap: "16px",
-          border: "1px solid #e5e7eb"
-        }}>
-          <div style={{ fontSize: "32px" }}>{user?.headline ? "✓" : "⚠"}</div>
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: "700", color: "#1f2937" }}>
-              {user?.headline ? "Profile Complete" : "Complete Profile"}
-            </div>
-            <div style={{ color: "#6b7280", fontWeight: "600", fontSize: "12px" }}>Profile Status</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Alumni */}
-      <div style={{
-        background: "white",
-        padding: "20px",
-        borderRadius: "12px",
-        boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-        marginBottom: "24px",
-        border: "1px solid #e5e7eb"
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "700", margin: 0 }}>
-            <i style={{ marginRight: "8px", color: "#2563eb" }} className="fas fa-users"></i>
-            Recent Alumni
-          </h2>
-          <Link to="/alumni" style={{ color: "#2563eb", fontWeight: "600", textDecoration: "none", fontSize: "12px" }}>
-            View All →
-          </Link>
-        </div>
-        
-        {alumni.length === 0 ? (
-          <p style={{ color: "#6b7280", textAlign: "center", padding: "20px", margin: 0, fontSize: "13px" }}>
-            No alumni found
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {alumni.slice(0, 5).map((person) => (
-              <Link
-                key={person.id}
-                to={`/alumni/${person.id}`}
-                style={{
-                  padding: "12px",
-                  borderRadius: "8px",
-                  background: "#f9fafb",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  cursor: "pointer",
-                  textDecoration: "none",
-                  transition: "all 0.3s"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#e0e7ff";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#f9fafb";
-                }}
-              >
-                <div>
-                  <div style={{ fontWeight: "600", color: "#1f2937", fontSize: "14px" }}>
-                    {person.first_name} {person.last_name}
-                  </div>
-                  <div style={{ fontSize: "11px", color: "#6b7280" }}>
-                    Batch {person.passout_year}
-                  </div>
-                </div>
-                <i style={{ color: "#2563eb" }} className="fas fa-arrow-right"></i>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Latest Jobs */}
-      <div style={{
-        background: "white",
-        padding: "20px",
-        borderRadius: "12px",
-        boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-        border: "1px solid #e5e7eb"
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "700", margin: 0 }}>
-            <i style={{ marginRight: "8px", color: "#7c3aed" }} className="fas fa-briefcase"></i>
-            Latest Jobs
-          </h2>
-          <Link to="/jobs" style={{ color: "#2563eb", fontWeight: "600", textDecoration: "none", fontSize: "12px" }}>
-            View All →
-          </Link>
-        </div>
-        
-        {jobs.length === 0 ? (
-          <p style={{ color: "#6b7280", textAlign: "center", padding: "20px", margin: 0, fontSize: "13px" }}>
-            No jobs posted yet
-          </p>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {jobs.slice(0, 5).map((job) => (
-              <div 
-                key={job.id}
-                style={{
-                  padding: "12px",
-                  borderRadius: "8px",
-                  background: "#f9fafb",
-                  cursor: "pointer",
-                  transition: "all 0.3s"
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#f0f4ff";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#f9fafb";
-                }}
-              >
-                <div style={{ fontWeight: "600", color: "#1f2937", marginBottom: "4px", fontSize: "14px" }}>
-                  {job.title}
-                </div>
-                <div style={{ fontSize: "11px", color: "#6b7280", marginBottom: "8px" }}>
-                  {job.company} • {job.location || "Remote"}
-                </div>
-                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                  {job.job_type && (
-                    <span style={{
-                      background: "#e0e7ff",
-                      color: "#2563eb",
-                      padding: "3px 6px",
-                      borderRadius: "4px",
-                      fontSize: "10px",
-                      fontWeight: "600"
-                    }}>
-                      {job.job_type}
-                    </span>
-                  )}
-                  {job.experience_level && (
-                    <span style={{
-                      background: "#fce7f3",
-                      color: "#be123c",
-                      padding: "3px 6px",
-                      borderRadius: "4px",
-                      fontSize: "10px",
-                      fontWeight: "600"
-                    }}>
-                      {job.experience_level}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// ==============================
-// AUTH PAGES (SIMPLIFIED)
+// LOGIN PAGE
 // ==============================
 const LoginPage = () => {
   const { login } = useAuth();
@@ -563,115 +194,1208 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px"
-    }}>
+    <div className="page-container" style={{ maxWidth: 450 }}>
       <Toaster />
-      <div style={{
-        background: "white",
-        borderRadius: "20px",
-        padding: "32px 24px",
-        maxWidth: "100%",
-        width: "100%",
-        maxWidth: "420px",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.3)"
-      }}>
-        <div style={{ textAlign: "center", marginBottom: "32px" }}>
-          <div style={{ fontSize: "48px", marginBottom: "16px" }}>🎓</div>
-          <h2 style={{ fontSize: "24px", fontWeight: "700", margin: "0 0 8px 0" }}>Welcome Back</h2>
-          <p style={{ color: "#6b7280", margin: 0, fontSize: "14px" }}>Login to Alumni Network</p>
-        </div>
-
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Login</h2>
         <form onSubmit={submit}>
-          <label style={{ display: "block", fontWeight: "600", marginBottom: "8px", color: "#1f2937", fontSize: "12px" }}>Email</label>
+          <label>Email</label>
           <input
+            className="input-box"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             disabled={isLoading}
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "2px solid #e5e7eb",
-              borderRadius: "8px",
-              marginBottom: "16px",
-              fontFamily: "inherit",
-              fontSize: "14px",
-              boxSizing: "border-box"
-            }}
           />
-
-          <label style={{ display: "block", fontWeight: "600", marginBottom: "8px", color: "#1f2937", fontSize: "12px" }}>Password</label>
+          <label>Password</label>
           <input
+            className="input-box"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             disabled={isLoading}
-            style={{
-              width: "100%",
-              padding: "12px 14px",
-              border: "2px solid #e5e7eb",
-              borderRadius: "8px",
-              marginBottom: "24px",
-              fontFamily: "inherit",
-              fontSize: "14px",
-              boxSizing: "border-box"
-            }}
           />
-
           <button 
-            type="submit"
+            className="btn-primary" 
+            style={{ width: "100%" }}
             disabled={isLoading}
-            style={{
-              width: "100%",
-              padding: "12px",
-              background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontWeight: "700",
-              fontSize: "16px",
-              cursor: isLoading ? "not-allowed" : "pointer",
-              transition: "all 0.3s",
-              boxShadow: "0 4px 15px rgba(37, 99, 235, 0.3)"
-            }}
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
+        <p style={{ textAlign: "center", marginTop: 10 }}>
+          Don't have an account?{" "}
+          <Link to="/register" className="text-blue">Register</Link>
+          {" | "}
+          <Link to="/forgot-password" className="text-blue">Forgot Password?</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
 
-        <div style={{ textAlign: "center", color: "#6b7280", marginTop: "16px" }}>
-          <p style={{ marginBottom: "12px", fontSize: "14px" }}>
-            Don't have an account?{" "}
-            <Link to="/register" style={{ color: "#2563eb", fontWeight: "600", textDecoration: "none" }}>
-              Register
-            </Link>
+// ==============================
+// REGISTER PAGE
+// ==============================
+const RegisterPage = () => {
+  const { register } = useAuth();
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
+    passoutYear: new Date().getFullYear(),
+  });
+
+  const submit = async (e) => {
+    e.preventDefault();
+    
+    if (form.password !== form.confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
+    try {
+      await register({
+        email: form.email,
+        password: form.password,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        passoutYear: form.passoutYear
+      });
+      localStorage.setItem("pendingEmail", form.email);
+      toast.success("OTP sent! Verify your email.");
+      window.location.href = "/verify-otp";
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Registration failed");
+    }
+  };
+
+  return (
+    <div className="page-container" style={{ maxWidth: 450 }}>
+      <Toaster />
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Create Account</h2>
+        <form onSubmit={submit}>
+          <label>First Name</label>
+          <input
+            className="input-box"
+            value={form.firstName}
+            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+            required
+          />
+          <label>Last Name</label>
+          <input
+            className="input-box"
+            value={form.lastName}
+            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+            required
+          />
+          <label>Email</label>
+          <input
+            className="input-box"
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
+          />
+          <label>Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+          />
+          <label>Confirm Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={form.confirmPassword}
+            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            required
+          />
+          <label>Passout Year</label>
+          <input
+            className="input-box"
+            type="number"
+            value={form.passoutYear}
+            onChange={(e) => setForm({ ...form, passoutYear: e.target.value })}
+            required
+          />
+          <button className="btn-primary" style={{ width: "100%" }}>
+            Register
+          </button>
+        </form>
+        <p style={{ textAlign: "center", marginTop: 10 }}>
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue">Login</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// VERIFY OTP PAGE
+// ==============================
+const VerifyOtp = () => {
+  const [otp, setOtp] = useState("");
+  const [resending, setResending] = useState(false);
+  const [canResend, setCanResend] = useState(true);
+  const [countdown, setCountdown] = useState(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCanResend(true);
+    }
+  }, [countdown]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    try {
+      const email = localStorage.getItem("pendingEmail");
+      
+      if (!email) {
+        toast.error("Email not found. Please register again.");
+        navigate("/register");
+        return;
+      }
+
+      await axios.post("/api/auth/verify-otp", { email, otp });
+      localStorage.removeItem("pendingEmail");
+      toast.success("Email verified! Please login.");
+      navigate("/login");
+    } catch (err) {
+      console.error("OTP verification error:", err);
+      toast.error(err.response?.data?.message || "Invalid OTP");
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!canResend || resending) return;
+
+    setResending(true);
+    try {
+      const email = localStorage.getItem("pendingEmail");
+      
+      if (!email) {
+        toast.error("Email not found. Please register again.");
+        navigate("/register");
+        return;
+      }
+
+      await axios.post("/api/auth/resend-otp", { email });
+      toast.success("New OTP sent to your email!");
+      
+      setCanResend(false);
+      setCountdown(60);
+      setOtp("");
+    } catch (err) {
+      console.error("Resend OTP error:", err);
+      toast.error(err.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const email = localStorage.getItem("pendingEmail");
+
+  return (
+    <div className="page-container" style={{ maxWidth: 450 }}>
+      <Toaster />
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Verify Email</h2>
+        
+        {email && (
+          <p style={{ 
+            textAlign: "center", 
+            color: "#6b7280", 
+            marginBottom: 20,
+            background: "#f3f4f6",
+            padding: "10px",
+            borderRadius: "8px"
+          }}>
+            OTP sent to: <strong>{email}</strong>
           </p>
-          <Link to="/forgot-password" style={{ color: "#2563eb", fontWeight: "600", textDecoration: "none", fontSize: "12px" }}>
-            Forgot Password?
-          </Link>
+        )}
+
+        <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+          Enter the 6-digit OTP sent to your email
+        </p>
+
+        <form onSubmit={submit}>
+          <label>OTP Code</label>
+          <input
+            className="input-box"
+            type="text"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+            required
+            maxLength={6}
+            placeholder="123456"
+            style={{ 
+              textAlign: "center", 
+              fontSize: "24px", 
+              letterSpacing: "8px",
+              fontWeight: "bold"
+            }}
+          />
+          
+          <button 
+            className="btn-primary" 
+            style={{ width: "100%", marginTop: 15 }}
+          >
+            Verify Email
+          </button>
+        </form>
+
+        <div style={{ 
+          marginTop: 20, 
+          paddingTop: 20, 
+          borderTop: "1px solid #eee",
+          textAlign: "center" 
+        }}>
+          <p style={{ color: "#6b7280", marginBottom: 10 }}>
+            Didn't receive the OTP?
+          </p>
+          
+          <button
+            onClick={handleResendOtp}
+            disabled={!canResend || resending}
+            style={{
+              background: canResend && !resending ? "#2563eb" : "#e5e7eb",
+              color: canResend && !resending ? "white" : "#9ca3af",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "none",
+              cursor: canResend && !resending ? "pointer" : "not-allowed",
+              fontSize: "14px",
+              fontWeight: "500"
+            }}
+          >
+            {resending ? "Sending..." : 
+             countdown > 0 ? `Resend OTP (${countdown}s)` : 
+             "Resend OTP"}
+          </button>
+        </div>
+
+        <p style={{ 
+          textAlign: "center", 
+          marginTop: 20,
+          fontSize: "14px",
+          color: "#6b7280" 
+        }}>
+          Wrong email? <Link to="/register" className="text-blue">Register again</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// FORGOT PASSWORD PAGE
+// ==============================
+const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.post("/api/auth/forgot-password", { email });
+      setSubmitted(true);
+      toast.success("Reset link sent to your email!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send reset link");
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="page-container" style={{ maxWidth: 450 }}>
+        <Toaster />
+        <div className="card" style={{ marginTop: 60 }}>
+          <h2 className="heading" style={{ textAlign: "center" }}>Check Your Email</h2>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            We've sent a password reset link to:
+          </p>
+          <p style={{ textAlign: "center", fontWeight: "bold", marginBottom: 20 }}>
+            {email}
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            Click the link in the email to reset your password.
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280", fontSize: "14px" }}>
+            Link expires in 1 hour.
+          </p>
+          <button 
+            className="btn-primary" 
+            onClick={() => navigate("/login")}
+            style={{ width: "100%", marginTop: 20 }}
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container" style={{ maxWidth: 450 }}>
+      <Toaster />
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Forgot Password?</h2>
+        <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+          Enter your email and we'll send you a link to reset your password.
+        </p>
+        <form onSubmit={submit}>
+          <label>Email</label>
+          <input
+            className="input-box"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="your@email.com"
+          />
+          <button 
+            className="btn-primary" 
+            style={{ width: "100%" }}
+            disabled={loading}
+          >
+            {loading ? "Sending..." : "Send Reset Link"}
+          </button>
+        </form>
+        <p style={{ textAlign: "center", marginTop: 15 }}>
+          Remember your password?{" "}
+          <Link to="/login" className="text-blue">Login</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// RESET PASSWORD PAGE
+// ==============================
+const ResetPasswordPage = () => {
+  const { token } = useParams();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  const submit = async (e) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post("/api/auth/reset-password", { token, password });
+      setSuccess(true);
+      toast.success("Password reset successfully!");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to reset password");
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="page-container" style={{ maxWidth: 450 }}>
+        <Toaster />
+        <div className="card" style={{ marginTop: 60 }}>
+          <h2 className="heading" style={{ textAlign: "center", color: "#15803d" }}>✅ Success!</h2>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            Your password has been reset successfully.
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280" }}>
+            Redirecting to login...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container" style={{ maxWidth: 450 }}>
+      <Toaster />
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Reset Password</h2>
+        <form onSubmit={submit}>
+          <label>New Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="Enter new password"
+          />
+          <label>Confirm Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="Confirm password"
+          />
+          <button 
+            className="btn-primary" 
+            style={{ width: "100%" }}
+            disabled={loading}
+          >
+            {loading ? "Resetting..." : "Reset Password"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// DASHBOARD
+// ==============================
+const DashboardPage = () => {
+  const { user } = useAuth();
+  const [alumni, setAlumni] = useState([]);
+  const [jobs, setJobs] = useState([]);
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const load = async () => {
+    try {
+      const [a, j] = await Promise.all([
+        axios.get("/api/users/directory?limit=10"),
+        axios.get("/api/jobs"),
+      ]);
+      setAlumni(a.data.users || []);
+      setJobs(j.data.jobs || []);
+    } catch (err) {
+      console.error("Failed to load data:", err);
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <Toaster />
+      <h1 style={{ marginBottom: 20 }}>Dashboard</h1>
+      <Link to="/alumni" className="btn-primary" style={{ marginBottom: 20, display: "inline-block" }}>
+        Browse Alumni
+      </Link>
+      
+      <div className="grid-3">
+        <div className="card">
+          <p>Total Alumni</p>
+          <h2>{alumni.length}</h2>
+        </div>
+        <div className="card">
+          <p>Active Jobs</p>
+          <h2>{jobs.length}</h2>
+        </div>
+        <div className="card">
+          <p>Your Profile</p>
+          <h3>{user?.headline || "Not set"}</h3>
+          <Link className="text-blue" to="/profile/edit">Edit Profile</Link>
+        </div>
+      </div>
+
+      <div className="grid-2">
+        <div className="card">
+          <h2>Recent Alumni</h2>
+          {alumni.length === 0 ? (
+            <p style={{ color: "#6b7280" }}>No alumni found</p>
+          ) : (
+            alumni.map((p) => (
+              <div key={p.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 8 }}>
+                {p.first_name} {p.last_name}
+              </div>
+            ))
+          )}
+        </div>
+        <div className="card">
+          <h2>Latest Jobs</h2>
+          {jobs.length === 0 ? (
+            <p style={{ color: "#6b7280" }}>No jobs found</p>
+          ) : (
+            jobs.map((job) => (
+              <div key={job.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 8 }}>
+                {job.title} – {job.company}
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-// Placeholder components for other pages
-const RegisterPage = () => <div style={{ padding: "40px 20px" }}><h1>Register Page</h1><p>Coming soon...</p></div>;
-const VerifyOtp = () => <div style={{ padding: "40px 20px" }}><h1>Verify OTP</h1><p>Coming soon...</p></div>;
-const ForgotPasswordPage = () => <div style={{ padding: "40px 20px" }}><h1>Forgot Password</h1><p>Coming soon...</p></div>;
-const ResetPasswordPage = () => <div style={{ padding: "40px 20px" }}><h1>Reset Password</h1><p>Coming soon...</p></div>;
-const AlumniList = () => <div style={{ padding: "20px" }}><h1>Alumni Directory</h1><p>Alumni list coming...</p></div>;
-const AlumniProfile = () => <div style={{ padding: "20px" }}><h1>Alumni Profile</h1><p>Profile coming...</p></div>;
-const EditProfile = () => <div style={{ padding: "20px" }}><h1>Edit Profile</h1><p>Edit profile coming...</p></div>;
-const JobsPage = () => <div style={{ padding: "20px" }}><h1>Jobs</h1><p>Jobs page coming...</p></div>;
+// ==============================
+// ALUMNI LIST
+// ==============================
+const AlumniList = () => {
+  const [alumni, setAlumni] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadAlumni();
+  }, []);
+
+  const loadAlumni = async () => {
+    try {
+      const res = await axios.get("/api/users/directory");
+      setAlumni(res.data.users || []);
+    } catch (err) {
+      toast.error("Failed to load alumni");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="page-container">Loading alumni...</div>;
+
+  return (
+    <div className="page-container">
+      <Toaster />
+      <h1>Alumni Directory</h1>
+      <p style={{ color: "#6b7280", marginBottom: 20 }}>Total: {alumni.length}</p>
+      <div className="grid-3">
+        {alumni.length === 0 ? (
+          <div className="card" style={{ gridColumn: "1 / -1" }}>
+            <p style={{ textAlign: "center" }}>No alumni found</p>
+          </div>
+        ) : (
+          alumni.map((person) => (
+            <div key={person.id} className="card">
+              <h3 style={{ marginTop: 0 }}>
+                {person.first_name} {person.last_name}
+              </h3>
+              <p style={{ color: "#6b7280" }}>{person.headline || "Alumni"}</p>
+              <p><strong>Batch:</strong> {person.passout_year}</p>
+              <Link to={`/alumni/${person.id}`} className="btn-primary" style={{ textDecoration: "none", display: "inline-block" }}>
+                View Profile
+              </Link>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// ALUMNI PROFILE
+// ==============================
+const AlumniProfile = () => {
+  const { id } = useParams();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const res = await axios.get(`/api/users/${id}`);
+        setUser(res.data.user);
+      } catch (err) {
+        console.error("Failed to load user:", err);
+        setError(err.response?.data?.message || "Failed to load user profile");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchUser();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="page-container">
+        <div className="card">
+          <p>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !user) {
+    return (
+      <div className="page-container">
+        <Toaster />
+        <div className="card">
+          <h2>User Not Found</h2>
+          <p style={{ color: "#6b7280", marginBottom: 15 }}>
+            {error || "This user profile could not be found."}
+          </p>
+          <Link to="/alumni" className="btn-primary" style={{ display: "inline-block", textDecoration: "none" }}>
+            Back to Alumni List
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container">
+      <Toaster />
+      <div className="card">
+        <h2>{user.first_name} {user.last_name}</h2>
+        <p style={{ color: "#6b7280", fontSize: "18px", marginTop: 5 }}>
+          {user.headline || "Alumni"}
+        </p>
+        
+        <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #eee" }}>
+          <p><b>Batch:</b> {user.passout_year || "N/A"}</p>
+          {user.email && <p><b>Email:</b> {user.email}</p>}
+          {user.current_company && <p><b>Company:</b> {user.current_company}</p>}
+          {user.location && <p><b>Location:</b> {user.location}</p>}
+        </div>
+        
+        {user.bio && (
+          <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #eee" }}>
+            <h3 style={{ marginTop: 0 }}>About</h3>
+            <p style={{ color: "#4b5563", lineHeight: 1.6 }}>{user.bio}</p>
+          </div>
+        )}
+        
+        <div style={{ marginTop: 25, display: "flex", gap: 10 }}>
+          <button 
+            className="btn-primary" 
+            onClick={() => toast.success("Connect feature coming soon!")}
+          >
+            Connect
+          </button>
+          <button 
+            className="btn-secondary" 
+            onClick={() => toast.success("Messaging feature coming soon!")}
+          >
+            Message
+          </button>
+        </div>
+      </div>
+      
+      <Link 
+        to="/alumni" 
+        className="text-blue" 
+        style={{ display: "inline-block", marginTop: 20, fontSize: "16px" }}
+      >
+        ← Back to Alumni List
+      </Link>
+    </div>
+  );
+};
+
+// ==============================
+// EDIT PROFILE
+// ==============================
+const EditProfile = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [form, setForm] = useState({
+    headline: "",
+    bio: "",
+    location: "",
+    currentCompany: ""
+  });
+
+  useEffect(() => {
+    if (user) {
+      setForm({
+        headline: user.headline || "",
+        bio: user.bio || "",
+        location: user.location || "",
+        currentCompany: user.current_company || ""
+      });
+    }
+  }, [user]);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put("/api/users/profile", form);
+      toast.success("Profile updated!");
+    } catch (err) {
+      toast.error("Failed to update profile");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    
+    if (!confirmed) return;
+
+    const doubleConfirm = window.confirm(
+      "Type 'DELETE' in your mind - this will permanently delete all your data including jobs, applications, and profile."
+    );
+    
+    if (!doubleConfirm) return;
+
+    try {
+      await axios.delete("/api/users/account");
+      toast.success("Account deleted successfully!");
+      logout();
+      navigate("/login");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete account");
+    }
+  };
+
+  return (
+    <div className="page-container" style={{ maxWidth: 600 }}>
+      <Toaster />
+      <div className="card">
+        <h2>Edit Profile</h2>
+        <form onSubmit={submit}>
+          <label>Headline</label>
+          <input
+            className="input-box"
+            value={form.headline}
+            onChange={(e) => setForm({ ...form, headline: e.target.value })}
+          />
+          <label>Bio</label>
+          <textarea
+            className="input-box"
+            rows={4}
+            value={form.bio}
+            onChange={(e) => setForm({ ...form, bio: e.target.value })}
+          />
+          <label>Location</label>
+          <input
+            className="input-box"
+            value={form.location}
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
+          />
+          <label>Company</label>
+          <input
+            className="input-box"
+            value={form.currentCompany}
+            onChange={(e) => setForm({ ...form, currentCompany: e.target.value })}
+          />
+          <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>
+            Save Changes
+          </button>
+        </form>
+      </div>
+
+      <div className="card" style={{ marginTop: 20, background: "#fee2e2", border: "1px solid #fca5a5" }}>
+        <h3 style={{ marginTop: 0, color: "#dc2626" }}>Danger Zone</h3>
+        <p style={{ color: "#991b1b", marginBottom: 15 }}>
+          Permanently delete your account and all associated data.
+        </p>
+        <button 
+          className="btn-danger"
+          onClick={handleDeleteAccount}
+          style={{ width: "100%" }}
+        >
+          🗑️ Delete My Account
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// CREATE JOB MODAL
+// ==============================
+const CreateJobModal = ({ onClose, onSuccess }) => {
+  const [form, setForm] = useState({
+    title: "",
+    company: "",
+    description: "",
+    requirements: "",
+    location: "",
+    salaryRange: "",
+    jobType: "Full-time",
+    experienceLevel: "Mid-level"
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const payload = {
+        title: form.title,
+        company: form.company,
+        description: form.description,
+        requirements: form.requirements,
+        location: form.location,
+        salaryRange: form.salaryRange,
+        jobType: form.jobType,
+        experienceLevel: form.experienceLevel
+      };
+      
+      console.log("Posting job with payload:", payload);
+      await axios.post("/api/jobs", payload);
+      toast.success("Job posted successfully!");
+      onSuccess();
+    } catch (err) {
+      console.error("Failed to post job:", err);
+      toast.error(err.response?.data?.message || "Failed to post job");
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "20px"
+    }}>
+      <div className="card" style={{ 
+        maxWidth: 600, 
+        width: "100%", 
+        maxHeight: "90vh", 
+        overflow: "auto" 
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <h2 style={{ margin: 0 }}>Post a Job</h2>
+          <button 
+            onClick={onClose}
+            style={{ 
+              background: "none", 
+              border: "none", 
+              fontSize: "24px", 
+              cursor: "pointer",
+              color: "#6b7280"
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <label>Job Title *</label>
+          <input
+            className="input-box"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            required
+            placeholder="e.g. Senior Software Engineer"
+          />
+
+          <label>Company *</label>
+          <input
+            className="input-box"
+            value={form.company}
+            onChange={(e) => setForm({ ...form, company: e.target.value })}
+            required
+            placeholder="e.g. Tech Corp"
+          />
+
+          <label>Location</label>
+          <input
+            className="input-box"
+            value={form.location}
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
+            placeholder="e.g. Remote, New York, etc."
+          />
+
+          <label>Job Type *</label>
+          <select
+            className="input-box"
+            value={form.jobType}
+            onChange={(e) => setForm({ ...form, jobType: e.target.value })}
+            required
+          >
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Internship">Internship</option>
+          </select>
+
+          <label>Experience Level *</label>
+          <select
+            className="input-box"
+            value={form.experienceLevel}
+            onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })}
+            required
+          >
+            <option value="Entry-level">Entry-level</option>
+            <option value="Mid-level">Mid-level</option>
+            <option value="Senior">Senior</option>
+            <option value="Lead">Lead</option>
+            <option value="Executive">Executive</option>
+          </select>
+
+          <label>Salary Range</label>
+          <input
+            className="input-box"
+            value={form.salaryRange}
+            onChange={(e) => setForm({ ...form, salaryRange: e.target.value })}
+            placeholder="e.g. $80K - $120K"
+          />
+
+          <label>Job Description *</label>
+          <textarea
+            className="input-box"
+            rows={5}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            required
+            placeholder="Describe the role, responsibilities, and what makes this opportunity great..."
+          />
+
+          <label>Requirements</label>
+          <textarea
+            className="input-box"
+            rows={4}
+            value={form.requirements}
+            onChange={(e) => setForm({ ...form, requirements: e.target.value })}
+            placeholder="List the required skills, qualifications, and experience..."
+          />
+
+          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+            <button 
+              type="submit" 
+              className="btn-primary" 
+              style={{ flex: 1 }}
+              disabled={submitting}
+            >
+              {submitting ? "Posting..." : "Post Job"}
+            </button>
+            <button 
+              type="button" 
+              className="btn-secondary" 
+              style={{ flex: 1 }}
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// JOB CARD
+// ==============================
+const JobCard = ({ job, onJobDeleted }) => {
+  const [expanded, setExpanded] = useState(false);
+  const { user } = useAuth();
+
+  const handleDeleteJob = async () => {
+    if (window.confirm("Are you sure you want to delete this job?")) {
+      try {
+        await axios.delete(`/api/jobs/${job.id}`);
+        toast.success("Job deleted!");
+        if (onJobDeleted) onJobDeleted();
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to delete job");
+      }
+    }
+  };
+
+  return (
+    <div className="card">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ marginTop: 0, marginBottom: 5 }}>{job.title}</h3>
+          <p style={{ color: "#6b7280", marginBottom: 10, fontSize: "16px" }}>
+            <strong>{job.company}</strong>
+            {job.location && ` • ${job.location}`}
+          </p>
+          
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+            {job.job_type && (
+              <span style={{ 
+                background: "#e0f2fe", 
+                color: "#0369a1", 
+                padding: "4px 12px", 
+                borderRadius: "6px",
+                fontSize: "14px"
+              }}>
+                {job.job_type}
+              </span>
+            )}
+            {job.experience_level && (
+              <span style={{ 
+                background: "#f3e8ff", 
+                color: "#7c3aed", 
+                padding: "4px 12px", 
+                borderRadius: "6px",
+                fontSize: "14px"
+              }}>
+                {job.experience_level}
+              </span>
+            )}
+            {job.salary_range && (
+              <span style={{ 
+                background: "#dcfce7", 
+                color: "#15803d", 
+                padding: "4px 12px", 
+                borderRadius: "6px",
+                fontSize: "14px"
+              }}>
+                {job.salary_range}
+              </span>
+            )}
+          </div>
+
+          {expanded && (
+            <div style={{ marginTop: 15, paddingTop: 15, borderTop: "1px solid #eee" }}>
+              <h4 style={{ marginTop: 0 }}>Description</h4>
+              <p style={{ color: "#4b5563", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                {job.description}
+              </p>
+              
+              {job.requirements && (
+                <>
+                  <h4 style={{ marginTop: 15 }}>Requirements</h4>
+                  <p style={{ color: "#4b5563", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                    {job.requirements}
+                  </p>
+                </>
+              )}
+              
+              <p style={{ color: "#6b7280", fontSize: "14px", marginTop: 15 }}>
+                Posted by: {job.first_name} {job.last_name}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
+        <button 
+          className="btn-primary"
+          onClick={() => toast.success("Apply feature coming soon!")}
+        >
+          Apply Now
+        </button>
+        <button 
+          className="btn-secondary"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? "Show Less" : "View Details"}
+        </button>
+        
+        {user?.id === job.posted_by && (
+          <button 
+            className="btn-danger"
+            onClick={handleDeleteJob}
+          >
+            Delete Job
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// JOBS PAGE
+// ==============================
+const JobsPage = () => {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  useEffect(() => {
+    loadJobs();
+  }, []);
+
+  const loadJobs = async () => {
+    try {
+      const res = await axios.get("/api/jobs");
+      setJobs(res.data.jobs || []);
+    } catch (err) {
+      console.error("Failed to load jobs:", err);
+      toast.error("Failed to load jobs");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className="page-container">Loading jobs...</div>;
+  }
+
+  return (
+    <div className="page-container">
+      <Toaster />
+      
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <h1>Job Board</h1>
+        <button 
+          className="btn-primary"
+          onClick={() => setShowCreateModal(true)}
+        >
+          + Post a Job
+        </button>
+      </div>
+
+      {showCreateModal && (
+        <CreateJobModal 
+          onClose={() => setShowCreateModal(false)} 
+          onSuccess={() => {
+            setShowCreateModal(false);
+            loadJobs();
+          }}
+        />
+      )}
+
+      {jobs.length === 0 ? (
+        <div className="card">
+          <p style={{ textAlign: "center", color: "#6b7280" }}>
+            No jobs posted yet. Be the first to post a job!
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+          {jobs.map((job) => (
+            <JobCard 
+              key={job.id} 
+              job={job}
+              onJobDeleted={loadJobs}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ==============================
 // MAIN APP
@@ -693,6 +1417,7 @@ function App() {
           <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
           <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
+          <Route path="/messages" element={<PrivateRoute><PrivateLayout><div className="page-container">Messages coming soon</div></PrivateLayout></PrivateRoute>} />
           <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
           
           <Route path="*" element={<Navigate to="/" replace />} />
