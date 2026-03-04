@@ -110,56 +110,95 @@ const Navbar = () => {
       padding: "12px 30px",
       margin: "12px 16px",
       borderRadius: "12px",
-      borderBottom: "2px solid #e5e7eb",
+      borderBottom: "none",
       background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-      boxShadow: "0 4px 12px rgba(37, 99, 235, 0.15)",
+      boxShadow: "0 4px 16px rgba(37, 99, 235, 0.1)",
       minHeight: "60px",
-      flexWrap: "wrap"
+      position: "relative",
+      border: "1px solid #e0e7ff",
+      flexWrap: "nowrap"
     }}>
-      <Link to="/" style={{ textDecoration: "none", color: "#6b7280", fontSize: "18px", display: "flex", alignItems: "center", gap: "8px" }}>
-        <img src="/logo-connectalumni.svg" alt="ConnectAlumni" style={{ width: "40px", height: "40px" }} />
-        <strong style={{ fontFamily: "'Poppins', sans-serif" }}>Alumni</strong>
+      <Link to="/" style={{ textDecoration: "none", color: "#2563eb", fontSize: "20px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px", whiteSpace: "nowrap" }}>
+        <img src="/logo-connectalumni.svg" alt="ConnectAlumni" style={{ width: "40px", height: "40px", flexShrink: 0 }} />
+        <strong style={{ fontFamily: "'Poppins', sans-serif", display: { __windowWidth: "768px" } }}>ConnectAlumni</strong>
       </Link>
       
       {/* Desktop Menu */}
-      <div style={{ display: "flex", gap: 15, alignItems: "center", flexWrap: "wrap" }}>
-        <Link to="/" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+      <div className="navbar-desktop-menu" style={{ display: "flex", gap: 15, alignItems: "center", marginLeft: "auto", marginRight: "16px" }}>
+        <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", transition: "all 0.3s", whiteSpace: "nowrap" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>
           <i className="fas fa-home" style={{ marginRight: "6px" }}></i>Home
         </Link>
-        <Link to="/alumni" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+        <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", transition: "all 0.3s", whiteSpace: "nowrap" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>
           <i className="fas fa-users" style={{ marginRight: "6px" }}></i>Alumni
         </Link>
-        <Link to="/messages" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+        <Link to="/messages" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", transition: "all 0.3s", whiteSpace: "nowrap" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>
           <i className="fas fa-comments" style={{ marginRight: "6px" }}></i>Messages
         </Link>
-        <Link to="/jobs" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+        <Link to="/jobs" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", transition: "all 0.3s", whiteSpace: "nowrap" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>
           <i className="fas fa-briefcase" style={{ marginRight: "6px" }}></i>Jobs
         </Link>
-        <Link to="/profile/edit" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+        <Link to="/profile/edit" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", transition: "all 0.3s", whiteSpace: "nowrap" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>
           <i className="fas fa-user" style={{ marginRight: "6px" }}></i>Profile
         </Link>
-        <span style={{ color: "rgba(255,255,255,0.9)", fontWeight: "500", fontSize: "12px", marginLeft: "12px", paddingLeft: "12px", borderLeft: "1px solid rgba(255,255,255,0.3)" }}>
+        <span style={{ color: "#6b7280", fontWeight: "500", fontSize: "12px", marginLeft: "8px", paddingLeft: "8px", borderLeft: "1px solid #e0e7ff", whiteSpace: "nowrap" }}>
           👋 {user?.first_name || user?.firstName || "User"}
         </span>
         <button 
           onClick={doLogout}
           style={{
-            background: "rgba(255,255,255,0.2)",
-            color: "#6b7280",
+            background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+            color: "white",
             border: "none",
-            padding: "6px 14px",
+            padding: "6px 12px",
             borderRadius: "6px",
             cursor: "pointer",
             fontWeight: "600",
             transition: "all 0.3s",
-            fontSize: "12px"
+            fontSize: "12px",
+            whiteSpace: "nowrap"
           }}
-          onMouseEnter={(e) => e.target.style.background = "rgba(255,255,255,0.3)"}
-          onMouseLeave={(e) => e.target.style.background = "rgba(255,255,255,0.2)"}
+          onMouseEnter={(e) => e.target.style.transform = "translateY(-2px)"}
+          onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
         >
-          <i className="fas fa-sign-out-alt" style={{ marginRight: "6px" }}></i>Logout
+          <i className="fas fa-sign-out-alt" style={{ marginRight: "4px" }}></i>Logout
         </button>
       </div>
+
+      {/* Mobile Hamburger Button */}
+      <button
+        className="navbar-hamburger-btn"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        style={{
+          background: "none",
+          border: "none",
+          fontSize: "24px",
+          cursor: "pointer",
+          color: "#2563eb",
+          padding: "8px",
+          marginLeft: "auto",
+          display: "none"
+        }}
+      >
+        {mobileMenuOpen ? "✕" : "☰"}
+      </button>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="navbar-mobile-menu">
+          <Link to="/" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-home" style={{ marginRight: "8px" }}></i>Home</Link>
+          <Link to="/alumni" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-users" style={{ marginRight: "8px" }}></i>Alumni</Link>
+          <Link to="/messages" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-comments" style={{ marginRight: "8px" }}></i>Messages</Link>
+          <Link to="/jobs" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-briefcase" style={{ marginRight: "8px" }}></i>Jobs</Link>
+          <Link to="/profile/edit" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-user" style={{ marginRight: "8px" }}></i>Profile</Link>
+          <button 
+            onClick={() => { doLogout(); setMobileMenuOpen(false); }}
+          >
+            <i className="fas fa-sign-out-alt" style={{ marginRight: "6px" }}></i>Logout
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
       {/* Mobile Menu Button */}
       <button
