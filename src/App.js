@@ -115,12 +115,12 @@ const Navbar = () => {
       position: "relative"
     }}>
       <Link to="/" style={{ textDecoration: "none", color: "#2563eb", fontSize: "20px", fontWeight: "700", display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontSize: "28px" }}>🎓</span>
-        <span style={{ fontFamily: "'Poppins', sans-serif" }}>Alumni Hub</span>
+        <span style={{ fontSize: "32px" }}>🌐</span>
+        <span style={{ fontFamily: "'Poppins', sans-serif", display: "none" }}>ConnectAlumni</span>
       </Link>
       
       {/* Desktop Menu */}
-      <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap", "@media (max-width: 768px)": { display: "none" } }}>
         <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Home</Link>
         <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
         <Link to="/messages" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Messages</Link>
@@ -152,13 +152,13 @@ const Navbar = () => {
       <button
         onClick={() => setMenuOpen(!menuOpen)}
         style={{
-          display: "none",
           background: "none",
           border: "none",
           fontSize: "24px",
           cursor: "pointer",
           color: "#2563eb",
-          padding: "8px"
+          padding: "8px",
+          marginLeft: "auto"
         }}
       >
         {menuOpen ? "✕" : "☰"}
