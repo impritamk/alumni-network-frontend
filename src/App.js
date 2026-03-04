@@ -101,6 +101,13 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  const navLinks = [
+    { label: "Home", path: "/" },
+    { label: "Alumni", path: "/alumni" },
+    { label: "Jobs", path: "/jobs" },
+    { label: "Profile", path: "/profile/edit" }
+  ];
+
   return (
     <nav style={{
       background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
@@ -133,28 +140,28 @@ const Navbar = () => {
             color: "white",
             fontFamily: "'Poppins', sans-serif"
           }}>
-            Alumni Network
+            Alumni
           </div>
         </Link>
         
+        {/* Desktop Menu */}
         <div style={{ 
           display: "flex", 
           gap: "30px", 
           alignItems: "center",
-          "@media (max-width: 768px)": { gap: "15px" }
+          "@media (max-width: 768px)": { display: "none" }
         }}>
-          <Link to="/" style={{ color: "white", fontWeight: "500", transition: "all 0.3s" }}>
-            Home
-          </Link>
-          <Link to="/alumni" style={{ color: "white", fontWeight: "500", transition: "all 0.3s" }}>
-            Alumni
-          </Link>
-          <Link to="/jobs" style={{ color: "white", fontWeight: "500", transition: "all 0.3s" }}>
-            Jobs
-          </Link>
-          <Link to="/profile/edit" style={{ color: "white", fontWeight: "500", transition: "all 0.3s" }}>
-            Profile
-          </Link>
+          {navLinks.map(link => (
+            <Link 
+              key={link.path}
+              to={link.path} 
+              style={{ color: "white", fontWeight: "500", transition: "all 0.3s" }}
+              onMouseEnter={(e) => e.target.style.opacity = "0.8"}
+              onMouseLeave={(e) => e.target.style.opacity = "1"}
+            >
+              {link.label}
+            </Link>
+          ))}
           
           <div style={{ 
             display: "flex", 
@@ -190,7 +197,111 @@ const Navbar = () => {
             </button>
           </div>
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          style={{
+            display: "none",
+            background: "rgba(255,255,255,0.2)",
+            color: "white",
+            border: "none",
+            padding: "8px 12px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "20px",
+            transition: "all 0.3s",
+            "@media (max-width: 768px)": { display: "block" }
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = "rgba(255,255,255,0.3)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = "rgba(255,255,255,0.2)";
+          }}
+        >
+          {mobileMenuOpen ? "✕" : "☰"}
+        </button>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div style={{
+          display: "none",
+          "@media (max-width: 768px)": { display: "block" },
+          background: "rgba(0,0,0,0.1)",
+          borderTop: "1px solid rgba(255,255,255,0.2)",
+          padding: "16px 0",
+          animation: "slideDown 0.3s ease-out"
+        }}>
+          {navLinks.map(link => (
+            <Link
+              key={link.path}
+              to={link.path}
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                display: "block",
+                color: "white",
+                fontWeight: "500",
+                padding: "12px 0",
+                borderBottom: "1px solid rgba(255,255,255,0.1)",
+                textDecoration: "none",
+                transition: "all 0.3s"
+              }}
+              onMouseEnter={(e) => e.target.style.paddingLeft = "16px"}
+              onMouseLeave={(e) => e.target.style.paddingLeft = "0"}
+            >
+              {link.label}
+            </Link>
+          ))}
+          
+          <div style={{
+            borderTop: "1px solid rgba(255,255,255,0.2)",
+            marginTop: "12px",
+            paddingTop: "12px",
+            display: "flex",
+            gap: "10px"
+          }}>
+            <span style={{ color: "white", fontWeight: "500", flex: 1 }}>
+              👋 {user?.first_name || "User"}
+            </span>
+            <button 
+              onClick={() => {
+                doLogout();
+                setMobileMenuOpen(false);
+              }}
+              style={{
+                background: "rgba(255,255,255,0.2)",
+                color: "white",
+                border: "none",
+                padding: "8px 16px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "600",
+                transition: "all 0.3s",
+                whiteSpace: "nowrap"
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          @keyframes slideDown {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        }
+      `}</style>
     </nav>
   );
 };
