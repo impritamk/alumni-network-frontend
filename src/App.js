@@ -242,7 +242,7 @@ const RegisterPage = () => {
   const [form, setForm] = useState({
     email: "",
     password: "",
-    confirmPassword: "",  // ← ADD THIS
+    confirmPassword: "",
     firstName: "",
     lastName: "",
     passoutYear: new Date().getFullYear(),
@@ -251,14 +251,19 @@ const RegisterPage = () => {
   const submit = async (e) => {
     e.preventDefault();
     
-    // ← ADD THIS CHECK
     if (form.password !== form.confirmPassword) {
       toast.error("Passwords do not match!");
       return;
     }
 
     try {
-      await register(form);
+      await register({
+        email: form.email,
+        password: form.password,
+        firstName: form.firstName,
+        lastName: form.lastName,
+        passoutYear: form.passoutYear
+      });
       localStorage.setItem("pendingEmail", form.email);
       toast.success("OTP sent! Verify your email.");
       window.location.href = "/verify-otp";
@@ -303,7 +308,6 @@ const RegisterPage = () => {
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
           />
-          {/* ← ADD THIS FIELD */}
           <label>Confirm Password</label>
           <input
             className="input-box"
@@ -332,6 +336,7 @@ const RegisterPage = () => {
     </div>
   );
 };
+
 // ==============================
 // VERIFY OTP PAGE
 // ==============================
@@ -991,8 +996,21 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
 // ==============================
 // JOB CARD
 // ==============================
-const JobCard = ({ job }) => {
+const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false);
+  const { user } = useAuth();
+
+  const handleDeleteJob = async () => {
+    if (window.confirm("Are you sure you want to delete this job?")) {
+      try {
+        await axios.delete(`/api/jobs/${job.id}`);
+        toast.success("Job deleted!");
+        if (onJobDeleted) onJobDeleted();
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to delete job");
+      }
+    }
+  };
 
   return (
     <div className="card">
@@ -1064,7 +1082,7 @@ const JobCard = ({ job }) => {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
+      <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
         <button 
           className="btn-primary"
           onClick={() => toast.success("Apply feature coming soon!")}
@@ -1077,6 +1095,15 @@ const JobCard = ({ job }) => {
         >
           {expanded ? "Show Less" : "View Details"}
         </button>
+        
+        {user?.id === job.posted_by && (
+          <button 
+            className="btn-danger"
+            onClick={handleDeleteJob}
+          >
+            Delete Job
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1143,7 +1170,11 @@ const JobsPage = () => {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
           {jobs.map((job) => (
-            <JobCard key={job.id} job={job} />
+            <JobCard 
+              key={job.id} 
+              job={job}
+              onJobDeleted={loadJobs}
+            />
           ))}
         </div>
       )}
@@ -1180,4 +1211,3 @@ function App() {
 }
 
 export default App;
-
