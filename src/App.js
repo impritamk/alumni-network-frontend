@@ -95,6 +95,7 @@ const Navbar = () => {
   console.log("🎨 Navbar rendering");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const doLogout = () => {
     logout();
@@ -106,26 +107,56 @@ const Navbar = () => {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      padding: "15px 30px",
-      borderBottom: "2px solid #ddd",
-      background: "#fff",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      minHeight: "60px"
+      padding: "15px 20px",
+      borderBottom: "2px solid #e5e7eb",
+      background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+      boxShadow: "0 4px 12px rgba(37, 99, 235, 0.15)",
+      minHeight: "60px",
+      flexWrap: "wrap"
     }}>
-      <Link to="/" style={{ textDecoration: "none", color: "#000", fontSize: "18px" }}>
-        <strong>🎓 Alumni Network</strong>
+      <Link to="/" style={{ textDecoration: "none", color: "white", fontSize: "18px", display: "flex", alignItems: "center", gap: "8px" }}>
+        <strong style={{ fontSize: "24px" }}>🎓</strong>
+        <strong style={{ fontFamily: "'Poppins', sans-serif" }}>Alumni</strong>
       </Link>
       
-      <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-        <Link to="/" className="text-blue">Home</Link>
-        <Link to="/alumni" className="text-blue">Alumni</Link>
-        <Link to="/messages" className="text-blue">Messages</Link>
-        <Link to="/jobs" className="text-blue">Jobs</Link>
-        <Link to="/profile/edit" className="text-blue">Profile</Link>
-        <span style={{ color: "#6b7280", fontWeight: "500" }}>
-          Hi, {user?.first_name || user?.firstName || "User"}
+      {/* Desktop Menu */}
+      <div style={{ display: "flex", gap: 15, alignItems: "center", flexWrap: "wrap" }}>
+        <Link to="/" className="text-blue" style={{ color: "white", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-home" style={{ marginRight: "6px" }}></i>Home
+        </Link>
+        <Link to="/alumni" className="text-blue" style={{ color: "white", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-users" style={{ marginRight: "6px" }}></i>Alumni
+        </Link>
+        <Link to="/messages" className="text-blue" style={{ color: "white", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-comments" style={{ marginRight: "6px" }}></i>Messages
+        </Link>
+        <Link to="/jobs" className="text-blue" style={{ color: "white", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-briefcase" style={{ marginRight: "6px" }}></i>Jobs
+        </Link>
+        <Link to="/profile/edit" className="text-blue" style={{ color: "white", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-user" style={{ marginRight: "6px" }}></i>Profile
+        </Link>
+        <span style={{ color: "rgba(255,255,255,0.9)", fontWeight: "500", fontSize: "12px", marginLeft: "12px", paddingLeft: "12px", borderLeft: "1px solid rgba(255,255,255,0.3)" }}>
+          👋 {user?.first_name || user?.firstName || "User"}
         </span>
-        <button className="btn-danger" onClick={doLogout}>Logout</button>
+        <button 
+          onClick={doLogout}
+          style={{
+            background: "rgba(255,255,255,0.2)",
+            color: "white",
+            border: "none",
+            padding: "6px 14px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontWeight: "600",
+            transition: "all 0.3s",
+            fontSize: "12px"
+          }}
+          onMouseEnter={(e) => e.target.style.background = "rgba(255,255,255,0.3)"}
+          onMouseLeave={(e) => e.target.style.background = "rgba(255,255,255,0.2)"}
+        >
+          <i className="fas fa-sign-out-alt" style={{ marginRight: "6px" }}></i>Logout
+        </button>
       </div>
     </div>
   );
@@ -222,7 +253,7 @@ const LoginPage = () => {
             style={{ width: "100%" }}
             disabled={isLoading}
           >
-            {isLoading ? "Logging in..." : "Login"}
+            <i className="fas fa-sign-in-alt" style={{ marginRight: "6px" }}></i>{isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
         <p style={{ textAlign: "center", marginTop: 10 }}>
@@ -1001,7 +1032,7 @@ const EditProfile = () => {
             onChange={(e) => setForm({ ...form, currentCompany: e.target.value })}
           />
           <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>
-            Save Changes
+            <i className="fas fa-save" style={{ marginRight: "6px" }}></i>Save Changes
           </button>
         </form>
       </div>
@@ -1016,7 +1047,7 @@ const EditProfile = () => {
           onClick={handleDeleteAccount}
           style={{ width: "100%" }}
         >
-          🗑️ Delete My Account
+          <i className="fas fa-trash-alt" style={{ marginRight: "6px" }}></i>Delete My Account
         </button>
       </div>
     </div>
@@ -1302,13 +1333,13 @@ const JobCard = ({ job, onJobDeleted }) => {
           className="btn-primary"
           onClick={() => toast.success("Apply feature coming soon!")}
         >
-          Apply Now
+          <i className="fas fa-paper-plane" style={{ marginRight: "6px" }}></i>Apply Now
         </button>
         <button 
           className="btn-secondary"
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? "Show Less" : "View Details"}
+          <i className="fas fa-arrow-down" style={{ marginRight: "6px" }}></i>{expanded ? "Show Less" : "View Details"}
         </button>
         
         {user?.id === job.posted_by && (
@@ -1316,7 +1347,7 @@ const JobCard = ({ job, onJobDeleted }) => {
             className="btn-danger"
             onClick={handleDeleteJob}
           >
-            Delete Job
+            <i className="fas fa-trash" style={{ marginRight: "6px" }}></i>Delete Job
           </button>
         )}
       </div>
