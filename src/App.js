@@ -94,7 +94,7 @@ const AuthProvider = ({ children }) => {
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
 
   const doLogout = () => {
     logout();
@@ -387,7 +387,7 @@ const DashboardPage = () => {
         <h1 style={{ fontSize: "40px", marginBottom: "16px", color: "white" }}>
           Welcome back, {user?.first_name}! 👋
         </h1>
-        <p style={{ fontSize: "16px", opacity: 0.9, marginBottom: "30px" }}>
+        <p style={{ fontSize: "16px", color: '#f0f4ff', marginBottom: "30px" }}>
           Connect with alumni, discover job opportunities, and grow your network
         </p>
         <div style={{ display: "flex", gap: "16px", justifyContent: "center", flexWrap: "wrap" }}>
