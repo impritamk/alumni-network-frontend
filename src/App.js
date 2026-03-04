@@ -739,7 +739,8 @@ const AlumniProfile = () => {
 // EDIT PROFILE
 // ==============================
 const EditProfile = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     headline: "",
     bio: "",
@@ -765,6 +766,29 @@ const EditProfile = () => {
       toast.success("Profile updated!");
     } catch (err) {
       toast.error("Failed to update profile");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    
+    if (!confirmed) return;
+
+    const doubleConfirm = window.confirm(
+      "Type 'DELETE' in your mind - this will permanently delete all your data including jobs, applications, and profile."
+    );
+    
+    if (!doubleConfirm) return;
+
+    try {
+      await axios.delete("/api/users/account");
+      toast.success("Account deleted successfully!");
+      logout();
+      navigate("/login");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete account");
     }
   };
 
@@ -803,6 +827,20 @@ const EditProfile = () => {
             Save Changes
           </button>
         </form>
+      </div>
+
+      <div className="card" style={{ marginTop: 20, background: "#fee2e2", border: "1px solid #fca5a5" }}>
+        <h3 style={{ marginTop: 0, color: "#dc2626" }}>Danger Zone</h3>
+        <p style={{ color: "#991b1b", marginBottom: 15 }}>
+          Permanently delete your account and all associated data.
+        </p>
+        <button 
+          className="btn-danger"
+          onClick={handleDeleteAccount}
+          style={{ width: "100%" }}
+        >
+          🗑️ Delete My Account
+        </button>
       </div>
     </div>
   );
