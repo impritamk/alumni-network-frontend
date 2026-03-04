@@ -95,6 +95,7 @@ const Navbar = () => {
   console.log("🎨 Navbar rendering");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const doLogout = () => {
     logout();
@@ -106,27 +107,81 @@ const Navbar = () => {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      padding: "15px 30px",
-      borderBottom: "2px solid #ddd",
-      background: "#fff",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      minHeight: "60px"
+      padding: "12px 30px",
+      margin: "12px 16px",
+      borderRadius: "12px",
+      borderBottom: "none",
+      background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+      boxShadow: "0 4px 16px rgba(37, 99, 235, 0.1)",
+      minHeight: "60px",
+      position: "relative",
+      border: "1px solid #e0e7ff"
     }}>
-      <Link to="/" style={{ textDecoration: "none", color: "#000", fontSize: "18px" }}>
-        <strong>🎓 Alumni Network</strong>
+      <Link to="/" style={{ textDecoration: "none", color: "#2563eb", fontSize: "20px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px" }}>
+        <img src="/logo-connectalumni.svg" alt="ConnectAlumni" style={{ width: "40px", height: "40px" }} />
+        <span style={{ fontFamily: "'Poppins', sans-serif" }}>ConnectAlumni</span>
       </Link>
       
-      <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-        <Link to="/" className="text-blue">Home</Link>
-        <Link to="/alumni" className="text-blue">Alumni</Link>
-        <Link to="/messages" className="text-blue">Messages</Link>
-        <Link to="/jobs" className="text-blue">Jobs</Link>
-        <Link to="/profile/edit" className="text-blue">Profile</Link>
+      {/* Desktop Menu */}
+      <div className="navbar-desktop-menu" style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+        <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Home</Link>
+        <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
+        <Link to="/messages" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Messages</Link>
+        <Link to="/jobs" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Jobs</Link>
+        <Link to="/profile/edit" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Profile</Link>
         <span style={{ color: "#6b7280", fontWeight: "500" }}>
           Hi, {user?.first_name || user?.firstName || "User"}
         </span>
-        <button className="btn-danger" onClick={doLogout}>Logout</button>
+        <button 
+          onClick={doLogout}
+          style={{
+            background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+            color: "white",
+            border: "none",
+            padding: "8px 16px",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "600",
+            transition: "all 0.3s"
+          }}
+          onMouseEnter={(e) => e.target.style.transform = "translateY(-2px)"}
+          onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
+        >
+          Logout
+        </button>
       </div>
+
+      {/* Mobile Hamburger Button */}
+      <button
+        className="navbar-hamburger-btn"
+        onClick={() => setMenuOpen(!menuOpen)}
+        style={{
+          background: "none",
+          border: "none",
+          fontSize: "24px",
+          cursor: "pointer",
+          color: "#2563eb",
+          padding: "8px"
+        }}
+      >
+        {menuOpen ? "✕" : "☰"}
+      </button>
+
+      {/* Mobile Menu */}
+      {menuOpen && (
+        <div className="navbar-mobile-menu">
+          <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link to="/alumni" onClick={() => setMenuOpen(false)}>Alumni</Link>
+          <Link to="/messages" onClick={() => setMenuOpen(false)}>Messages</Link>
+          <Link to="/jobs" onClick={() => setMenuOpen(false)}>Jobs</Link>
+          <Link to="/profile/edit" onClick={() => setMenuOpen(false)}>Profile</Link>
+          <button 
+            onClick={() => { doLogout(); setMenuOpen(false); }}
+          >
+            Logout
+          </button>
+        </div>
+      )}
     </div>
   );
 };
