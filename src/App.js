@@ -283,6 +283,9 @@ const LoginPage = () => {
         <p style={{ textAlign: "center", marginTop: 10 }}>
           Don't have an account?{" "}
           <Link to="/register" className="text-blue">Register</Link>
+            {" | "}
+          <Link to="/forgot-password" className="text-blue">Forgot Password?</Link>
+
         </p>
       </div>
     </div>
@@ -1304,3 +1307,4 @@ function App() {
 }
 
 export default App;
+
