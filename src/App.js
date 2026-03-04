@@ -108,11 +108,14 @@ const Navbar = () => {
       justifyContent: "space-between",
       alignItems: "center",
       padding: "12px 30px",
-      borderBottom: "1px solid #e0e7ff",
-      background: "#ffffff",
-      boxShadow: "0 2px 8px rgba(37, 99, 235, 0.08)",
+      margin: "12px 16px",
+      borderRadius: "12px",
+      borderBottom: "none",
+      background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+      boxShadow: "0 4px 16px rgba(37, 99, 235, 0.1)",
       minHeight: "60px",
-      position: "relative"
+      position: "relative",
+      border: "1px solid #e0e7ff"
     }}>
       <Link to="/" style={{ textDecoration: "none", color: "#2563eb", fontSize: "20px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px" }}>
         <img src="/logo-connectalumni.svg" alt="ConnectAlumni" style={{ width: "40px", height: "40px" }} />
