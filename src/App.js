@@ -95,7 +95,6 @@ const Navbar = () => {
   console.log("🎨 Navbar rendering");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const doLogout = () => {
     logout();
