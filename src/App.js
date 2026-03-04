@@ -555,7 +555,180 @@ const VerifyOtp = () => {
     </div>
   );
 };
+// ==============================
+// FORGOT PASSWORD PAGE
+// ==============================
+const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.post("/api/auth/forgot-password", { email });
+      setSubmitted(true);
+      toast.success("Reset link sent to your email!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send reset link");
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="page-container" style={{ maxWidth: 450 }}>
+        <Toaster />
+        <div className="card" style={{ marginTop: 60 }}>
+          <h2 className="heading" style={{ textAlign: "center" }}>Check Your Email</h2>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            We've sent a password reset link to:
+          </p>
+          <p style={{ textAlign: "center", fontWeight: "bold", marginBottom: 20 }}>
+            {email}
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            Click the link in the email to reset your password.
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280", fontSize: "14px" }}>
+            Link expires in 1 hour.
+          </p>
+          <button 
+            className="btn-primary" 
+            onClick={() => navigate("/login")}
+            style={{ width: "100%", marginTop: 20 }}
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container" style={{ maxWidth: 450 }}>
+      <Toaster />
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Forgot Password?</h2>
+        <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+          Enter your email and we'll send you a link to reset your password.
+        </p>
+        <form onSubmit={submit}>
+          <label>Email</label>
+          <input
+            className="input-box"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="your@email.com"
+          />
+          <button 
+            className="btn-primary" 
+            style={{ width: "100%" }}
+            disabled={loading}
+          >
+            {loading ? "Sending..." : "Send Reset Link"}
+          </button>
+        </form>
+        <p style={{ textAlign: "center", marginTop: 15 }}>
+          Remember your password?{" "}
+          <Link to="/login" className="text-blue">Login</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// RESET PASSWORD PAGE
+// ==============================
+const ResetPasswordPage = () => {
+  const { token } = useParams();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  const submit = async (e) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post("/api/auth/reset-password", { token, password });
+      setSuccess(true);
+      toast.success("Password reset successfully!");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to reset password");
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="page-container" style={{ maxWidth: 450 }}>
+        <Toaster />
+        <div className="card" style={{ marginTop: 60 }}>
+          <h2 className="heading" style={{ textAlign: "center", color: "#15803d" }}>✅ Success!</h2>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            Your password has been reset successfully.
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280" }}>
+            Redirecting to login...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container" style={{ maxWidth: 450 }}>
+      <Toaster />
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Reset Password</h2>
+        <form onSubmit={submit}>
+          <label>New Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="Enter new password"
+          />
+          <label>Confirm Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="Confirm password"
+          />
+          <button 
+            className="btn-primary" 
+            style={{ width: "100%" }}
+            disabled={loading}
+          >
+            {loading ? "Resetting..." : "Reset Password"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
 // ==============================
 // DASHBOARD
 // ==============================
@@ -1290,7 +1463,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
+           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           
@@ -1309,5 +1482,6 @@ function App() {
 }
 
 export default App;
+
 
 
