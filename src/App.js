@@ -95,6 +95,7 @@ const Navbar = () => {
   console.log("🎨 Navbar rendering");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const doLogout = () => {
     logout();
@@ -157,9 +158,95 @@ const Navbar = () => {
           <i className="fas fa-sign-out-alt" style={{ marginRight: "6px" }}></i>Logout
         </button>
       </div>
+
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        style={{
+          background: "rgba(255,255,255,0.2)",
+          color: "white",
+          border: "none",
+          padding: "8px 12px",
+          borderRadius: "6px",
+          cursor: "pointer",
+          fontSize: "18px",
+          display: "none"
+        }}
+      >
+        {mobileMenuOpen ? <i className="fas fa-times"></i> : <i className="fas fa-bars"></i>}
+      </button>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "linear-gradient(135deg, #1e40af 0%, #6d28d9 100%)",
+          padding: "12px 0",
+          borderBottom: "2px solid #e5e7eb",
+          zIndex: 999,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+        }}>
+          <Link 
+            to="/" 
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "white", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-home" style={{ marginRight: "8px" }}></i>Home
+          </Link>
+          <Link 
+            to="/alumni"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "white", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-users" style={{ marginRight: "8px" }}></i>Alumni
+          </Link>
+          <Link 
+            to="/messages"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "white", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-comments" style={{ marginRight: "8px" }}></i>Messages
+          </Link>
+          <Link 
+            to="/jobs"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "white", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-briefcase" style={{ marginRight: "8px" }}></i>Jobs
+          </Link>
+          <Link 
+            to="/profile/edit"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "white", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-user" style={{ marginRight: "8px" }}></i>Profile
+          </Link>
+          <button 
+            onClick={() => {
+              doLogout();
+              setMobileMenuOpen(false);
+            }}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              color: "white",
+              border: "none",
+              padding: "8px 20px",
+              cursor: "pointer",
+              fontWeight: "600",
+              width: "calc(100% - 40px)",
+              margin: "8px 20px",
+              borderRadius: "6px",
+              fontSize: "13px"
+            }}
+          >
+            <i className="fas fa-sign-out-alt" style={{ marginRight: "6px" }}></i>Logout
+          </button>
+        </div>
+      )}
     </div>
-  );
-};
 
 // ==============================
 // PRIVATE ROUTE
