@@ -95,7 +95,7 @@ const Navbar = () => {
   console.log("🎨 Navbar rendering");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const doLogout = () => {
     logout();
@@ -110,75 +110,141 @@ const Navbar = () => {
       padding: "12px 30px",
       margin: "12px 16px",
       borderRadius: "12px",
-      borderBottom: "none",
+      borderBottom: "2px solid #e5e7eb",
       background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-      boxShadow: "0 4px 16px rgba(37, 99, 235, 0.1)",
+      boxShadow: "0 4px 12px rgba(37, 99, 235, 0.15)",
       minHeight: "60px",
-      position: "relative",
-      border: "1px solid #e0e7ff"
+      flexWrap: "wrap"
     }}>
-      <Link to="/" style={{ textDecoration: "none", color: "#2563eb", fontSize: "20px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px" }}>
+      <Link to="/" style={{ textDecoration: "none", color: "#6b7280", fontSize: "18px", display: "flex", alignItems: "center", gap: "8px" }}>
         <img src="/logo-connectalumni.svg" alt="ConnectAlumni" style={{ width: "40px", height: "40px" }} />
-        <span style={{ fontFamily: "'Poppins', sans-serif" }}>ConnectAlumni</span>
+        <strong style={{ fontFamily: "'Poppins', sans-serif" }}>Alumni</strong>
       </Link>
       
       {/* Desktop Menu */}
-      <div className="navbar-desktop-menu" style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-        <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Home</Link>
-        <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
-        <Link to="/messages" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Messages</Link>
-        <Link to="/jobs" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Jobs</Link>
-        <Link to="/profile/edit" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Profile</Link>
-        <span style={{ color: "#6b7280", fontWeight: "500" }}>
-          Hi, {user?.first_name || user?.firstName || "User"}
+      <div style={{ display: "flex", gap: 15, alignItems: "center", flexWrap: "wrap" }}>
+        <Link to="/" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-home" style={{ marginRight: "6px" }}></i>Home
+        </Link>
+        <Link to="/alumni" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-users" style={{ marginRight: "6px" }}></i>Alumni
+        </Link>
+        <Link to="/messages" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-comments" style={{ marginRight: "6px" }}></i>Messages
+        </Link>
+        <Link to="/jobs" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-briefcase" style={{ marginRight: "6px" }}></i>Jobs
+        </Link>
+        <Link to="/profile/edit" className="text-blue" style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px" }}>
+          <i className="fas fa-user" style={{ marginRight: "6px" }}></i>Profile
+        </Link>
+        <span style={{ color: "rgba(255,255,255,0.9)", fontWeight: "500", fontSize: "12px", marginLeft: "12px", paddingLeft: "12px", borderLeft: "1px solid rgba(255,255,255,0.3)" }}>
+          👋 {user?.first_name || user?.firstName || "User"}
         </span>
         <button 
           onClick={doLogout}
           style={{
-            background: "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
-            color: "white",
+            background: "rgba(255,255,255,0.2)",
+            color: "#6b7280",
             border: "none",
-            padding: "8px 16px",
-            borderRadius: "8px",
+            padding: "6px 14px",
+            borderRadius: "6px",
             cursor: "pointer",
             fontWeight: "600",
-            transition: "all 0.3s"
+            transition: "all 0.3s",
+            fontSize: "12px"
           }}
-          onMouseEnter={(e) => e.target.style.transform = "translateY(-2px)"}
-          onMouseLeave={(e) => e.target.style.transform = "translateY(0)"}
+          onMouseEnter={(e) => e.target.style.background = "rgba(255,255,255,0.3)"}
+          onMouseLeave={(e) => e.target.style.background = "rgba(255,255,255,0.2)"}
         >
-          Logout
+          <i className="fas fa-sign-out-alt" style={{ marginRight: "6px" }}></i>Logout
         </button>
       </div>
 
-      {/* Mobile Hamburger Button */}
+      {/* Mobile Menu Button */}
       <button
-        className="navbar-hamburger-btn"
-        onClick={() => setMenuOpen(!menuOpen)}
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         style={{
-          background: "none",
+          background: "rgba(255,255,255,0.2)",
+          color: "#6b7280",
           border: "none",
-          fontSize: "24px",
+          padding: "8px 12px",
+          borderRadius: "6px",
           cursor: "pointer",
-          color: "#2563eb",
-          padding: "8px"
+          fontSize: "18px",
+          display: "none"
         }}
       >
-        {menuOpen ? "✕" : "☰"}
+        {mobileMenuOpen ? <i className="fas fa-times"></i> : <i className="fas fa-bars"></i>}
       </button>
 
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="navbar-mobile-menu">
-          <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-          <Link to="/alumni" onClick={() => setMenuOpen(false)}>Alumni</Link>
-          <Link to="/messages" onClick={() => setMenuOpen(false)}>Messages</Link>
-          <Link to="/jobs" onClick={() => setMenuOpen(false)}>Jobs</Link>
-          <Link to="/profile/edit" onClick={() => setMenuOpen(false)}>Profile</Link>
-          <button 
-            onClick={() => { doLogout(); setMenuOpen(false); }}
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div style={{
+          position: "absolute",
+          top: "100%",
+          left: 0,
+          right: 0,
+          background: "linear-gradient(135deg, #1e40af 0%, #6d28d9 100%)",
+          padding: "12px 0",
+          borderBottom: "2px solid #e5e7eb",
+          zIndex: 999,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+        }}>
+          <Link 
+            to="/" 
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
           >
-            Logout
+            <i className="fas fa-home" style={{ marginRight: "8px" }}></i>Home
+          </Link>
+          <Link 
+            to="/alumni"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-users" style={{ marginRight: "8px" }}></i>Alumni
+          </Link>
+          <Link 
+            to="/messages"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-comments" style={{ marginRight: "8px" }}></i>Messages
+          </Link>
+          <Link 
+            to="/jobs"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-briefcase" style={{ marginRight: "8px" }}></i>Jobs
+          </Link>
+          <Link 
+            to="/profile/edit"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ color: "#6b7280", fontWeight: "500", fontSize: "13px", display: "block", padding: "10px 20px", textDecoration: "none" }}
+          >
+            <i className="fas fa-user" style={{ marginRight: "8px" }}></i>Profile
+          </Link>
+          <button 
+            onClick={() => {
+              doLogout();
+              setMobileMenuOpen(false);
+            }}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              color: "#6b7280",
+              border: "none",
+              padding: "8px 20px",
+              cursor: "pointer",
+              fontWeight: "600",
+              width: "calc(100% - 40px)",
+              margin: "8px 20px",
+              borderRadius: "6px",
+              fontSize: "13px"
+            }}
+          >
+            <i className="fas fa-sign-out-alt" style={{ marginRight: "6px" }}></i>Logout
           </button>
         </div>
       )}
@@ -277,12 +343,14 @@ const LoginPage = () => {
             style={{ width: "100%" }}
             disabled={isLoading}
           >
-            {isLoading ? "Logging in..." : "Login"}
+            <i className="fas fa-sign-in-alt" style={{ marginRight: "6px" }}></i>{isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
         <p style={{ textAlign: "center", marginTop: 10 }}>
           Don't have an account?{" "}
           <Link to="/register" className="text-blue">Register</Link>
+          {" | "}
+          <Link to="/forgot-password" className="text-blue">Forgot Password?</Link>
         </p>
       </div>
     </div>
@@ -548,6 +616,181 @@ const VerifyOtp = () => {
         }}>
           Wrong email? <Link to="/register" className="text-blue">Register again</Link>
         </p>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// FORGOT PASSWORD PAGE
+// ==============================
+const ForgotPasswordPage = () => {
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.post("/api/auth/forgot-password", { email });
+      setSubmitted(true);
+      toast.success("Reset link sent to your email!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send reset link");
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <div className="page-container" style={{ maxWidth: 450 }}>
+        <Toaster />
+        <div className="card" style={{ marginTop: 60 }}>
+          <h2 className="heading" style={{ textAlign: "center" }}>Check Your Email</h2>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            We've sent a password reset link to:
+          </p>
+          <p style={{ textAlign: "center", fontWeight: "bold", marginBottom: 20 }}>
+            {email}
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            Click the link in the email to reset your password.
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280", fontSize: "14px" }}>
+            Link expires in 1 hour.
+          </p>
+          <button 
+            className="btn-primary" 
+            onClick={() => navigate("/login")}
+            style={{ width: "100%", marginTop: 20 }}
+          >
+            Back to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container" style={{ maxWidth: 450 }}>
+      <Toaster />
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Forgot Password?</h2>
+        <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+          Enter your email and we'll send you a link to reset your password.
+        </p>
+        <form onSubmit={submit}>
+          <label>Email</label>
+          <input
+            className="input-box"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="your@email.com"
+          />
+          <button 
+            className="btn-primary" 
+            style={{ width: "100%" }}
+            disabled={loading}
+          >
+            {loading ? "Sending..." : "Send Reset Link"}
+          </button>
+        </form>
+        <p style={{ textAlign: "center", marginTop: 15 }}>
+          Remember your password?{" "}
+          <Link to="/login" className="text-blue">Login</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// RESET PASSWORD PAGE
+// ==============================
+const ResetPasswordPage = () => {
+  const { token } = useParams();
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const navigate = useNavigate();
+
+  const submit = async (e) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post("/api/auth/reset-password", { token, password });
+      setSuccess(true);
+      toast.success("Password reset successfully!");
+      setTimeout(() => navigate("/login"), 2000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to reset password");
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="page-container" style={{ maxWidth: 450 }}>
+        <Toaster />
+        <div className="card" style={{ marginTop: 60 }}>
+          <h2 className="heading" style={{ textAlign: "center", color: "#15803d" }}>✅ Success!</h2>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
+            Your password has been reset successfully.
+          </p>
+          <p style={{ textAlign: "center", color: "#6b7280" }}>
+            Redirecting to login...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="page-container" style={{ maxWidth: 450 }}>
+      <Toaster />
+      <div className="card" style={{ marginTop: 60 }}>
+        <h2 className="heading" style={{ textAlign: "center" }}>Reset Password</h2>
+        <form onSubmit={submit}>
+          <label>New Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="Enter new password"
+          />
+          <label>Confirm Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={loading}
+            placeholder="Confirm password"
+          />
+          <button 
+            className="btn-primary" 
+            style={{ width: "100%" }}
+            disabled={loading}
+          >
+            {loading ? "Resetting..." : "Reset Password"}
+          </button>
+        </form>
       </div>
     </div>
   );
@@ -879,7 +1122,7 @@ const EditProfile = () => {
             onChange={(e) => setForm({ ...form, currentCompany: e.target.value })}
           />
           <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>
-            Save Changes
+            <i className="fas fa-save" style={{ marginRight: "6px" }}></i>Save Changes
           </button>
         </form>
       </div>
@@ -894,7 +1137,7 @@ const EditProfile = () => {
           onClick={handleDeleteAccount}
           style={{ width: "100%" }}
         >
-          🗑️ Delete My Account
+          <i className="fas fa-trash-alt" style={{ marginRight: "6px" }}></i>Delete My Account
         </button>
       </div>
     </div>
@@ -1180,13 +1423,13 @@ const JobCard = ({ job, onJobDeleted }) => {
           className="btn-primary"
           onClick={() => toast.success("Apply feature coming soon!")}
         >
-          Apply Now
+          <i className="fas fa-paper-plane" style={{ marginRight: "6px" }}></i>Apply Now
         </button>
         <button 
           className="btn-secondary"
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? "Show Less" : "View Details"}
+          <i className="fas fa-arrow-down" style={{ marginRight: "6px" }}></i>{expanded ? "Show Less" : "View Details"}
         </button>
         
         {user?.id === job.posted_by && (
@@ -1194,7 +1437,7 @@ const JobCard = ({ job, onJobDeleted }) => {
             className="btn-danger"
             onClick={handleDeleteJob}
           >
-            Delete Job
+            <i className="fas fa-trash" style={{ marginRight: "6px" }}></i>Delete Job
           </button>
         )}
       </div>
@@ -1288,6 +1531,8 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           
           <Route path="/" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
