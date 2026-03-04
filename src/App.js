@@ -1289,6 +1289,8 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           
@@ -1307,4 +1309,5 @@ function App() {
 }
 
 export default App;
+
 
