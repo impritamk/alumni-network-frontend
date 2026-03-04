@@ -242,6 +242,7 @@ const RegisterPage = () => {
   const [form, setForm] = useState({
     email: "",
     password: "",
+    confirmPassword: "",  // ← ADD THIS
     firstName: "",
     lastName: "",
     passoutYear: new Date().getFullYear(),
@@ -249,6 +250,13 @@ const RegisterPage = () => {
 
   const submit = async (e) => {
     e.preventDefault();
+    
+    // ← ADD THIS CHECK
+    if (form.password !== form.confirmPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+
     try {
       await register(form);
       localStorage.setItem("pendingEmail", form.email);
@@ -295,6 +303,15 @@ const RegisterPage = () => {
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             required
           />
+          {/* ← ADD THIS FIELD */}
+          <label>Confirm Password</label>
+          <input
+            className="input-box"
+            type="password"
+            value={form.confirmPassword}
+            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+            required
+          />
           <label>Passout Year</label>
           <input
             className="input-box"
@@ -315,7 +332,6 @@ const RegisterPage = () => {
     </div>
   );
 };
-
 // ==============================
 // VERIFY OTP PAGE
 // ==============================
@@ -1164,3 +1180,4 @@ function App() {
 }
 
 export default App;
+
