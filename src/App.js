@@ -98,11 +98,42 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false }); // 🟢 NEW FEATURE: Indicators
+
+  // Poll for new notifications every 15 seconds
+  useEffect(() => {
+    if (user) {
+      const fetchIndicators = async () => {
+        try {
+          const res = await axios.get("/api/user/indicators");
+          setIndicators(res.data);
+        } catch (err) { }
+      };
+      
+      fetchIndicators(); // Initial fetch
+      const interval = setInterval(fetchIndicators, 15000); // Check every 15s
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const doLogout = () => {
     logout();
     navigate("/login");
   };
+
+  // 🟢 NEW FEATURE: Notification Dot Style
+  const Dot = () => (
+    <span style={{
+      position: "absolute",
+      top: "-5px",
+      right: "-10px",
+      width: "8px",
+      height: "8px",
+      background: "#ef4444", // Red dot
+      borderRadius: "50%",
+      boxShadow: "0 0 0 2px #ffffff"
+    }}></span>
+  );
 
   return (
     <div style={{
@@ -129,8 +160,31 @@ const Navbar = () => {
         <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Home</Link>
         <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
         <Link to="/connections" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Connections</Link>
-        <Link to="/messages" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Messages</Link>
-        <Link to="/jobs" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Jobs</Link>
+        
+        {/* Messages Link with Notification Dot */}
+        <Link 
+          to="/messages" 
+          onClick={() => setIndicators(prev => ({...prev, hasUnreadMessages: false}))}
+          style={{ position: "relative", color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} 
+          onMouseEnter={(e) => e.target.style.color = "#2563eb"} 
+          onMouseLeave={(e) => e.target.style.color = "#6b7280"}
+        >
+          Messages
+          {indicators.hasUnreadMessages && <Dot />}
+        </Link>
+
+        {/* Jobs Link with Notification Dot */}
+        <Link 
+          to="/jobs" 
+          onClick={() => setIndicators(prev => ({...prev, hasNewJobs: false}))}
+          style={{ position: "relative", color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} 
+          onMouseEnter={(e) => e.target.style.color = "#2563eb"} 
+          onMouseLeave={(e) => e.target.style.color = "#6b7280"}
+        >
+          Jobs
+          {indicators.hasNewJobs && <Dot />}
+        </Link>
+
         <Link to="/profile/edit" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Profile</Link>
         <span style={{ color: "#6b7280", fontWeight: "500" }}>
           Hi, {user?.first_name || user?.firstName || "User"}
@@ -164,10 +218,12 @@ const Navbar = () => {
           fontSize: "24px",
           cursor: "pointer",
           color: "#2563eb",
-          padding: "8px"
+          padding: "8px",
+          position: "relative"
         }}
       >
         {menuOpen ? "✕" : "☰"}
+        {(indicators.hasNewJobs || indicators.hasUnreadMessages) && <Dot />}
       </button>
 
       {/* Mobile Menu */}
@@ -176,8 +232,12 @@ const Navbar = () => {
           <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
           <Link to="/alumni" onClick={() => setMenuOpen(false)}>Alumni</Link>
           <Link to="/connections" onClick={() => setMenuOpen(false)}>Connections</Link>
-          <Link to="/messages" onClick={() => setMenuOpen(false)}>Messages</Link>
-          <Link to="/jobs" onClick={() => setMenuOpen(false)}>Jobs</Link>
+          <Link to="/messages" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasUnreadMessages: false})) }}>
+            Messages {indicators.hasUnreadMessages && "🔴"}
+          </Link>
+          <Link to="/jobs" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasNewJobs: false})) }}>
+            Jobs {indicators.hasNewJobs && "🔴"}
+          </Link>
           <Link to="/profile/edit" onClick={() => setMenuOpen(false)}>Profile</Link>
           <button 
             onClick={() => { doLogout(); setMenuOpen(false); }}
@@ -235,7 +295,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // 🟢 NEW FEATURE
+  const [showPassword, setShowPassword] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -269,7 +329,6 @@ const LoginPage = () => {
             disabled={isLoading}
           />
           <label>Password</label>
-          {/* 🟢 NEW FEATURE: View Password wrapper */}
           <div style={{ position: 'relative' }}>
             <input
               className="input-box"
@@ -320,7 +379,7 @@ const RegisterPage = () => {
     lastName: "",
     passoutYear: new Date().getFullYear(),
   });
-  const [showPassword, setShowPassword] = useState(false); // 🟢 NEW FEATURE
+  const [showPassword, setShowPassword] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -685,7 +744,7 @@ const ResetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // 🟢 NEW FEATURE
+  const [showPassword, setShowPassword] = useState(false); 
   const navigate = useNavigate();
 
   const submit = async (e) => {
@@ -1144,7 +1203,7 @@ const ConnectionsPage = () => {
         toast.error("Failed to remove connection");
       }
     }
-  }
+  };
 
   const handleAccept = async (connectionId) => {
     try {
@@ -1593,7 +1652,8 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
   );
 };
 
-// 🟢 NEW FEATURE: APPLY JOB MODAL
+// ==============================
+// APPLY JOB MODAL
 // ==============================
 const ApplyJobModal = ({ job, onClose, onSuccess }) => {
   const [form, setForm] = useState({
@@ -1940,6 +2000,15 @@ const MessagesPage = () => {
   const [searchParams] = useSearchParams();
   const targetUserId = searchParams.get("userId");
 
+  const loadInbox = useCallback(async () => {
+    try {
+      const res = await axios.get("/api/inbox");
+      setInbox(res.data.rooms || []);
+    } catch (err) {
+      console.error("Failed to load inbox", err);
+    }
+  }, []);
+
   useEffect(() => {
     if (targetUserId) {
       startChat(targetUserId);
@@ -1947,16 +2016,7 @@ const MessagesPage = () => {
       loadInbox();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetUserId]);
-
-  const loadInbox = async () => {
-    try {
-      const res = await axios.get("/api/inbox");
-      setInbox(res.data.rooms || []);
-    } catch (err) {
-      console.error("Failed to load inbox", err);
-    }
-  };
+  }, [targetUserId, loadInbox]);
 
   const startChat = async (otherUserId) => {
     try {
@@ -1996,17 +2056,50 @@ const MessagesPage = () => {
       <Toaster />
       <div className="card" style={{ display: "flex", flexDirection: "column", height: "70vh", padding: 0, overflow: "hidden" }}>
         
-        <div style={{ padding: "15px 20px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+        {/* 🟢 NEW FEATURE: Inbox Back Button */}
+        <div style={{ padding: "15px 20px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", gap: 15 }}>
+          {activeRoom && (
+            <button 
+              onClick={() => { setActiveRoom(null); setChatPartner(null); loadInbox(); }}
+              style={{ background: "none", border: "none", color: "#2563eb", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}
+            >
+              ← Back
+            </button>
+          )}
           <h2 style={{ margin: 0, fontSize: "18px" }}>
             {chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}
           </h2>
         </div>
 
         <div style={{ flex: 1, padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", background: "#ffffff" }}>
+          
+          {/* 🟢 NEW FEATURE: Render the beautiful list of connections in the inbox! */}
           {!activeRoom ? (
-            <div style={{ margin: "auto", color: "#94a3b8", textAlign: "center" }}>
-              {inbox.length === 0 ? "Select a connection from their profile to start messaging." : "Your inbox is ready! Go to an Alumni Profile and click 'Message' to start chatting."}
-            </div>
+            inbox.length === 0 ? (
+              <div style={{ margin: "auto", color: "#94a3b8", textAlign: "center" }}>
+                Your inbox is ready! Go to an Alumni Profile and click 'Message' to start chatting.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {inbox.map((item) => (
+                  <div 
+                    key={item.room.id}
+                    onClick={() => startChat(item.otherUser.id)}
+                    style={{ display: "flex", alignItems: "center", gap: "15px", padding: "15px", border: "1px solid #e2e8f0", borderRadius: "12px", cursor: "pointer", transition: "all 0.2s" }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = "#f8fafc"}
+                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                  >
+                     <div style={{ width: 45, height: 45, background: "linear-gradient(135deg, #2563eb, #7c3aed)", color: "white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "bold" }}>
+                       {item.otherUser.first_name[0]}{item.otherUser.last_name[0]}
+                     </div>
+                     <div>
+                       <h4 style={{ margin: 0, color: "#0f172a" }}>{item.otherUser.first_name} {item.otherUser.last_name}</h4>
+                       <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>Click to open chat</p>
+                     </div>
+                  </div>
+                ))}
+              </div>
+            )
           ) : messages.length === 0 ? (
             <div style={{ margin: "auto", color: "#94a3b8" }}>No messages yet. Say hi! 👋</div>
           ) : (
