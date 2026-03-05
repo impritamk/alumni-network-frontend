@@ -101,7 +101,6 @@ const Navbar = () => {
   const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false });
   const [isDark, setIsDark] = useState(document.body.classList.contains("dark-mode")); 
 
-  // Poll for new notifications every 60 seconds (Fixed 429 Error)
   useEffect(() => {
     if (user) {
       const fetchIndicators = async () => {
@@ -153,7 +152,6 @@ const Navbar = () => {
       position: "relative"
     }}>
       
-      {/* 🟢 NEW: TWO-TONE LOGO & AUTO-INVERT SVG */}
       <Link to="/" style={{ textDecoration: "none", fontSize: "22px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
         <img 
           src="/logo-connectalumni.svg" 
@@ -161,7 +159,7 @@ const Navbar = () => {
           style={{ 
             width: "40px", 
             height: "40px",
-            filter: isDark ? "invert(1) brightness(2)" : "none", // Inverts black SVG to white in dark mode
+            filter: isDark ? "invert(1) brightness(2)" : "none",
             transition: "filter 0.3s ease" 
           }} 
         />
@@ -174,6 +172,7 @@ const Navbar = () => {
       {/* Desktop Menu */}
       <div className="navbar-desktop-menu" style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
         <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Home</Link>
+        <Link to="/feed" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Feed</Link>
         <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
         <Link to="/connections" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Connections</Link>
         
@@ -198,6 +197,10 @@ const Navbar = () => {
           Jobs
           {indicators.hasNewJobs && <Dot />}
         </Link>
+        
+        {user?.role === 'admin' && (
+          <Link to="/admin" style={{ color: "#ef4444", fontWeight: "700", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#dc2626"} onMouseLeave={(e) => e.target.style.color = "#ef4444"}>Admin Panel</Link>
+        )}
 
         <Link to="/profile/edit" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Profile</Link>
         
@@ -254,6 +257,7 @@ const Navbar = () => {
       {menuOpen && (
         <div className="navbar-mobile-menu">
           <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link to="/feed" onClick={() => setMenuOpen(false)}>Feed</Link>
           <Link to="/alumni" onClick={() => setMenuOpen(false)}>Alumni</Link>
           <Link to="/connections" onClick={() => setMenuOpen(false)}>Connections</Link>
           <Link to="/messages" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasUnreadMessages: false})) }}>
@@ -262,15 +266,12 @@ const Navbar = () => {
           <Link to="/jobs" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasNewJobs: false})) }}>
             Jobs {indicators.hasNewJobs && "🔴"}
           </Link>
+          {user?.role === 'admin' && <Link to="/admin" onClick={() => setMenuOpen(false)} style={{color: "#ef4444"}}>Admin Panel</Link>}
           <Link to="/profile/edit" onClick={() => setMenuOpen(false)}>Profile</Link>
           <button onClick={toggleDarkMode} style={{ background: "none", border: "none", color: "#6b7280", textAlign: "left", padding: "10px 0" }}>
             {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
           </button>
-          <button 
-            onClick={() => { doLogout(); setMenuOpen(false); }}
-          >
-            Logout
-          </button>
+          <button onClick={() => { doLogout(); setMenuOpen(false); }}>Logout</button>
         </div>
       )}
     </div>
@@ -278,20 +279,14 @@ const Navbar = () => {
 };
 
 // ==============================
-// PRIVATE ROUTE
+// PRIVATE ROUTE & LAYOUT
 // ==============================
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '20px'
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontSize: '20px' }}>
         <i className="fas fa-spinner fa-spin" style={{ color: "#2563eb", marginRight: "10px" }}></i> Loading...
       </div>
     );
@@ -300,9 +295,6 @@ const PrivateRoute = ({ children }) => {
   return user ? children : <Navigate to="/login" replace />;
 };
 
-// ==============================
-// PRIVATE LAYOUT
-// ==============================
 const PrivateLayout = ({ children }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -439,75 +431,30 @@ const RegisterPage = () => {
         <h2 className="heading" style={{ textAlign: "center" }}>Create Account</h2>
         <form onSubmit={submit}>
           <label>First Name</label>
-          <input
-            className="input-box"
-            value={form.firstName}
-            onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-            required
-          />
+          <input className="input-box" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
           <label>Last Name</label>
-          <input
-            className="input-box"
-            value={form.lastName}
-            onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-            required
-          />
+          <input className="input-box" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
           <label>Email</label>
-          <input
-            className="input-box"
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            required
-          />
+          <input className="input-box" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           
           <label>Password</label>
           <div style={{ position: 'relative' }}>
-            <input
-              className="input-box"
-              type={showPassword ? "text" : "password"}
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
-              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
-            />
-            <button 
-              type="button" 
-              onClick={() => setShowPassword(!showPassword)} 
-              style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-            >
+            <input className="input-box" type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }} />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"} style={{ color: "#6b7280", fontSize: "16px" }}></i>
             </button>
           </div>
 
           <label>Confirm Password</label>
           <div style={{ position: 'relative' }}>
-            <input
-              className="input-box"
-              type={showPassword ? "text" : "password"}
-              value={form.confirmPassword}
-              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-              required
-              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
-            />
+            <input className="input-box" type={showPassword ? "text" : "password"} value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }} />
           </div>
 
           <label>Passout Year</label>
-          <input
-            className="input-box"
-            type="number"
-            value={form.passoutYear}
-            onChange={(e) => setForm({ ...form, passoutYear: e.target.value })}
-            required
-          />
-          <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }}>
-            Register
-          </button>
+          <input className="input-box" type="number" value={form.passoutYear} onChange={(e) => setForm({ ...form, passoutYear: e.target.value })} required />
+          <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }}>Register</button>
         </form>
-        <p style={{ textAlign: "center", marginTop: 15 }}>
-          Already have an account?{" "}
-          <Link to="/login" className="text-blue">Login</Link>
-        </p>
+        <p style={{ textAlign: "center", marginTop: 15 }}>Already have an account? <Link to="/login" className="text-blue">Login</Link></p>
       </div>
     </div>
   );
@@ -536,44 +483,36 @@ const VerifyOtp = () => {
     e.preventDefault();
     try {
       const email = localStorage.getItem("pendingEmail");
-      
       if (!email) {
         toast.error("Email not found. Please register again.");
         navigate("/register");
         return;
       }
-
       await axios.post("/api/auth/verify-otp", { email, otp });
       localStorage.removeItem("pendingEmail");
       toast.success("Email verified! Please login.");
       navigate("/login");
     } catch (err) {
-      console.error("OTP verification error:", err);
       toast.error(err.response?.data?.message || "Invalid OTP");
     }
   };
 
   const handleResendOtp = async () => {
     if (!canResend || resending) return;
-
     setResending(true);
     try {
       const email = localStorage.getItem("pendingEmail");
-      
       if (!email) {
         toast.error("Email not found. Please register again.");
         navigate("/register");
         return;
       }
-
       await axios.post("/api/auth/resend-otp", { email });
       toast.success("New OTP sent to your email!");
-      
       setCanResend(false);
       setCountdown(60);
       setOtp("");
     } catch (err) {
-      console.error("Resend OTP error:", err);
       toast.error(err.response?.data?.message || "Failed to resend OTP");
     } finally {
       setResending(false);
@@ -587,95 +526,30 @@ const VerifyOtp = () => {
       <Toaster />
       <div className="card" style={{ marginTop: 60 }}>
         <h2 className="heading" style={{ textAlign: "center" }}>Verify Email</h2>
-        
         {email && (
-          <p style={{ 
-            textAlign: "center", 
-            color: "#6b7280", 
-            marginBottom: 20,
-            background: "#f3f4f6",
-            padding: "10px",
-            borderRadius: "8px"
-          }}>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20, background: "#f3f4f6", padding: "10px", borderRadius: "8px" }}>
             OTP sent to: <strong>{email}</strong>
           </p>
         )}
-
-        <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
-          Enter the 6-digit OTP sent to your email
-        </p>
-
+        <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>Enter the 6-digit OTP sent to your email</p>
         <form onSubmit={submit}>
           <label>OTP Code</label>
-          <input
-            className="input-box"
-            type="text"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-            required
-            maxLength={6}
-            placeholder="123456"
-            style={{ 
-              textAlign: "center", 
-              fontSize: "24px", 
-              letterSpacing: "8px",
-              fontWeight: "bold"
-            }}
-          />
-          
-          <button 
-            className="btn-primary" 
-            style={{ width: "100%", marginTop: 15 }}
-          >
-            Verify Email
-          </button>
+          <input className="input-box" type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} required maxLength={6} placeholder="123456" style={{ textAlign: "center", fontSize: "24px", letterSpacing: "8px", fontWeight: "bold" }} />
+          <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>Verify Email</button>
         </form>
-
-        <div style={{ 
-          marginTop: 20, 
-          paddingTop: 20, 
-          borderTop: "1px solid #eee",
-          textAlign: "center" 
-        }}>
-          <p style={{ color: "#6b7280", marginBottom: 10 }}>
-            Didn't receive the OTP?
-          </p>
-          
-          <button
-            onClick={handleResendOtp}
-            disabled={!canResend || resending}
-            style={{
-              background: canResend && !resending ? "#2563eb" : "#e5e7eb",
-              color: canResend && !resending ? "white" : "#9ca3af",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              border: "none",
-              cursor: canResend && !resending ? "pointer" : "not-allowed",
-              fontSize: "14px",
-              fontWeight: "500"
-            }}
-          >
-            {resending ? "Sending..." : 
-             countdown > 0 ? `Resend OTP (${countdown}s)` : 
-             "Resend OTP"}
+        <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #eee", textAlign: "center" }}>
+          <p style={{ color: "#6b7280", marginBottom: 10 }}>Didn't receive the OTP?</p>
+          <button onClick={handleResendOtp} disabled={!canResend || resending} style={{ background: canResend && !resending ? "#2563eb" : "#e5e7eb", color: canResend && !resending ? "white" : "#9ca3af", padding: "10px 20px", borderRadius: "8px", border: "none", cursor: canResend && !resending ? "pointer" : "not-allowed", fontSize: "14px", fontWeight: "500" }}>
+            {resending ? "Sending..." : countdown > 0 ? `Resend OTP (${countdown}s)` : "Resend OTP"}
           </button>
         </div>
-
-        <p style={{ 
-          textAlign: "center", 
-          marginTop: 20,
-          fontSize: "14px",
-          color: "#6b7280" 
-        }}>
-          Wrong email? <Link to="/register" className="text-blue">Register again</Link>
-        </p>
       </div>
     </div>
   );
 };
 
 // ==============================
-// FORGOT PASSWORD PAGE
+// FORGOT / RESET PASSWORD PAGES
 // ==============================
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -702,25 +576,8 @@ const ForgotPasswordPage = () => {
         <Toaster />
         <div className="card" style={{ marginTop: 60 }}>
           <h2 className="heading" style={{ textAlign: "center" }}>Check Your Email</h2>
-          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
-            We've sent a password reset link to:
-          </p>
-          <p style={{ textAlign: "center", fontWeight: "bold", marginBottom: 20 }}>
-            {email}
-          </p>
-          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
-            Click the link in the email to reset your password.
-          </p>
-          <p style={{ textAlign: "center", color: "#6b7280", fontSize: "14px" }}>
-            Link expires in 1 hour.
-          </p>
-          <button 
-            className="btn-primary" 
-            onClick={() => navigate("/login")}
-            style={{ width: "100%", marginTop: 20 }}
-          >
-            Back to Login
-          </button>
+          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>We've sent a password reset link to:<br/><strong>{email}</strong></p>
+          <button className="btn-primary" onClick={() => navigate("/login")} style={{ width: "100%", marginTop: 20 }}>Back to Login</button>
         </div>
       </div>
     );
@@ -731,40 +588,16 @@ const ForgotPasswordPage = () => {
       <Toaster />
       <div className="card" style={{ marginTop: 60 }}>
         <h2 className="heading" style={{ textAlign: "center" }}>Forgot Password?</h2>
-        <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
-          Enter your email and we'll send you a link to reset your password.
-        </p>
         <form onSubmit={submit}>
           <label>Email</label>
-          <input
-            className="input-box"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            disabled={loading}
-            placeholder="your@email.com"
-          />
-          <button 
-            className="btn-primary" 
-            style={{ width: "100%" }}
-            disabled={loading}
-          >
-            {loading ? "Sending..." : "Send Reset Link"}
-          </button>
+          <input className="input-box" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} placeholder="your@email.com" />
+          <button className="btn-primary" style={{ width: "100%" }} disabled={loading}>{loading ? "Sending..." : "Send Reset Link"}</button>
         </form>
-        <p style={{ textAlign: "center", marginTop: 15 }}>
-          Remember your password?{" "}
-          <Link to="/login" className="text-blue">Login</Link>
-        </p>
       </div>
     </div>
   );
 };
 
-// ==============================
-// RESET PASSWORD PAGE
-// ==============================
 const ResetPasswordPage = () => {
   const { token } = useParams();
   const [password, setPassword] = useState("");
@@ -776,12 +609,10 @@ const ResetPasswordPage = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-
     if (password !== confirmPassword) {
       toast.error("Passwords do not match!");
       return;
     }
-
     setLoading(true);
     try {
       await axios.post("/api/auth/reset-password", { token, password });
@@ -800,12 +631,7 @@ const ResetPasswordPage = () => {
         <Toaster />
         <div className="card" style={{ marginTop: 60 }}>
           <h2 className="heading" style={{ textAlign: "center", color: "#15803d" }}>✅ Success!</h2>
-          <p style={{ textAlign: "center", color: "#6b7280", marginBottom: 20 }}>
-            Your password has been reset successfully.
-          </p>
-          <p style={{ textAlign: "center", color: "#6b7280" }}>
-            Redirecting to login...
-          </p>
+          <p style={{ textAlign: "center", color: "#6b7280" }}>Redirecting to login...</p>
         </div>
       </div>
     );
@@ -819,47 +645,208 @@ const ResetPasswordPage = () => {
         <form onSubmit={submit}>
           <label>New Password</label>
           <div style={{ position: 'relative' }}>
-            <input
-              className="input-box"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={loading}
-              placeholder="Enter new password"
-              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
-            />
-            <button 
-              type="button" 
-              onClick={() => setShowPassword(!showPassword)} 
-              style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-            >
+            <input className="input-box" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }} />
+            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"} style={{ color: "#6b7280", fontSize: "16px" }}></i>
             </button>
           </div>
-
           <label>Confirm Password</label>
           <div style={{ position: 'relative' }}>
-            <input
-              className="input-box"
-              type={showPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              disabled={loading}
-              placeholder="Confirm password"
-              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
-            />
+            <input className="input-box" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }} />
           </div>
-          
-          <button 
-            className="btn-primary" 
-            style={{ width: "100%", marginTop: "10px" }}
-            disabled={loading}
-          >
-            {loading ? "Resetting..." : "Reset Password"}
+          <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={loading}>{loading ? "Resetting..." : "Reset Password"}</button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// COMMUNITY FEED
+// ==============================
+const FeedPage = () => {
+  const { user } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchPosts = async () => {
+    try {
+      const res = await axios.get("/api/posts");
+      setPosts(res.data.posts);
+    } catch (err) {
+      toast.error("Failed to load posts");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("/api/posts", { content });
+      setContent("");
+      fetchPosts();
+      toast.success("Post created!");
+    } catch (err) {
+      toast.error("Failed to create post");
+    }
+  };
+
+  const handleDelete = async (postId) => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    try {
+      await axios.delete(`/api/posts/${postId}`);
+      setPosts(posts.filter(p => p.id !== postId));
+      toast.success("Post deleted");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete post");
+    }
+  };
+
+  if (loading) return <div className="page-container"><p style={{ textAlign: "center" }}>Loading feed...</p></div>;
+
+  return (
+    <div className="page-container" style={{ maxWidth: 700 }}>
+      <Toaster />
+      <h1>Community Feed</h1>
+      
+      <div className="card" style={{ marginBottom: 20 }}>
+        <form onSubmit={handleSubmit}>
+          <textarea
+            className="input-box"
+            rows="3"
+            placeholder="What's on your mind?"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            required
+            style={{ resize: "vertical" }}
+          />
+          <button type="submit" className="btn-primary" style={{ width: "100%", marginTop: 10 }}>
+            Post to Community
           </button>
         </form>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+        {posts.map(post => (
+          <div key={post.id} className="card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <h4 style={{ margin: "0 0 5px 0", color: "#0f172a" }}>
+                  {post.first_name} {post.last_name}
+                  {post.role === 'admin' && <span style={{ marginLeft: 8, background: "#fef2f2", color: "#dc2626", padding: "2px 6px", borderRadius: "4px", fontSize: "11px", fontWeight: "bold" }}>ADMIN</span>}
+                </h4>
+                <p style={{ margin: "0 0 15px 0", fontSize: "12px", color: "#94a3b8" }}>
+                  {new Date(post.created_at).toLocaleString()}
+                </p>
+              </div>
+              {/* ADMIN DELETE BUTTON OR OWNER DELETE BUTTON */}
+              {(user?.role === 'admin' || user?.id === post.user_id) && (
+                <button onClick={() => handleDelete(post.id)} className="btn-danger" style={{ padding: "4px 10px", fontSize: "12px" }}>
+                  Delete
+                </button>
+              )}
+            </div>
+            <p style={{ margin: 0, whiteSpace: "pre-wrap", color: "#334155", lineHeight: 1.5 }}>{post.content}</p>
+          </div>
+        ))}
+        {posts.length === 0 && <p style={{ textAlign: "center", color: "#6b7280" }}>No posts yet. Be the first to post!</p>}
+      </div>
+    </div>
+  );
+};
+
+// ==============================
+// ADMIN PANEL
+// ==============================
+const AdminPanel = () => {
+  const { user } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get("/api/admin/users");
+      setUsers(res.data.users);
+    } catch (err) {
+      toast.error("Failed to load users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleToggleBan = async (targetUser) => {
+    const action = targetUser.is_banned ? "unban" : "ban";
+    if (!window.confirm(`Are you sure you want to ${action} ${targetUser.first_name}?`)) return;
+
+    try {
+      await axios.patch(`/api/admin/users/${targetUser.id}/${action}`);
+      toast.success(`User successfully ${action}ned`);
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || `Failed to ${action} user`);
+    }
+  };
+
+  // Extra protection on component layer
+  if (user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
+  if (loading) return <div className="page-container"><p style={{ textAlign: "center" }}>Loading admin panel...</p></div>;
+
+  return (
+    <div className="page-container">
+      <Toaster />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <i className="fas fa-shield-alt" style={{ fontSize: "28px", color: "#dc2626" }}></i>
+        <h1 style={{ margin: 0 }}>Admin Panel</h1>
+      </div>
+      
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Manage Users</h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {users.map(u => (
+            <div key={u.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px", borderBottom: "1px solid #e2e8f0", background: u.is_banned ? "#fef2f2" : "transparent" }}>
+              <div>
+                <strong style={{ fontSize: "16px", color: u.is_banned ? "#991b1b" : "#0f172a" }}>{u.first_name} {u.last_name}</strong>
+                <span style={{ color: "#64748b", marginLeft: 10 }}>{u.email}</span>
+                <span style={{ 
+                  marginLeft: 15, 
+                  fontSize: "12px", 
+                  fontWeight: "bold",
+                  padding: "4px 8px",
+                  borderRadius: "12px",
+                  background: u.is_banned ? "#fecaca" : "#dcfce7",
+                  color: u.is_banned ? "#b91c1c" : "#15803d" 
+                }}>
+                  {u.is_banned ? "Banned" : "Active"}
+                </span>
+                {u.role === 'admin' && <span style={{ marginLeft: 10, fontSize: "12px", color: "#6b7280", fontWeight: "bold" }}>(Admin)</span>}
+              </div>
+              
+              {u.role !== 'admin' && (
+                <button
+                  onClick={() => handleToggleBan(u)}
+                  className={u.is_banned ? "btn-secondary" : "btn-danger"}
+                  style={{ padding: "8px 16px", fontSize: "13px", fontWeight: "bold" }}
+                >
+                  <i className={`fas ${u.is_banned ? "fa-unlock" : "fa-ban"}`} style={{ marginRight: 6 }}></i>
+                  {u.is_banned ? "Unban User" : "Ban User"}
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -893,8 +880,6 @@ const DashboardPage = () => {
   return (
     <div className="page-container">
       <Toaster />
-      
-      {/* Welcome Banner */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 30, flexWrap: "wrap", gap: "15px" }}>
         <div>
           <h1 style={{ margin: "0 0 5px 0" }}>Welcome back, {user?.first_name || "Alumni"}! 👋</h1>
@@ -904,13 +889,12 @@ const DashboardPage = () => {
           <Link to="/alumni" className="btn-secondary" style={{ textDecoration: "none" }}>
             <i className="fas fa-search" style={{ marginRight: 5 }}></i> Find Alumni
           </Link>
-          <Link to="/jobs" className="btn-primary" style={{ textDecoration: "none" }}>
-            <i className="fas fa-briefcase" style={{ marginRight: 5 }}></i> View Jobs
+          <Link to="/feed" className="btn-primary" style={{ textDecoration: "none" }}>
+            <i className="fas fa-newspaper" style={{ marginRight: 5 }}></i> View Feed
           </Link>
         </div>
       </div>
       
-      {/* Stat Widgets */}
       <div className="grid-3" style={{ marginBottom: 30 }}>
         
         <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}>
@@ -949,7 +933,6 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid-2">
-        {/* Newest Members Feed */}
         <div className="card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h2 style={{ margin: 0, fontSize: "18px" }}><i className="fas fa-user-plus" style={{ marginRight: 8, color: "#64748b" }}></i> Newest Members</h2>
@@ -980,7 +963,6 @@ const DashboardPage = () => {
           )}
         </div>
 
-        {/* Latest Opportunities Feed */}
         <div className="card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <h2 style={{ margin: 0, fontSize: "18px" }}><i className="fas fa-bullhorn" style={{ marginRight: 8, color: "#64748b" }}></i> Latest Jobs</h2>
@@ -1134,16 +1116,10 @@ const ConnectButton = ({ userId }) => {
   if (status === "accepted") {
     return (
       <div style={{ display: "flex", gap: 8 }}>
-        <button 
-          className="btn-primary"
-          onClick={handleMessage}
-        >
+        <button className="btn-primary" onClick={handleMessage}>
           <i className="fas fa-comment-dots" style={{ marginRight: 5 }}></i> Message
         </button>
-        <button 
-          className="btn-danger"
-          onClick={handleRemove}
-        >
+        <button className="btn-danger" onClick={handleRemove}>
           <i className="fas fa-times" style={{ marginRight: 5 }}></i> Disconnect
         </button>
       </div>
@@ -1159,11 +1135,7 @@ const ConnectButton = ({ userId }) => {
   }
 
   return (
-    <button 
-      className="btn-primary"
-      onClick={handleConnect}
-      disabled={loading}
-    >
+    <button className="btn-primary" onClick={handleConnect} disabled={loading}>
       <i className="fas fa-user-plus" style={{ marginRight: 5 }}></i> Connect
     </button>
   );
@@ -1253,11 +1225,7 @@ const AlumniProfile = () => {
         </div>
       </div>
       
-      <Link 
-        to="/alumni" 
-        className="text-blue" 
-        style={{ display: "inline-block", marginTop: 20, fontSize: "16px" }}
-      >
+      <Link to="/alumni" className="text-blue" style={{ display: "inline-block", marginTop: 20, fontSize: "16px" }}>
         ← Back to Alumni List
       </Link>
     </div>
@@ -1337,34 +1305,10 @@ const ConnectionsPage = () => {
       <h1>My Network</h1>
 
       <div style={{ display: "flex", gap: 10, marginBottom: 20, borderBottom: "2px solid #e5e7eb" }}>
-        <button
-          onClick={() => setTab("connections")}
-          style={{
-            background: "none",
-            border: "none",
-            padding: "12px 0",
-            fontSize: "16px",
-            fontWeight: tab === "connections" ? "700" : "500",
-            color: tab === "connections" ? "#2563eb" : "#6b7280",
-            borderBottom: tab === "connections" ? "3px solid #2563eb" : "none",
-            cursor: "pointer"
-          }}
-        >
+        <button onClick={() => setTab("connections")} style={{ background: "none", border: "none", padding: "12px 0", fontSize: "16px", fontWeight: tab === "connections" ? "700" : "500", color: tab === "connections" ? "#2563eb" : "#6b7280", borderBottom: tab === "connections" ? "3px solid #2563eb" : "none", cursor: "pointer" }}>
           Connections ({connections.length})
         </button>
-        <button
-          onClick={() => setTab("pending")}
-          style={{
-            background: "none",
-            border: "none",
-            padding: "12px 0",
-            fontSize: "16px",
-            fontWeight: tab === "pending" ? "700" : "500",
-            color: tab === "pending" ? "#2563eb" : "#6b7280",
-            borderBottom: tab === "pending" ? "3px solid #2563eb" : "none",
-            cursor: "pointer"
-          }}
-        >
+        <button onClick={() => setTab("pending")} style={{ background: "none", border: "none", padding: "12px 0", fontSize: "16px", fontWeight: tab === "pending" ? "700" : "500", color: tab === "pending" ? "#2563eb" : "#6b7280", borderBottom: tab === "pending" ? "3px solid #2563eb" : "none", cursor: "pointer" }}>
           Pending ({pending.length})
         </button>
       </div>
@@ -1373,38 +1317,18 @@ const ConnectionsPage = () => {
         <div>
           {connections.length === 0 ? (
             <div className="card">
-              <p style={{ textAlign: "center", color: "#6b7280" }}>
-                No connections yet. Start connecting with alumni!
-              </p>
+              <p style={{ textAlign: "center", color: "#6b7280" }}>No connections yet. Start connecting with alumni!</p>
             </div>
           ) : (
             <div className="grid-3">
               {connections.map((conn) => (
                 <div key={conn.connection_id} className="card">
-                  <h3 style={{ marginTop: 0 }}>
-                    {conn.first_name} {conn.last_name}
-                  </h3>
-                  <p style={{ color: "#6b7280", fontSize: "14px" }}>
-                    {conn.headline || "Alumni"}
-                  </p>
-                  <p style={{ fontSize: "13px", color: "#9ca3af" }}>
-                    Batch {conn.passout_year}
-                  </p>
+                  <h3 style={{ marginTop: 0 }}>{conn.first_name} {conn.last_name}</h3>
+                  <p style={{ color: "#6b7280", fontSize: "14px" }}>{conn.headline || "Alumni"}</p>
+                  <p style={{ fontSize: "13px", color: "#9ca3af" }}>Batch {conn.passout_year}</p>
                   <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                    <button
-                      className="btn-secondary"
-                      onClick={() => window.location.href = `/alumni/${conn.id}`}
-                      style={{ flex: 1, fontSize: "13px", padding: "6px" }}
-                    >
-                      View Profile
-                    </button>
-                    <button
-                      className="btn-danger"
-                      onClick={() => handleRemoveConnection(conn.connected_to)}
-                      style={{ flex: 1, fontSize: "13px", padding: "6px" }}
-                    >
-                      Remove
-                    </button>
+                    <button className="btn-secondary" onClick={() => window.location.href = `/alumni/${conn.id}`} style={{ flex: 1, fontSize: "13px", padding: "6px" }}>View Profile</button>
+                    <button className="btn-danger" onClick={() => handleRemoveConnection(conn.connected_to)} style={{ flex: 1, fontSize: "13px", padding: "6px" }}>Remove</button>
                   </div>
                 </div>
               ))}
@@ -1417,38 +1341,18 @@ const ConnectionsPage = () => {
         <div>
           {pending.length === 0 ? (
             <div className="card">
-              <p style={{ textAlign: "center", color: "#6b7280" }}>
-                No pending connection requests
-              </p>
+              <p style={{ textAlign: "center", color: "#6b7280" }}>No pending connection requests</p>
             </div>
           ) : (
             <div className="grid-2">
               {pending.map((req) => (
                 <div key={req.connection_id} className="card" style={{ background: "#f0f4ff" }}>
-                  <h3 style={{ marginTop: 0, color: "#2563eb" }}>
-                    {req.first_name} {req.last_name}
-                  </h3>
-                  <p style={{ color: "#6b7280", fontSize: "14px" }}>
-                    {req.headline || "Alumni"}
-                  </p>
-                  <p style={{ fontSize: "13px", color: "#9ca3af", marginBottom: 15 }}>
-                    Batch {req.passout_year}
-                  </p>
+                  <h3 style={{ marginTop: 0, color: "#2563eb" }}>{req.first_name} {req.last_name}</h3>
+                  <p style={{ color: "#6b7280", fontSize: "14px" }}>{req.headline || "Alumni"}</p>
+                  <p style={{ fontSize: "13px", color: "#9ca3af", marginBottom: 15 }}>Batch {req.passout_year}</p>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <button
-                      className="btn-primary"
-                      onClick={() => handleAccept(req.connection_id)}
-                      style={{ flex: 1, fontSize: "13px", padding: "8px" }}
-                    >
-                      Accept
-                    </button>
-                    <button
-                      className="btn-secondary"
-                      onClick={() => handleReject(req.connection_id)}
-                      style={{ flex: 1, fontSize: "13px", padding: "8px" }}
-                    >
-                      Reject
-                    </button>
+                    <button className="btn-primary" onClick={() => handleAccept(req.connection_id)} style={{ flex: 1, fontSize: "13px", padding: "8px" }}>Accept</button>
+                    <button className="btn-secondary" onClick={() => handleReject(req.connection_id)} style={{ flex: 1, fontSize: "13px", padding: "8px" }}>Reject</button>
                   </div>
                 </div>
               ))}
@@ -1532,71 +1436,34 @@ const EditProfile = () => {
           <div style={{ display: "flex", gap: "10px" }}>
             <div style={{ flex: 1 }}>
               <label>First Name</label>
-              <input
-                className="input-box"
-                value={form.firstName}
-                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                required
-              />
+              <input className="input-box" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required />
             </div>
             <div style={{ flex: 1 }}>
               <label>Last Name</label>
-              <input
-                className="input-box"
-                value={form.lastName}
-                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                required
-              />
+              <input className="input-box" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required />
             </div>
           </div>
 
           <label>Headline</label>
-          <input
-            className="input-box"
-            value={form.headline}
-            onChange={(e) => setForm({ ...form, headline: e.target.value })}
-            placeholder="e.g. Software Engineer at Google"
-          />
+          <input className="input-box" value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} placeholder="e.g. Software Engineer at Google" />
           
           <label>Bio</label>
-          <textarea
-            className="input-box"
-            rows={4}
-            value={form.bio}
-            onChange={(e) => setForm({ ...form, bio: e.target.value })}
-          />
+          <textarea className="input-box" rows={4} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
           
           <label>Location</label>
-          <input
-            className="input-box"
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-            placeholder="e.g. New York, NY"
-          />
+          <input className="input-box" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="e.g. New York, NY" />
           
           <label>Company</label>
-          <input
-            className="input-box"
-            value={form.currentCompany}
-            onChange={(e) => setForm({ ...form, currentCompany: e.target.value })}
-          />
+          <input className="input-box" value={form.currentCompany} onChange={(e) => setForm({ ...form, currentCompany: e.target.value })} />
           
-          <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>
-            Save Changes
-          </button>
+          <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>Save Changes</button>
         </form>
       </div>
 
       <div className="card" style={{ marginTop: 20, background: "#fee2e2", border: "1px solid #fca5a5" }}>
         <h3 style={{ marginTop: 0, color: "#dc2626" }}>Danger Zone</h3>
-        <p style={{ color: "#991b1b", marginBottom: 15 }}>
-          Permanently delete your account and all associated data.
-        </p>
-        <button 
-          className="btn-danger"
-          onClick={handleDeleteAccount}
-          style={{ width: "100%" }}
-        >
+        <p style={{ color: "#991b1b", marginBottom: 15 }}>Permanently delete your account and all associated data.</p>
+        <button className="btn-danger" onClick={handleDeleteAccount} style={{ width: "100%" }}>
           <i className="fas fa-trash-alt" style={{ marginRight: 5 }}></i> Delete My Account
         </button>
       </div>
@@ -1625,17 +1492,7 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
     setSubmitting(true);
 
     try {
-      const payload = {
-        title: form.title,
-        company: form.company,
-        description: form.description,
-        requirements: form.requirements,
-        location: form.location,
-        salaryRange: form.salaryRange,
-        jobType: form.jobType,
-        experienceLevel: form.experienceLevel
-      };
-      
+      const payload = { ...form };
       await axios.post("/api/jobs", payload);
       toast.success("Job posted successfully!");
       onSuccess();
@@ -1647,75 +1504,25 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
   };
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 1000,
-      padding: "20px"
-    }}>
-      <div className="card" style={{ 
-        maxWidth: 600, 
-        width: "100%", 
-        maxHeight: "90vh", 
-        overflow: "auto" 
-      }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+      <div className="card" style={{ maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <h2 style={{ margin: 0 }}>Post a Job</h2>
-          <button 
-            onClick={onClose}
-            style={{ 
-              background: "none", 
-              border: "none", 
-              fontSize: "24px", 
-              cursor: "pointer",
-              color: "#6b7280"
-            }}
-          >
-            ×
-          </button>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "#6b7280" }}>×</button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <label>Job Title *</label>
-          <input
-            className="input-box"
-            value={form.title}
-            onChange={(e) => setForm({ ...form, title: e.target.value })}
-            required
-            placeholder="e.g. Senior Software Engineer"
-          />
+          <input className="input-box" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required placeholder="e.g. Senior Software Engineer" />
 
           <label>Company *</label>
-          <input
-            className="input-box"
-            value={form.company}
-            onChange={(e) => setForm({ ...form, company: e.target.value })}
-            required
-            placeholder="e.g. Tech Corp"
-          />
+          <input className="input-box" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} required placeholder="e.g. Tech Corp" />
 
           <label>Location</label>
-          <input
-            className="input-box"
-            value={form.location}
-            onChange={(e) => setForm({ ...form, location: e.target.value })}
-            placeholder="e.g. Remote, New York, etc."
-          />
+          <input className="input-box" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="e.g. Remote, New York, etc." />
 
           <label>Job Type *</label>
-          <select
-            className="input-box"
-            value={form.jobType}
-            onChange={(e) => setForm({ ...form, jobType: e.target.value })}
-            required
-          >
+          <select className="input-box" value={form.jobType} onChange={(e) => setForm({ ...form, jobType: e.target.value })} required>
             <option value="Full-time">Full-time</option>
             <option value="Part-time">Part-time</option>
             <option value="Contract">Contract</option>
@@ -1723,12 +1530,7 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
           </select>
 
           <label>Experience Level *</label>
-          <select
-            className="input-box"
-            value={form.experienceLevel}
-            onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })}
-            required
-          >
+          <select className="input-box" value={form.experienceLevel} onChange={(e) => setForm({ ...form, experienceLevel: e.target.value })} required>
             <option value="Entry-level">Entry-level</option>
             <option value="Mid-level">Mid-level</option>
             <option value="Senior">Senior</option>
@@ -1737,50 +1539,19 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
           </select>
 
           <label>Salary Range</label>
-          <input
-            className="input-box"
-            value={form.salaryRange}
-            onChange={(e) => setForm({ ...form, salaryRange: e.target.value })}
-            placeholder="e.g. $80K - $120K"
-          />
+          <input className="input-box" value={form.salaryRange} onChange={(e) => setForm({ ...form, salaryRange: e.target.value })} placeholder="e.g. $80K - $120K" />
 
           <label>Job Description *</label>
-          <textarea
-            className="input-box"
-            rows={5}
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            required
-            placeholder="Describe the role, responsibilities, and what makes this opportunity great..."
-          />
+          <textarea className="input-box" rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required placeholder="Describe the role..." />
 
           <label>Requirements</label>
-          <textarea
-            className="input-box"
-            rows={4}
-            value={form.requirements}
-            onChange={(e) => setForm({ ...form, requirements: e.target.value })}
-            placeholder="List the required skills, qualifications, and experience..."
-          />
+          <textarea className="input-box" rows={4} value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} placeholder="List the required skills..." />
 
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-            <button 
-              type="submit" 
-              className="btn-primary" 
-              style={{ flex: 1 }}
-              disabled={submitting}
-            >
+            <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={submitting}>
               {submitting ? "Posting..." : "Post Job"}
             </button>
-            <button 
-              type="button" 
-              className="btn-secondary" 
-              style={{ flex: 1 }}
-              onClick={onClose}
-              disabled={submitting}
-            >
-              Cancel
-            </button>
+            <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={onClose} disabled={submitting}>Cancel</button>
           </div>
         </form>
       </div>
@@ -1792,12 +1563,7 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
 // APPLY JOB MODAL
 // ==============================
 const ApplyJobModal = ({ job, onClose, onSuccess }) => {
-  const [form, setForm] = useState({
-    coverLetter: "",
-    resume: "",
-    phone: "",
-    linkedinUrl: ""
-  });
+  const [form, setForm] = useState({ coverLetter: "", resume: "", phone: "", linkedinUrl: "" });
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -1820,99 +1586,34 @@ const ApplyJobModal = ({ job, onClose, onSuccess }) => {
   };
 
   return (
-    <div style={{
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: "rgba(0,0,0,0.5)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 1000,
-      padding: "20px"
-    }}>
-      <div className="card" style={{ 
-        maxWidth: 500, 
-        width: "100%", 
-        maxHeight: "90vh", 
-        overflow: "auto" 
-      }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+      <div className="card" style={{ maxWidth: 500, width: "100%", maxHeight: "90vh", overflow: "auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div>
             <h2 style={{ margin: 0 }}>Apply for {job.title}</h2>
             <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>at {job.company}</p>
           </div>
-          <button 
-            onClick={onClose}
-            style={{ 
-              background: "none", 
-              border: "none", 
-              fontSize: "24px", 
-              cursor: "pointer",
-              color: "#6b7280"
-            }}
-          >
-            ×
-          </button>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "#6b7280" }}>×</button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <label>Cover Letter</label>
-          <textarea
-            className="input-box"
-            rows={5}
-            value={form.coverLetter}
-            onChange={(e) => setForm({ ...form, coverLetter: e.target.value })}
-            placeholder="Why are you a great fit for this role?"
-          />
+          <textarea className="input-box" rows={5} value={form.coverLetter} onChange={(e) => setForm({ ...form, coverLetter: e.target.value })} placeholder="Why are you a great fit for this role?" />
 
           <label>Resume Link (Google Drive, Dropbox, etc.)</label>
-          <input
-            className="input-box"
-            type="url"
-            value={form.resume}
-            onChange={(e) => setForm({ ...form, resume: e.target.value })}
-            placeholder="https://"
-          />
+          <input className="input-box" type="url" value={form.resume} onChange={(e) => setForm({ ...form, resume: e.target.value })} placeholder="https://" />
 
           <label>Phone Number</label>
-          <input
-            className="input-box"
-            type="tel"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            placeholder="+1 234 567 8900"
-          />
+          <input className="input-box" type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 234 567 8900" />
 
           <label>LinkedIn Profile URL</label>
-          <input
-            className="input-box"
-            type="url"
-            value={form.linkedinUrl}
-            onChange={(e) => setForm({ ...form, linkedinUrl: e.target.value })}
-            placeholder="https://linkedin.com/in/yourprofile"
-          />
+          <input className="input-box" type="url" value={form.linkedinUrl} onChange={(e) => setForm({ ...form, linkedinUrl: e.target.value })} placeholder="https://linkedin.com/in/yourprofile" />
 
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-            <button 
-              type="submit" 
-              className="btn-primary" 
-              style={{ flex: 1 }}
-              disabled={submitting}
-            >
+            <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={submitting}>
               {submitting ? "Submitting..." : "Submit Application"}
             </button>
-            <button 
-              type="button" 
-              className="btn-secondary" 
-              style={{ flex: 1 }}
-              onClick={onClose}
-              disabled={submitting}
-            >
-              Cancel
-            </button>
+            <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={onClose} disabled={submitting}>Cancel</button>
           </div>
         </form>
       </div>
@@ -1942,11 +1643,7 @@ const ViewApplicationsModal = ({ job, onClose }) => {
   }, [job.id]);
 
   return (
-    <div style={{
-      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-      background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center",
-      justifyContent: "center", zIndex: 1000, padding: "20px"
-    }}>
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
       <div className="card" style={{ maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto", background: "#f8fafc" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div>
@@ -2029,35 +1726,17 @@ const JobCard = ({ job, onJobDeleted }) => {
           
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
             {job.job_type && (
-              <span style={{ 
-                background: "#e0f2fe", 
-                color: "#0369a1", 
-                padding: "4px 12px", 
-                borderRadius: "6px",
-                fontSize: "14px"
-              }}>
+              <span style={{ background: "#e0f2fe", color: "#0369a1", padding: "4px 12px", borderRadius: "6px", fontSize: "14px" }}>
                 <i className="fas fa-briefcase" style={{ marginRight: 4 }}></i> {job.job_type}
               </span>
             )}
             {job.experience_level && (
-              <span style={{ 
-                background: "#f3e8ff", 
-                color: "#7c3aed", 
-                padding: "4px 12px", 
-                borderRadius: "6px",
-                fontSize: "14px"
-              }}>
+              <span style={{ background: "#f3e8ff", color: "#7c3aed", padding: "4px 12px", borderRadius: "6px", fontSize: "14px" }}>
                 <i className="fas fa-chart-line" style={{ marginRight: 4 }}></i> {job.experience_level}
               </span>
             )}
             {job.salary_range && (
-              <span style={{ 
-                background: "#dcfce7", 
-                color: "#15803d", 
-                padding: "4px 12px", 
-                borderRadius: "6px",
-                fontSize: "14px"
-              }}>
+              <span style={{ background: "#dcfce7", color: "#15803d", padding: "4px 12px", borderRadius: "6px", fontSize: "14px" }}>
                 <i className="fas fa-money-bill-wave" style={{ marginRight: 4 }}></i> {job.salary_range}
               </span>
             )}
@@ -2066,16 +1745,12 @@ const JobCard = ({ job, onJobDeleted }) => {
           {expanded && (
             <div style={{ marginTop: 15, paddingTop: 15, borderTop: "1px solid #eee" }}>
               <h4 style={{ marginTop: 0 }}>Description</h4>
-              <p style={{ color: "#4b5563", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                {job.description}
-              </p>
+              <p style={{ color: "#4b5563", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{job.description}</p>
               
               {job.requirements && (
                 <>
                   <h4 style={{ marginTop: 15 }}>Requirements</h4>
-                  <p style={{ color: "#4b5563", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                    {job.requirements}
-                  </p>
+                  <p style={{ color: "#4b5563", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{job.requirements}</p>
                 </>
               )}
               
@@ -2088,55 +1763,29 @@ const JobCard = ({ job, onJobDeleted }) => {
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
-        
-        {/* If the user DID NOT post the job, they can apply */}
         {user?.id !== job.posted_by && (
-          <button 
-            className="btn-primary"
-            onClick={() => setShowApplyModal(true)}
-          >
+          <button className="btn-primary" onClick={() => setShowApplyModal(true)}>
             <i className="fas fa-paper-plane" style={{ marginRight: 5 }}></i> Apply Now
           </button>
         )}
-
-        <button 
-          className="btn-secondary"
-          onClick={() => setExpanded(!expanded)}
-        >
+        <button className="btn-secondary" onClick={() => setExpanded(!expanded)}>
           {expanded ? <><i className="fas fa-chevron-up"></i> Show Less</> : <><i className="fas fa-chevron-down"></i> View Details</>}
         </button>
         
-        {/* If the user DID post the job, they see the applications */}
         {user?.id === job.posted_by && (
           <>
             <button className="btn-primary" onClick={() => setShowApplicationsModal(true)}>
               <i className="fas fa-users" style={{ marginRight: 5 }}></i> View Applications ({job.application_count || 0})
             </button>
-            <button 
-              className="btn-danger"
-              onClick={handleDeleteJob}
-            >
+            <button className="btn-danger" onClick={handleDeleteJob}>
               <i className="fas fa-trash" style={{ marginRight: 5 }}></i> Delete Job
             </button>
           </>
         )}
       </div>
 
-      {showApplyModal && (
-        <ApplyJobModal 
-          job={job}
-          onClose={() => setShowApplyModal(false)}
-          onSuccess={() => { setShowApplyModal(false); if(onJobDeleted) onJobDeleted(); }}
-        />
-      )}
-
-      {showApplicationsModal && (
-        <ViewApplicationsModal 
-          job={job} 
-          onClose={() => setShowApplicationsModal(false)} 
-        />
-      )}
-
+      {showApplyModal && <ApplyJobModal job={job} onClose={() => setShowApplyModal(false)} onSuccess={() => { setShowApplyModal(false); if(onJobDeleted) onJobDeleted(); }} />}
+      {showApplicationsModal && <ViewApplicationsModal job={job} onClose={() => setShowApplicationsModal(false)} />}
     </div>
   );
 };
@@ -2180,38 +1829,21 @@ const JobsPage = () => {
       
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <h1>Job Board</h1>
-        <button 
-          className="btn-primary"
-          onClick={() => setShowCreateModal(true)}
-        >
+        <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
           <i className="fas fa-plus" style={{ marginRight: 5 }}></i> Post a Job
         </button>
       </div>
 
-      {showCreateModal && (
-        <CreateJobModal 
-          onClose={() => setShowCreateModal(false)} 
-          onSuccess={() => {
-            setShowCreateModal(false);
-            loadJobs();
-          }}
-        />
-      )}
+      {showCreateModal && <CreateJobModal onClose={() => setShowCreateModal(false)} onSuccess={() => { setShowCreateModal(false); loadJobs(); }} />}
 
       {jobs.length === 0 ? (
         <div className="card">
-          <p style={{ textAlign: "center", color: "#6b7280" }}>
-            No jobs posted yet. Be the first to post a job!
-          </p>
+          <p style={{ textAlign: "center", color: "#6b7280" }}>No jobs posted yet. Be the first to post a job!</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
           {jobs.map((job) => (
-            <JobCard 
-              key={job.id} 
-              job={job}
-              onJobDeleted={loadJobs}
-            />
+            <JobCard key={job.id} job={job} onJobDeleted={loadJobs} />
           ))}
         </div>
       )}
@@ -2327,10 +1959,7 @@ const MessagesPage = () => {
                      <div>
                        <h4 style={{ margin: 0, color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
                          {item.otherUser.first_name} {item.otherUser.last_name}
-                         {/* Unread message dot */}
-                         {item.hasUnread && (
-                           <span style={{ width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", display: "inline-block" }}></span>
-                         )}
+                         {item.hasUnread && <span style={{ width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", display: "inline-block" }}></span>}
                        </h4>
                        <p style={{ margin: 0, fontSize: "13px", color: item.hasUnread ? "#ef4444" : "#64748b", fontWeight: item.hasUnread ? "bold" : "normal" }}>
                          {item.hasUnread ? "New message!" : "Click to open chat"}
@@ -2405,6 +2034,8 @@ function App() {
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           
           <Route path="/" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/feed" element={<PrivateRoute><PrivateLayout><FeedPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/admin" element={<PrivateRoute><PrivateLayout><AdminPanel /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
           <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
