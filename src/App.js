@@ -9,7 +9,6 @@ import toast, { Toaster } from "react-hot-toast";
 // ==============================
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 axios.defaults.baseURL = API_URL;
-console.log("🔧 API URL:", API_URL);
 
 // ==============================
 // AUTH CONTEXT
@@ -110,7 +109,6 @@ const Navbar = () => {
 
   return (
     <div className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 30px", margin: "12px 16px", borderRadius: "12px", borderBottom: "none", minHeight: "60px", position: "relative" }}>
-      
       <Link to="/" style={{ textDecoration: "none", fontSize: "22px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
         <img src="/logo-connectalumni.svg" alt="Logo" style={{ width: "40px", height: "40px", filter: isDark ? "invert(1) brightness(2)" : "none", transition: "filter 0.3s ease" }} />
         <div style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.5px" }}>
@@ -119,7 +117,6 @@ const Navbar = () => {
         </div>
       </Link>
       
-      {/* DESKTOP MENU */}
       <div className="navbar-desktop-menu">
         <Link to="/" className="nav-link">Feed</Link>
         <Link to="/dashboard" className="nav-link">Dashboard</Link>
@@ -151,42 +148,25 @@ const Navbar = () => {
         <button onClick={doLogout} className="btn-primary" style={{ padding: "8px 16px" }}>Logout</button>
       </div>
 
-      {/* MOBILE HAMBURGER BUTTON */}
       <button className="navbar-hamburger-btn" onClick={() => setMenuOpen(true)} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "var(--primary)", position: "relative" }}>
         <i className="fas fa-bars"></i>
         {(indicators.hasNewJobs || indicators.hasUnreadMessages) && <Dot />}
       </button>
 
-      {/* MOBILE DRAWER MENU */}
       {menuOpen && <div className="drawer-overlay" onClick={() => setMenuOpen(false)}></div>}
       <div className={`mobile-drawer ${menuOpen ? 'open' : ''}`}>
         <button onClick={() => setMenuOpen(false)} style={{ alignSelf: 'flex-end', background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--text-muted)' }}>
           <i className="fas fa-times"></i>
         </button>
-        
         <Link to="/" className="drawer-link" onClick={() => setMenuOpen(false)}>Feed</Link>
         <Link to="/dashboard" className="drawer-link" onClick={() => setMenuOpen(false)}>Dashboard</Link>
         <Link to="/alumni" className="drawer-link" onClick={() => setMenuOpen(false)}>Alumni Directory</Link>
         <Link to="/connections" className="drawer-link" onClick={() => setMenuOpen(false)}>Connections</Link>
-        
-        <Link to="/messages" className="drawer-link" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasUnreadMessages: false})); }}>
-          Messages {indicators.hasUnreadMessages && "🔴"}
-        </Link>
-        
-        <Link to="/jobs" className="drawer-link" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasNewJobs: false})); }}>
-          Jobs {indicators.hasNewJobs && "🔴"}
-        </Link>
-        
-        {user?.role === 'admin' && (
-          <Link to="/admin" className="drawer-link" onClick={() => setMenuOpen(false)} style={{ color: '#ef4444', fontWeight: 'bold' }}>Admin Panel</Link>
-        )}
-        
+        <Link to="/messages" className="drawer-link" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasUnreadMessages: false})); }}>Messages {indicators.hasUnreadMessages && "🔴"}</Link>
+        <Link to="/jobs" className="drawer-link" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasNewJobs: false})); }}>Jobs {indicators.hasNewJobs && "🔴"}</Link>
+        {user?.role === 'admin' && <Link to="/admin" className="drawer-link" onClick={() => setMenuOpen(false)} style={{ color: '#ef4444', fontWeight: 'bold' }}>Admin Panel</Link>}
         <Link to="/profile/edit" className="drawer-link" onClick={() => setMenuOpen(false)}>Edit Profile</Link>
-        
-        <button onClick={toggleDarkMode} style={{ background: "none", border: "none", color: "var(--text-muted)", textAlign: "left", padding: "10px 0", fontSize: '18px', cursor: "pointer" }}>
-          {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
-        </button>
-        
+        <button onClick={toggleDarkMode} style={{ background: "none", border: "none", color: "var(--text-muted)", textAlign: "left", padding: "10px 0", fontSize: '18px', cursor: "pointer" }}>{isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}</button>
         <button onClick={doLogout} className="btn-danger" style={{ marginTop: 'auto' }}>Logout</button>
       </div>
     </div>
@@ -248,7 +228,6 @@ const LoginPage = () => {
         <form onSubmit={submit}>
           <label>Email</label>
           <input className="input-box" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} />
-          
           <label>Password</label>
           <div style={{ position: 'relative' }}>
             <input className="input-box" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} style={{ paddingRight: '40px' }} />
@@ -256,7 +235,6 @@ const LoginPage = () => {
               <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
             </button>
           </div>
-          
           <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
           </button>
@@ -300,13 +278,10 @@ const RegisterPage = () => {
             <div style={{ flex: 1 }}><label>First Name</label><input className="input-box" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required /></div>
             <div style={{ flex: 1 }}><label>Last Name</label><input className="input-box" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required /></div>
           </div>
-          
           <label>Email</label>
           <input className="input-box" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-          
           <label>College Name</label>
           <input className="input-box" type="text" value={form.collegeName} onChange={(e) => setForm({ ...form, collegeName: e.target.value })} required />
-          
           <label>Password</label>
           <div style={{ position: 'relative' }}>
             <input className="input-box" type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required style={{ paddingRight: '40px' }} />
@@ -314,13 +289,10 @@ const RegisterPage = () => {
               <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
             </button>
           </div>
-          
           <label>Confirm Password</label>
           <input className="input-box" type={showPassword ? "text" : "password"} value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />
-          
           <label>Passout Year</label>
           <input className="input-box" type="number" value={form.passoutYear} onChange={(e) => setForm({ ...form, passoutYear: e.target.value })} required />
-          
           <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }}>Register</button>
         </form>
         <p style={{ textAlign: "center", marginTop: 15, color: "var(--text-muted)" }}>
@@ -356,9 +328,7 @@ const VerifyOtp = () => {
       localStorage.removeItem("pendingEmail"); 
       toast.success("Email verified! Please login."); 
       navigate("/login"); 
-    } catch (err) { 
-      toast.error(err.response?.data?.message || "Invalid OTP"); 
-    } 
+    } catch (err) { toast.error(err.response?.data?.message || "Invalid OTP"); } 
   };
 
   const handleResendOtp = async () => { 
@@ -369,14 +339,9 @@ const VerifyOtp = () => {
       if (!email) { toast.error("Email not found."); navigate("/register"); return; } 
       await axios.post("/api/auth/resend-otp", { email }); 
       toast.success("New OTP sent!"); 
-      setCanResend(false); 
-      setCountdown(60); 
-      setOtp(""); 
-    } catch (err) { 
-      toast.error("Failed to resend OTP"); 
-    } finally { 
-      setResending(false); 
-    } 
+      setCanResend(false); setCountdown(60); setOtp(""); 
+    } catch (err) { toast.error("Failed to resend OTP"); } 
+    finally { setResending(false); } 
   };
 
   const email = localStorage.getItem("pendingEmail");
@@ -408,7 +373,6 @@ const ForgotPasswordPage = () => {
   const [email, setEmail] = useState(""); const [submitted, setSubmitted] = useState(false); const [loading, setLoading] = useState(false); const navigate = useNavigate();
   const submit = async (e) => { e.preventDefault(); setLoading(true); try { await axios.post("/api/auth/forgot-password", { email }); setSubmitted(true); toast.success("Reset link sent!"); } catch (err) { toast.error("Failed to send reset link"); setLoading(false); } };
   if (submitted) return <div className="page-container" style={{ maxWidth: 450 }}><Toaster /><div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Check Your Email</h2><p style={{ textAlign: "center", color: "var(--text-muted)", marginBottom: 20 }}>We've sent a password reset link to:<br/><strong>{email}</strong></p><button className="btn-primary" onClick={() => navigate("/login")} style={{ width: "100%", marginTop: 20 }}>Back to Login</button></div></div>;
-  
   return (
     <div className="page-container" style={{ maxWidth: 450 }}><Toaster />
       <div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Forgot Password?</h2>
@@ -422,7 +386,6 @@ const ResetPasswordPage = () => {
   const { token } = useParams(); const [password, setPassword] = useState(""); const [confirmPassword, setConfirmPassword] = useState(""); const [loading, setLoading] = useState(false); const [success, setSuccess] = useState(false); const [showPassword, setShowPassword] = useState(false); const navigate = useNavigate();
   const submit = async (e) => { e.preventDefault(); if (password !== confirmPassword) { toast.error("Passwords do not match!"); return; } setLoading(true); try { await axios.post("/api/auth/reset-password", { token, password }); setSuccess(true); toast.success("Password reset successfully!"); setTimeout(() => navigate("/login"), 2000); } catch (err) { toast.error("Failed to reset password"); setLoading(false); } };
   if (success) return <div className="page-container" style={{ maxWidth: 450 }}><Toaster /><div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center", color: "#15803d" }}>✅ Success!</h2><p style={{ textAlign: "center", color: "var(--text-muted)" }}>Redirecting to login...</p></div></div>;
-  
   return (
     <div className="page-container" style={{ maxWidth: 450 }}><Toaster />
       <div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Reset Password</h2>
@@ -598,7 +561,6 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
   return (
     <div className="card" style={{ marginBottom: "15px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        {/* CLICKABLE HEADER FOR PROFILE ROUTING */}
         <div 
           className="post-header" 
           onClick={() => navigate(`/alumni/${post.user_id}`)}
@@ -737,7 +699,7 @@ const FeedPage = () => {
 };
 
 // ==============================
-// JOBS COMPONENT & TAGS FIX
+// JOB MODALS (CREATE/EDIT, APPLY, VIEW)
 // ==============================
 const JobFormModal = ({ job, onClose, onSuccess }) => {
   const isEdit = !!job; 
@@ -800,10 +762,92 @@ const JobFormModal = ({ job, onClose, onSuccess }) => {
   );
 };
 
+const ApplyJobModal = ({ job, onClose, onSuccess }) => {
+  const [form, setForm] = useState({ coverLetter: "", resume: "", phone: "", linkedinUrl: "" }); 
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => { 
+    e.preventDefault(); 
+    setSubmitting(true); 
+    try { 
+      await axios.post(`/api/jobs/${job.id}/apply`, form); 
+      toast.success("Application submitted successfully!"); 
+      onSuccess(); 
+    } catch (err) { 
+      if (err.response?.status === 409) { toast.error("You have already applied to this job"); } 
+      else { toast.error(err.response?.data?.message || "Failed to submit application"); } 
+    } finally { setSubmitting(false); } 
+  };
+
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+      <div className="card" style={{ maxWidth: 500, width: "100%", maxHeight: "90vh", overflow: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div><h2 style={{ margin: 0 }}>Apply for {job.title}</h2><p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>at {job.company}</p></div>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "var(--text-muted)" }}>×</button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <label>Cover Letter</label><textarea className="input-box" rows={5} value={form.coverLetter} onChange={(e) => setForm({ ...form, coverLetter: e.target.value })} placeholder="Why are you a great fit for this role?" />
+          <label>Resume Link</label><input className="input-box" type="url" value={form.resume} onChange={(e) => setForm({ ...form, resume: e.target.value })} placeholder="https://drive.google.com/..." />
+          <label>Phone Number</label><input className="input-box" type="tel" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="+1 234 567 8900" />
+          <label>LinkedIn URL</label><input className="input-box" type="url" value={form.linkedinUrl} onChange={(e) => setForm({ ...form, linkedinUrl: e.target.value })} placeholder="https://linkedin.com/in/yourprofile" />
+          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+            <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={submitting}>{submitting ? "Submitting..." : "Submit Application"}</button>
+            <button type="button" className="btn-secondary" style={{ flex: 1 }} onClick={onClose} disabled={submitting}>Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const ViewApplicationsModal = ({ job, onClose }) => {
+  const [applications, setApplications] = useState([]); 
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { 
+    const fetchApplications = async () => { 
+      try { 
+        const res = await axios.get(`/api/jobs/${job.id}/applications`); 
+        setApplications(res.data.applications || []); 
+      } catch (err) { toast.error("Failed to load applications"); } 
+      finally { setLoading(false); } 
+    }; 
+    fetchApplications(); 
+  }, [job.id]);
+
+  return (
+    <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+      <div className="card" style={{ maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto", background: "var(--bg-color)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div><h2 style={{ margin: 0 }}>Applicants for {job.title}</h2><p style={{ margin: 0, color: "var(--text-muted)", fontSize: "14px" }}>Total: {applications.length}</p></div>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "var(--text-muted)" }}>×</button>
+        </div>
+        {loading ? ( <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)" }}><i className="fas fa-spinner fa-spin fa-2x"></i><p>Loading applications...</p></div> ) : applications.length === 0 ? ( <div style={{ textAlign: "center", padding: "20px", color: "var(--text-muted)" }}><i className="fas fa-folder-open fa-2x" style={{ marginBottom: 10 }}></i><p>No applications received yet.</p></div> ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            {applications.map((app) => (
+              <div key={app.id} style={{ background: "var(--card-bg)", padding: "15px", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+                <h3 style={{ margin: "0 0 5px 0", color: "inherit" }}>{app.first_name} {app.last_name}</h3>
+                <p style={{ margin: "0 0 10px 0", color: "var(--text-muted)", fontSize: "14px" }}>{app.email} • {app.headline || "Alumni"}</p>
+                <div style={{ background: "var(--bg-color)", padding: "10px", borderRadius: "6px", fontSize: "14px", color: "inherit", whiteSpace: "pre-wrap", marginBottom: "10px" }}>{app.cover_letter || "No cover letter provided."}</div>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  {app.resume_url && <a href={app.resume_url} target="_blank" rel="noreferrer" style={{ background: "rgba(37, 99, 235, 0.1)", color: "var(--primary)", padding: "6px 12px", borderRadius: "6px", textDecoration: "none", fontSize: "13px", fontWeight: "600" }}><i className="fas fa-file-alt" style={{ marginRight: 4 }}></i> View Resume</a>}
+                  <Link to={`/alumni/${app.applicant_id}`} style={{ background: "rgba(37, 99, 235, 0.1)", color: "var(--primary)", padding: "6px 12px", borderRadius: "6px", textDecoration: "none", fontSize: "13px", fontWeight: "600" }}><i className="fas fa-user" style={{ marginRight: 4 }}></i> View Profile</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false); 
   const [showApplyModal, setShowApplyModal] = useState(false); 
   const [showEditModal, setShowEditModal] = useState(false); 
+  const [showApplicationsModal, setShowApplicationsModal] = useState(false); 
   const { user } = useAuth();
   
   const handleDeleteJob = async () => { 
@@ -823,7 +867,6 @@ const JobCard = ({ job, onJobDeleted }) => {
           <h3 style={{ marginTop: 0, marginBottom: 5 }}>{job.title}</h3>
           <p style={{ color: "var(--text-muted)", marginBottom: 10, fontSize: "16px" }}><strong>{job.company}</strong>{job.location && ` • ${job.location}`}</p>
           
-          {/* 🟢 THE JOB TAGS BUG FIX 🟢 */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
             {job.job_type && <span className="job-tag job-tag-blue"><i className="fas fa-briefcase"></i> {job.job_type}</span>}
             {job.experience_level && <span className="job-tag job-tag-purple"><i className="fas fa-chart-line"></i> {job.experience_level}</span>}
@@ -842,10 +885,13 @@ const JobCard = ({ job, onJobDeleted }) => {
       <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
         {user?.id !== job.posted_by && <button className="btn-primary" onClick={() => setShowApplyModal(true)}>Apply Now</button>}
         <button className="btn-secondary" onClick={() => setExpanded(!expanded)}>{expanded ? "Show Less" : "View Details"}</button>
+        {user?.id === job.posted_by && <button className="btn-primary" onClick={() => setShowApplicationsModal(true)}>Applications ({job.application_count || 0})</button>}
         {(user?.id === job.posted_by || user?.role === 'admin') && <button className="btn-secondary" onClick={() => setShowEditModal(true)}><i className="fas fa-edit"></i> Edit</button>}
         {(user?.id === job.posted_by || user?.role === 'admin') && <button className="btn-danger" onClick={handleDeleteJob}><i className="fas fa-trash"></i></button>}
       </div>
       {showEditModal && <JobFormModal job={job} onClose={() => setShowEditModal(false)} onSuccess={() => { setShowEditModal(false); onJobDeleted(); }} />}
+      {showApplyModal && <ApplyJobModal job={job} onClose={() => setShowApplyModal(false)} onSuccess={() => { setShowApplyModal(false); onJobDeleted(); }} />}
+      {showApplicationsModal && <ViewApplicationsModal job={job} onClose={() => setShowApplicationsModal(false)} />}
     </div>
   );
 };
@@ -1045,7 +1091,7 @@ const MessagesPage = () => {
         {activeRoom && (
           <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", background: "var(--bg-color)", borderTop: "1px solid var(--border-color)" }}>
             <input type="text" className="input-box" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." style={{ flex: 1, borderRadius: "24px", marginBottom: 0 }} />
-            <button type="submit" className="btn-primary" style={{ borderRadius: "50%", width: "45px", height: "45px", marginLeft: "10px", padding: 0 }}><i className="fas fa-paper-plane"></i></button>
+            <button type="submit" className="btn-primary" style={{ borderRadius: "50%", width: "45px", height: "45px", marginLeft: "10px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><i className="fas fa-paper-plane"></i></button>
           </form>
         )}
       </div>
@@ -1057,26 +1103,72 @@ const MessagesPage = () => {
 // DASHBOARD, ADMIN & EDIT PROFILE
 // ==============================
 const DashboardPage = () => {
-  const { user } = useAuth(); const [alumni, setAlumni] = useState([]); const [jobs, setJobs] = useState([]);
-  useEffect(() => { const load = async () => { try { const [a, j] = await Promise.all([ axios.get("/api/users/directory?limit=10"), axios.get("/api/jobs") ]); setAlumni(a.data.users || []); setJobs(j.data.jobs || []); } catch (err) {} }; load(); }, []);
+  const { user } = useAuth(); 
+  const [alumni, setAlumni] = useState([]); 
+  const [jobs, setJobs] = useState([]);
+  
+  useEffect(() => { 
+    const load = async () => { 
+      try { 
+        const [a, j] = await Promise.all([ axios.get("/api/users/directory?limit=10"), axios.get("/api/jobs") ]); 
+        setAlumni(a.data.users || []); setJobs(j.data.jobs || []); 
+      } catch (err) {} 
+    }; 
+    load(); 
+  }, []);
+  
   return (
     <div className="page-container"><Toaster /><h1 style={{ marginBottom: "20px" }}>Dashboard Overview</h1>
       <div className="grid-3" style={{ marginBottom: 30 }}>
         <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#e0f2fe", color: "#2563eb", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-users"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase" }}>Registered Alumni</p><h2 style={{ margin: 0, fontSize: "28px" }}>{alumni.length}+</h2></div></div>
         <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#f3e8ff", color: "#7c3aed", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-briefcase"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase" }}>Active Jobs</p><h2 style={{ margin: 0, fontSize: "28px" }}>{jobs.length}</h2></div></div>
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#dcfce7", color: "#15803d", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-id-badge"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase" }}>Your Profile</p><h3 style={{ margin: "2px 0", fontSize: "16px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "150px" }}>{user?.headline || "Headline not set"}</h3><Link className="text-blue" to="/profile/edit" style={{ fontSize: "13px" }}>Edit Profile →</Link></div></div>
       </div>
     </div>
   );
 };
 
 const AdminPanel = () => {
-  const { user } = useAuth(); const [users, setUsers] = useState([]); const [loading, setLoading] = useState(true); const [searchTerm, setSearchTerm] = useState("");
-  const fetchUsers = async (search = "") => { try { setLoading(true); const res = await axios.get(`/api/admin/users?search=${search}`); setUsers(res.data.users); } catch (err) { toast.error("Failed to load users"); } finally { setLoading(false); } };
+  const { user } = useAuth(); 
+  const [users, setUsers] = useState([]); 
+  const [loading, setLoading] = useState(true); 
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const fetchUsers = async (search = "") => { 
+    try { 
+      setLoading(true); 
+      const res = await axios.get(`/api/admin/users?search=${search}`); 
+      setUsers(res.data.users); 
+    } catch (err) { toast.error("Failed to load users"); } 
+    finally { setLoading(false); } 
+  };
+  
   useEffect(() => { fetchUsers(); }, []);
+  
   const handleSearch = (e) => { e.preventDefault(); fetchUsers(searchTerm); };
-  const handleToggleBan = async (targetUser) => { const action = targetUser.is_banned ? "unban" : "ban"; if (!window.confirm(`Are you sure you want to ${action} ${targetUser.first_name}?`)) return; try { await axios.patch(`/api/admin/users/${targetUser.id}/${action}`); toast.success(`User successfully ${action}ned`); fetchUsers(searchTerm); } catch (err) { toast.error("Failed"); } };
-  const handleRoleChange = async (targetUser) => { const newRole = targetUser.role === 'admin' ? 'user' : 'admin'; if (!window.confirm(`Make ${targetUser.first_name} a ${newRole}?`)) return; try { await axios.patch(`/api/admin/users/${targetUser.id}/role`, { role: newRole }); toast.success(`Updated`); fetchUsers(searchTerm); } catch (err) { toast.error("Failed"); } };
+  
+  const handleToggleBan = async (targetUser) => { 
+    const action = targetUser.is_banned ? "unban" : "ban"; 
+    if (!window.confirm(`Are you sure you want to ${action} ${targetUser.first_name}?`)) return; 
+    try { 
+      await axios.patch(`/api/admin/users/${targetUser.id}/${action}`); 
+      toast.success(`User successfully ${action}ned`); 
+      fetchUsers(searchTerm); 
+    } catch (err) { toast.error("Failed"); } 
+  };
+  
+  const handleRoleChange = async (targetUser) => { 
+    const newRole = targetUser.role === 'admin' ? 'user' : 'admin'; 
+    if (!window.confirm(`Make ${targetUser.first_name} a ${newRole}?`)) return; 
+    try { 
+      await axios.patch(`/api/admin/users/${targetUser.id}/role`, { role: newRole }); 
+      toast.success(`Updated`); 
+      fetchUsers(searchTerm); 
+    } catch (err) { toast.error("Failed"); } 
+  };
+  
   if (user?.role !== 'admin') return <Navigate to="/" replace />;
+  
   return (
     <div className="page-container"><Toaster />
       <div className="card">
@@ -1104,30 +1196,82 @@ const AdminPanel = () => {
 };
 
 const EditProfile = () => {
-  const { user, logout } = useAuth(); const navigate = useNavigate();
+  const { user, logout } = useAuth(); 
+  const navigate = useNavigate();
   const [form, setForm] = useState({ firstName: "", lastName: "", headline: "", bio: "", location: "", currentCompany: "", collegeName: "" });
-  useEffect(() => { if (user) setForm({ firstName: user.first_name||"", lastName: user.last_name||"", headline: user.headline||"", bio: user.bio||"", location: user.location||"", currentCompany: user.current_company||"", collegeName: user.college_name||"Chaibasa Engineering College" }); }, [user]);
-  const submit = async (e) => { e.preventDefault(); try { await axios.put("/api/users/profile", form); toast.success("Updated!"); setTimeout(() => window.location.reload(), 1000); } catch (err) { toast.error("Failed to update"); } };
+  
+  useEffect(() => { 
+    if (user) setForm({ firstName: user.first_name||"", lastName: user.last_name||"", headline: user.headline||"", bio: user.bio||"", location: user.location||"", currentCompany: user.current_company||"", collegeName: user.college_name||"Chaibasa Engineering College" }); 
+  }, [user]);
+  
+  const submit = async (e) => { 
+    e.preventDefault(); 
+    try { 
+      await axios.put("/api/users/profile", form); 
+      toast.success("Updated!"); 
+      setTimeout(() => window.location.reload(), 1000); 
+    } catch (err) { toast.error("Failed to update"); } 
+  };
+  
+  const handleDeleteAccount = async () => { 
+    const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone."); 
+    if (!confirmed) return; 
+    const doubleConfirm = window.confirm("Type 'DELETE' in your mind - this will permanently delete all your data including jobs, applications, and profile."); 
+    if (!doubleConfirm) return; 
+    try { 
+      await axios.delete("/api/users/account"); 
+      toast.success("Account deleted successfully!"); 
+      logout(); 
+      navigate("/login"); 
+    } catch (err) { toast.error("Failed to delete account"); } 
+  };
+
   return (
     <div className="page-container" style={{ maxWidth: 600 }}><Toaster />
       <div className="card"><h2>Edit Profile</h2>
         <form onSubmit={submit}>
-          <div style={{ display: "flex", gap: "10px" }}><div style={{ flex: 1 }}><label>First Name</label><input className="input-box" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required /></div><div style={{ flex: 1 }}><label>Last Name</label><input className="input-box" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required /></div></div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ flex: 1 }}><label>First Name</label><input className="input-box" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required /></div>
+            <div style={{ flex: 1 }}><label>Last Name</label><input className="input-box" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required /></div>
+          </div>
           <label>College Name</label><input className="input-box" value={form.collegeName} onChange={(e) => setForm({ ...form, collegeName: e.target.value })} required />
           <label>Headline</label><input className="input-box" value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} />
           <label>Bio</label><textarea className="input-box" rows={4} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
+          <label>Location</label><input className="input-box" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+          <label>Company</label><input className="input-box" value={form.currentCompany} onChange={(e) => setForm({ ...form, currentCompany: e.target.value })} />
           <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>Save Changes</button>
         </form>
+      </div>
+      
+      {/* 🔴 RESTORED DANGER ZONE FOR ACCOUNT DELETION 🔴 */}
+      <div className="card" style={{ marginTop: 20, background: "#fee2e2", border: "1px solid #fca5a5" }}>
+        <h3 style={{ marginTop: 0, color: "#dc2626" }}>Danger Zone</h3>
+        <p style={{ color: "#991b1b", marginBottom: 15 }}>Permanently delete your account and all associated data.</p>
+        <button className="btn-danger" onClick={handleDeleteAccount} style={{ width: "100%" }}>
+          <i className="fas fa-trash-alt" style={{ marginRight: 5 }}></i> Delete My Account
+        </button>
       </div>
     </div>
   );
 };
 
 const AlumniList = () => {
-  const [alumni, setAlumni] = useState([]); const [loading, setLoading] = useState(true); const [searchTerm, setSearchTerm] = useState("");
-  const loadAlumni = async (search = "") => { try { setLoading(true); const res = await axios.get(`/api/users/directory?search=${search}`); setAlumni(res.data.users || []); } catch (err) { toast.error("Failed to load alumni"); } finally { setLoading(false); } };
+  const [alumni, setAlumni] = useState([]); 
+  const [loading, setLoading] = useState(true); 
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const loadAlumni = async (search = "") => { 
+    try { 
+      setLoading(true); 
+      const res = await axios.get(`/api/users/directory?search=${search}`); 
+      setAlumni(res.data.users || []); 
+    } catch (err) { toast.error("Failed to load alumni"); } 
+    finally { setLoading(false); } 
+  };
+  
   useEffect(() => { loadAlumni(); }, []);
   const handleSearch = (e) => { e.preventDefault(); loadAlumni(searchTerm); };
+  
   return (
     <div className="page-container"><Toaster /><h1>Alumni Directory</h1>
       <div className="card" style={{ marginBottom: 20 }}>
