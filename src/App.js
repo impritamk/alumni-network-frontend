@@ -17,12 +17,51 @@ const AuthContext = React.createContext();
 export const useAuth = () => React.useContext(AuthContext);
 
 const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); const [loading, setLoading] = useState(true);
-  useEffect(() => { const token = localStorage.getItem("token"); if (token) { axios.defaults.headers.common["Authorization"] = `Bearer ${token}`; fetchUser(); } else { setLoading(false); } }, []);
-  const fetchUser = async () => { try { const res = await axios.get("/api/auth/me"); setUser(res.data.user); } catch (err) { localStorage.removeItem("token"); delete axios.defaults.headers.common["Authorization"]; } finally { setLoading(false); } };
-  const login = async (email, password) => { const res = await axios.post("/api/auth/login", { email, password }); localStorage.setItem("token", res.data.token); axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`; setUser(res.data.user); return res.data.user; };
-  const register = async (formData) => { const res = await axios.post("/api/auth/register", formData); return res.data; };
-  const logout = () => { localStorage.removeItem("token"); delete axios.defaults.headers.common["Authorization"]; setUser(null); };
+  const [user, setUser] = useState(null); 
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => { 
+    const token = localStorage.getItem("token"); 
+    if (token) { 
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`; 
+      fetchUser(); 
+    } else { 
+      setLoading(false); 
+    } 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  
+  const fetchUser = async () => { 
+    try { 
+      const res = await axios.get("/api/auth/me"); 
+      setUser(res.data.user); 
+    } catch (err) { 
+      localStorage.removeItem("token"); 
+      delete axios.defaults.headers.common["Authorization"]; 
+    } finally { 
+      setLoading(false); 
+    } 
+  };
+  
+  const login = async (email, password) => { 
+    const res = await axios.post("/api/auth/login", { email, password }); 
+    localStorage.setItem("token", res.data.token); 
+    axios.defaults.headers.common["Authorization"] = `Bearer ${res.data.token}`; 
+    setUser(res.data.user); 
+    return res.data.user; 
+  };
+  
+  const register = async (formData) => { 
+    const res = await axios.post("/api/auth/register", formData); 
+    return res.data; 
+  };
+  
+  const logout = () => { 
+    localStorage.removeItem("token"); 
+    delete axios.defaults.headers.common["Authorization"]; 
+    setUser(null); 
+  };
+  
   return <AuthContext.Provider value={{ user, login, register, logout, loading }}>{children}</AuthContext.Provider>;
 };
 
@@ -30,10 +69,26 @@ const AuthProvider = ({ children }) => {
 // NAVBAR WITH SLEEK DRAWER
 // ==============================
 const Navbar = () => {
-  const { user, logout } = useAuth(); const navigate = useNavigate(); const [menuOpen, setMenuOpen] = useState(false);
+  const { user, logout } = useAuth(); 
+  const navigate = useNavigate(); 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false });
   const [isDark, setIsDark] = useState(document.body.classList.contains("dark-mode")); 
-  useEffect(() => { if (user) { const fetchInd = async () => { try { const res = await axios.get("/api/user/indicators"); setIndicators(res.data); } catch (err) { } }; fetchInd(); const int = setInterval(fetchInd, 60000); return () => clearInterval(int); } }, [user]);
+  
+  useEffect(() => { 
+    if (user) { 
+      const fetchInd = async () => { 
+        try { 
+          const res = await axios.get("/api/user/indicators"); 
+          setIndicators(res.data); 
+        } catch (err) { } 
+      }; 
+      fetchInd(); 
+      const int = setInterval(fetchInd, 60000); 
+      return () => clearInterval(int); 
+    } 
+  }, [user]);
+  
   const doLogout = () => { logout(); navigate("/login"); };
   const toggleDarkMode = () => { document.body.classList.toggle("dark-mode"); setIsDark(!isDark); };
   const Dot = () => <span style={{ position: "absolute", top: "-5px", right: "-10px", width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", boxShadow: "0 0 0 2px #ffffff" }}></span>;
@@ -44,8 +99,12 @@ const Navbar = () => {
         <img src="/logo-connectalumni.svg" alt="Logo" style={{ width: "40px", height: "40px", filter: isDark ? "invert(1) brightness(2)" : "none", transition: "filter 0.3s ease" }} />
         <div style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.5px" }}><span style={{ color: isDark ? "#f8fafc" : "#0f172a" }}>Connect</span><span style={{ color: "#2563eb" }}>Alumni</span></div>
       </Link>
+      
       <div className="navbar-desktop-menu" style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-        <Link to="/" className="nav-link">Feed</Link><Link to="/dashboard" className="nav-link">Dashboard</Link><Link to="/alumni" className="nav-link">Alumni</Link><Link to="/connections" className="nav-link">Connections</Link>
+        <Link to="/" className="nav-link">Feed</Link>
+        <Link to="/dashboard" className="nav-link">Dashboard</Link>
+        <Link to="/alumni" className="nav-link">Alumni</Link>
+        <Link to="/connections" className="nav-link">Connections</Link>
         <Link to="/messages" onClick={() => setIndicators(prev => ({...prev, hasUnreadMessages: false}))} className="nav-link" style={{position:'relative'}}>Messages {indicators.hasUnreadMessages && <Dot />}</Link>
         <Link to="/jobs" onClick={() => setIndicators(prev => ({...prev, hasNewJobs: false}))} className="nav-link" style={{position:'relative'}}>Jobs {indicators.hasNewJobs && <Dot />}</Link>
         {user?.role === 'admin' && <Link to="/admin" style={{ color: "#ef4444", fontWeight: "700", fontSize: "14px" }}>Admin Panel</Link>}
@@ -565,29 +624,52 @@ const ConnectionsPage = () => {
   const handleReject = async (connectionId) => { try { await axios.delete(`/api/connections/${connectionId}/reject`); toast.success("Connection rejected"); loadConnections(); } catch (err) { toast.error("Failed to reject connection"); } };
 
   if (loading) return <div className="page-container"><div style={{ textAlign: "center", marginTop: "50px", color: "#6b7280" }}><i className="fas fa-spinner fa-spin fa-2x"></i><p>Loading network...</p></div></div>;
+  
   return (
     <div className="page-container"><Toaster /><h1>My Network</h1>
       <div style={{ display: "flex", gap: 10, marginBottom: 20, borderBottom: "2px solid #e5e7eb" }}>
         <button onClick={() => setTab("connections")} style={{ background: "none", border: "none", padding: "12px 0", fontSize: "16px", fontWeight: tab === "connections" ? "700" : "500", color: tab === "connections" ? "#2563eb" : "#6b7280", borderBottom: tab === "connections" ? "3px solid #2563eb" : "none", cursor: "pointer" }}>Connections ({connections.length})</button>
         <button onClick={() => setTab("pending")} style={{ background: "none", border: "none", padding: "12px 0", fontSize: "16px", fontWeight: tab === "pending" ? "700" : "500", color: tab === "pending" ? "#2563eb" : "#6b7280", borderBottom: tab === "pending" ? "3px solid #2563eb" : "none", cursor: "pointer" }}>Pending ({pending.length})</button>
       </div>
+      
       {tab === "connections" && (
-        <div>{connections.length === 0 ? ( <div className="card"><p style={{ textAlign: "center", color: "#6b7280" }}>No connections yet. Start connecting with alumni!</p></div> ) : (
+        <div>
+          {connections.length === 0 ? ( <div className="card"><p style={{ textAlign: "center", color: "#6b7280" }}>No connections yet. Start connecting with alumni!</p></div> ) : (
             <div className="grid-3">
               {connections.map((conn) => (
-                <div key={conn.connection_id} className="card"><h3 style={{ marginTop: 0 }}>{conn.first_name} {conn.last_name}</h3><p style={{ color: "#6b7280", fontSize: "14px" }}>{conn.headline || "Alumni"}</p><p style={{ fontSize: "13px", color: "#9ca3af" }}>Batch {conn.passout_year}</p><div style={{ display: "flex", gap: 8, marginTop: 12 }}><button className="btn-secondary" onClick={() => window.location.href = `/alumni/${conn.id}`} style={{ flex: 1, fontSize: "13px", padding: "6px" }}>View Profile</button><button className="btn-danger" onClick={() => handleRemoveConnection(conn.connected_to)} style={{ flex: 1, fontSize: "13px", padding: "6px" }}>Remove</button></div></div>
+                <div key={conn.connection_id} className="card">
+                  <h3 style={{ marginTop: 0 }}>{conn.first_name} {conn.last_name}</h3>
+                  <p style={{ color: "#6b7280", fontSize: "14px" }}>{conn.headline || "Alumni"}</p>
+                  <p style={{ fontSize: "13px", color: "#9ca3af" }}>Batch {conn.passout_year}</p>
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    <button className="btn-secondary" onClick={() => window.location.href = `/alumni/${conn.id}`} style={{ flex: 1, fontSize: "13px", padding: "6px" }}>View Profile</button>
+                    <button className="btn-danger" onClick={() => handleRemoveConnection(conn.connected_to)} style={{ flex: 1, fontSize: "13px", padding: "6px" }}>Remove</button>
+                  </div>
+                </div>
               ))}
             </div>
-          )}</div>
+          )}
+        </div>
       )}
+      
       {tab === "pending" && (
-        <div>{pending.length === 0 ? ( <div className="card"><p style={{ textAlign: "center", color: "#6b7280" }}>No pending connection requests</p></div> ) : (
+        <div>
+          {pending.length === 0 ? ( <div className="card"><p style={{ textAlign: "center", color: "#6b7280" }}>No pending connection requests</p></div> ) : (
             <div className="grid-2">
               {pending.map((req) => (
-                <div key={req.connection_id} className="card" style={{ background: "#f0f4ff" }}><h3 style={{ marginTop: 0, color: "#2563eb" }}>{req.first_name} {req.last_name}</h3><p style={{ color: "#6b7280", fontSize: "14px" }}>{req.headline || "Alumni"}</p><p style={{ fontSize: "13px", color: "#9ca3af", marginBottom: 15 }}>Batch {req.passout_year}</p><div style={{ display: "flex", gap: 8 }}><button className="btn-primary" onClick={() => handleAccept(req.connection_id)} style={{ flex: 1, fontSize: "13px", padding: "8px" }}>Accept</button><button className="btn-secondary" onClick={() => handleReject(req.connection_id)} style={{ flex: 1, fontSize: "13px", padding: "8px" }}>Reject</button></div></div>
+                <div key={req.connection_id} className="card" style={{ background: "var(--card-bg, #f0f4ff)" }}>
+                  <h3 style={{ marginTop: 0, color: "#2563eb" }}>{req.first_name} {req.last_name}</h3>
+                  <p style={{ color: "#6b7280", fontSize: "14px" }}>{req.headline || "Alumni"}</p>
+                  <p style={{ fontSize: "13px", color: "#9ca3af", marginBottom: 15 }}>Batch {req.passout_year}</p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button className="btn-primary" onClick={() => handleAccept(req.connection_id)} style={{ flex: 1, fontSize: "13px", padding: "8px" }}>Accept</button>
+                    <button className="btn-secondary" onClick={() => handleReject(req.connection_id)} style={{ flex: 1, fontSize: "13px", padding: "8px" }}>Reject</button>
+                  </div>
+                </div>
               ))}
             </div>
-          )}</div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -597,10 +679,32 @@ const ConnectionsPage = () => {
 // MESSAGES PAGE
 // ==============================
 const MessagesPage = () => {
-  const { user } = useAuth(); const [messages, setMessages] = useState([]); const [newMessage, setNewMessage] = useState(""); const [activeRoom, setActiveRoom] = useState(null); const [chatPartner, setChatPartner] = useState(null); const [inbox, setInbox] = useState([]); const [searchParams] = useSearchParams(); const targetUserId = searchParams.get("userId");
+  const { user } = useAuth(); 
+  const [messages, setMessages] = useState([]); 
+  const [newMessage, setNewMessage] = useState(""); 
+  const [activeRoom, setActiveRoom] = useState(null); 
+  const [chatPartner, setChatPartner] = useState(null); 
+  const [inbox, setInbox] = useState([]); 
+  const [searchParams] = useSearchParams(); 
+  const targetUserId = searchParams.get("userId");
 
-  const loadInbox = useCallback(async () => { try { const res = await axios.get("/api/inbox"); setInbox(res.data.rooms || []); } catch (err) { console.error("Failed to load inbox", err); } }, []);
-  useEffect(() => { if (targetUserId) { startChat(targetUserId); } else { loadInbox(); } }, [targetUserId, loadInbox]);
+  const loadInbox = useCallback(async () => { 
+    try { 
+      const res = await axios.get("/api/inbox"); 
+      setInbox(res.data.rooms || []); 
+    } catch (err) { 
+      console.error("Failed to load inbox", err); 
+    } 
+  }, []);
+  
+  useEffect(() => { 
+    if (targetUserId) { 
+      startChat(targetUserId); 
+    } else { 
+      loadInbox(); 
+    } 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetUserId, loadInbox]);
 
   const startChat = async (otherUserId) => { try { const roomRes = await axios.post(`/api/messages/room/${otherUserId}`); setActiveRoom(roomRes.data.room); setChatPartner(roomRes.data.otherUser); fetchMessages(roomRes.data.room.id); } catch (err) { toast.error("Failed to start chat"); } };
   const fetchMessages = async (roomId) => { try { const res = await axios.get(`/api/messages/${roomId}`); setMessages(res.data.messages || []); } catch (err) { console.error(err); } };
@@ -609,6 +713,7 @@ const MessagesPage = () => {
   return (
     <div className="page-container"><Toaster />
       <div className="card" style={{ display: "flex", flexDirection: "column", height: "70vh", padding: 0, overflow: "hidden" }}>
+        
         <div style={{ padding: "15px 20px", background: "var(--card-bg, #f8fafc)", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", gap: 15 }}>
           {activeRoom && <button onClick={() => { setActiveRoom(null); setChatPartner(null); loadInbox(); }} style={{ background: "none", border: "none", color: "#2563eb", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}><i className="fas fa-arrow-left"></i> Back</button>}
           <h2 style={{ margin: 0, fontSize: "18px" }}>{chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}</h2>
@@ -657,24 +762,28 @@ const MessagesPage = () => {
 // ==============================
 function App() {
   return (
-    <Router><AuthProvider><Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/verify-otp" element={<VerifyOtp />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-      
-      <Route path="/" element={<PrivateRoute><PrivateLayout><FeedPage /></PrivateLayout></PrivateRoute>} />
-      <Route path="/dashboard" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
-      <Route path="/admin" element={<PrivateRoute><PrivateLayout><AdminPanel /></PrivateLayout></PrivateRoute>} />
-      <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
-      <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
-      <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
-      <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
-      <Route path="/messages" element={<PrivateRoute><PrivateLayout><MessagesPage /></PrivateLayout></PrivateRoute>} />
-      <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes></AuthProvider></Router>
+    <Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+          
+          <Route path="/" element={<PrivateRoute><PrivateLayout><FeedPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/admin" element={<PrivateRoute><PrivateLayout><AdminPanel /></PrivateLayout></PrivateRoute>} />
+          <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
+          <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
+          <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
+          <Route path="/messages" element={<PrivateRoute><PrivateLayout><MessagesPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
 
