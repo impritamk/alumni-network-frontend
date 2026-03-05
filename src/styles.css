@@ -1,77 +1,258 @@
 /* ==========================================
-   🌙 SUPERCHARGED DARK MODE
+   1. GLOBAL RESET & TYPOGRAPHY
    ========================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap');
 
-/* 1. Smooth transitions for everything */
-html, body, #root, .page-container, .card, input, textarea, div {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* 2. Force the main background to change everywhere */
-body.dark-mode, 
-body.dark-mode #root,
-body.dark-mode .app-content,
-body.dark-mode .page-container {
-  background-color: #0f172a !important; /* Deep dark blue/grey */
-  color: #f8fafc !important;
-  min-height: 100vh;
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  line-height: 1.5;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* 3. Polish the Cards */
-body.dark-mode .card {
-  background-color: #1e293b !important;
-  border: 1px solid #334155 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5) !important;
+/* ==========================================
+   2. LAYOUT CONTAINERS
+   ========================================== */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ==========================================
+   3. GRIDS (Responsive)
+   ========================================== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* ==========================================
+   4. INPUTS & FORMS
+   ========================================== */
+label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  margin-top: 12px;
+  color: #475569;
+}
+
+.input-box {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+}
+
+.input-box:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ==========================================
+   5. BUTTONS
+   ========================================== */
+button {
+  font-family: 'Inter', sans-serif;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-size: 14px;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.btn-secondary:hover {
+  background: #e2e8f0;
+}
+
+.btn-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.btn-danger:hover {
+  background: #fecaca;
+}
+
+/* ==========================================
+   6. TYPOGRAPHY & LINKS
+   ========================================== */
+.text-blue {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.text-blue:hover {
+  text-decoration: underline;
+}
+
+.heading {
+  font-family: 'Poppins', sans-serif;
+  color: #0f172a;
+}
+
+/* ==========================================
+   7. NAVBAR RESPONSIVENESS
+   ========================================== */
+.navbar-hamburger-btn {
+  display: none !important;
+}
+
+.navbar-mobile-menu {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .navbar-desktop-menu {
+    display: none !important;
+  }
+  
+  .navbar-hamburger-btn {
+    display: block !important;
+  }
+
+  .navbar-mobile-menu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 1000;
+    min-width: 200px;
+  }
+
+  .navbar-mobile-menu a, 
+  .navbar-mobile-menu button {
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #334155;
+    font-weight: 500;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: left;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    font-size: 15px;
+  }
+  
+  .navbar-mobile-menu button {
+    color: #ef4444;
+    border-bottom: none;
+  }
+}
+
+/* ==========================================
+   🌙 8. SAFE DARK MODE (COLORS ONLY)
+   ========================================== */
+body.dark-mode {
+  background-color: #0f172a !important; 
   color: #e2e8f0 !important;
 }
 
-/* 4. Fix Text Colors globally */
-body.dark-mode h1, 
-body.dark-mode h2, 
-body.dark-mode h3, 
-body.dark-mode h4,
-body.dark-mode strong,
-body.dark-mode b {
+/* Cards */
+body.dark-mode .card,
+body.dark-mode .navbar-mobile-menu {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Text specific to cards */
+body.dark-mode .card h1, 
+body.dark-mode .card h2, 
+body.dark-mode .card h3, 
+body.dark-mode .card h4,
+body.dark-mode .heading,
+body.dark-mode .navbar-mobile-menu a {
   color: #f8fafc !important;
 }
 
-body.dark-mode p,
-body.dark-mode span,
 body.dark-mode label,
-body.dark-mode div {
+body.dark-mode .card p {
   color: #cbd5e1 !important;
 }
 
-/* 5. Override inline styling for Navbar and Chat Headers */
-body.dark-mode div[style*="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"],
-body.dark-mode div[style*="background: #f8fafc"],
-body.dark-mode div[style*="background: rgb(248, 250, 252)"] {
-  background: #1e293b !important;
-  border-color: #334155 !important;
-}
-
-/* Override inline styling for chat backgrounds */
-body.dark-mode div[style*="background: #ffffff"],
-body.dark-mode div[style*="background: rgb(255, 255, 255)"],
-body.dark-mode div[style*="background: white"] {
-  background: #0f172a !important;
-  border-color: #334155 !important;
-}
-
-/* Incoming Chat Bubbles & "About" backgrounds */
-body.dark-mode div[style*="background: #f1f5f9"],
-body.dark-mode div[style*="background: rgb(241, 245, 249)"] {
-  background: #334155 !important;
-  color: #f8fafc !important;
-}
-
-/* 6. Polish Inputs and Textareas */
+/* Inputs */
 body.dark-mode .input-box,
-body.dark-mode input,
-body.dark-mode textarea,
-body.dark-mode select {
+body.dark-mode select.input-box,
+body.dark-mode textarea.input-box {
   background-color: #0f172a !important;
-  border: 1px solid #475569 !important;
+  border-color: #475569 !important;
   color: #f8fafc !important;
 }
 
@@ -79,13 +260,58 @@ body.dark-mode .input-box::placeholder {
   color: #64748b !important;
 }
 
-/* 7. Special fix for the red "Danger Zone" in Edit Profile */
+/* Safely target inline backgrounds (Navbar & Chat Headers) */
+body.dark-mode div[style*="linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)"] {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode div[style*="background: #f8fafc"],
+body.dark-mode div[style*="background: rgb(248, 250, 252)"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+body.dark-mode div[style*="background: #ffffff"],
+body.dark-mode div[style*="background: rgb(255, 255, 255)"],
+body.dark-mode div[style*="background: white"] {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+/* Incoming Chat Bubbles & "About" section */
+body.dark-mode div[style*="background: #f1f5f9"],
+body.dark-mode div[style*="background: rgb(241, 245, 249)"] {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+/* Danger Zone Fix */
 body.dark-mode .card[style*="background: #fee2e2"] {
-  background: #450a0a !important; /* Very dark red */
+  background-color: #450a0a !important;
   border-color: #7f1d1d !important;
 }
 
-/* 8. Links in dark mode */
+body.dark-mode .card[style*="background: #fee2e2"] h3 {
+  color: #fca5a5 !important;
+}
+
+body.dark-mode .card[style*="background: #fee2e2"] p {
+  color: #f87171 !important;
+}
+
+/* Links */
 body.dark-mode a.text-blue {
-  color: #60a5fa !important; /* Lighter blue so it pops in dark mode */
+  color: #60a5fa !important; 
+}
+
+/* Secondary Button Fix in Dark Mode */
+body.dark-mode .btn-secondary {
+  background: #334155;
+  color: #e2e8f0;
+  border-color: #475569;
+}
+
+body.dark-mode .btn-secondary:hover {
+  background: #475569;
 }
