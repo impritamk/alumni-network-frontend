@@ -324,7 +324,8 @@ const RegisterPage = () => {
         lastName: form.lastName,
         passoutYear: form.passoutYear
       });
-      localStorage.setItem("pendingEmail", form.email);
+      // Store the exact email they typed locally to autofill verify page
+      localStorage.setItem("pendingEmail", form.email.toLowerCase().trim());
       toast.success("OTP sent! Verify your email.");
       window.location.href = "/verify-otp";
     } catch (err) {
@@ -742,7 +743,6 @@ const DashboardPage = () => {
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
-    // Moved load() inside useEffect to fix exhaustive-deps warning
     const load = async () => {
       try {
         const [a, j] = await Promise.all([
@@ -821,7 +821,6 @@ const AlumniList = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Moved loadAlumni inside useEffect to fix exhaustive-deps warning
     const loadAlumni = async () => {
       try {
         const res = await axios.get("/api/users/directory");
@@ -875,7 +874,6 @@ const ConnectButton = ({ userId }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Moved checkConnectionStatus inside useEffect to fix exhaustive-deps warning
     const checkConnectionStatus = async () => {
       try {
         const res = await axios.get(`/api/connections/check/${userId}`);
@@ -907,6 +905,22 @@ const ConnectButton = ({ userId }) => {
     }
   };
 
+  // 🟢 NEW FEATURE: Handle removing an established connection directly from the button
+  const handleRemove = async () => {
+    if (window.confirm("Are you sure you want to remove this connection?")) {
+      try {
+        setLoading(true);
+        await axios.delete(`/api/connections/${userId}`);
+        setStatus("not_connected"); 
+        toast.success("Connection removed");
+      } catch (err) {
+        toast.error("Failed to remove connection");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   const handleMessage = () => {
     toast.success("Messaging feature coming soon!");
   };
@@ -915,6 +929,7 @@ const ConnectButton = ({ userId }) => {
     return <button className="btn-primary" disabled>Loading...</button>;
   }
 
+  // 🟢 NEW FEATURE: Displays both Message and Disconnect buttons if accepted
   if (status === "accepted") {
     return (
       <div style={{ display: "flex", gap: 8 }}>
@@ -923,6 +938,12 @@ const ConnectButton = ({ userId }) => {
           onClick={handleMessage}
         >
           💬 Message
+        </button>
+        <button 
+          className="btn-danger"
+          onClick={handleRemove}
+        >
+          ✕ Disconnect
         </button>
       </div>
     );
@@ -1027,12 +1048,6 @@ const AlumniProfile = () => {
         
         <div style={{ marginTop: 25, display: "flex", gap: 10 }}>
           <ConnectButton userId={id} />
-          <button 
-            className="btn-secondary" 
-            onClick={() => toast.success("Messaging feature coming soon!")}
-          >
-            Message
-          </button>
         </div>
       </div>
       
@@ -1056,8 +1071,6 @@ const ConnectionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("connections");
 
-  // Used useCallback here because loadConnections is called inside other functions
-  // as well as the initial useEffect
   const loadConnections = useCallback(async () => {
     try {
       const [connRes, pendRes] = await Promise.all([
@@ -1180,7 +1193,7 @@ const ConnectionsPage = () => {
                     </button>
                     <button
                       className="btn-danger"
-                      onClick={() => handleRemoveConnection(conn.id)}
+                      onClick={() => handleRemoveConnection(conn.connected_to)}
                       style={{ flex: 1, fontSize: "13px", padding: "6px" }}
                     >
                       Remove
@@ -1660,8 +1673,6 @@ const JobsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Used useCallback here because loadJobs is called inside useEffect 
-  // and passed as a prop to JobCard
   const loadJobs = useCallback(async () => {
     try {
       const res = await axios.get("/api/jobs");
