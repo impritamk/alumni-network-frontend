@@ -7,7 +7,8 @@ import {
   Navigate,
   Link,
   useNavigate,
-  useParams
+  useParams,
+  useSearchParams
 } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
@@ -872,6 +873,7 @@ const AlumniList = () => {
 const ConnectButton = ({ userId }) => {
   const [status, setStatus] = useState("not_connected");
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // 🟢 NEW FEATURE: Used to navigate to chat!
 
   useEffect(() => {
     const checkConnectionStatus = async () => {
@@ -905,7 +907,6 @@ const ConnectButton = ({ userId }) => {
     }
   };
 
-  // 🟢 NEW FEATURE: Handle removing an established connection directly from the button
   const handleRemove = async () => {
     if (window.confirm("Are you sure you want to remove this connection?")) {
       try {
@@ -921,15 +922,15 @@ const ConnectButton = ({ userId }) => {
     }
   };
 
+  // 🟢 NEW FEATURE: Sends the user to the Messages page with the target ID
   const handleMessage = () => {
-    toast.success("Messaging feature coming soon!");
+    navigate(`/messages?userId=${userId}`);
   };
 
   if (loading) {
     return <button className="btn-primary" disabled>Loading...</button>;
   }
 
-  // 🟢 NEW FEATURE: Displays both Message and Disconnect buttons if accepted
   if (status === "accepted") {
     return (
       <div style={{ display: "flex", gap: 8 }}>
@@ -1738,6 +1739,135 @@ const JobsPage = () => {
   );
 };
 
+// 🟢 NEW FEATURE: MESSAGES PAGE
+// ==============================
+const MessagesPage = () => {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [activeRoom, setActiveRoom] = useState(null);
+  const [chatPartner, setChatPartner] = useState(null);
+  const [inbox, setInbox] = useState([]);
+
+  // Fetch the target user ID if we were directed here from the profile page
+  const [searchParams] = useSearchParams();
+  const targetUserId = searchParams.get("userId");
+
+  useEffect(() => {
+    if (targetUserId) {
+      startChat(targetUserId);
+    } else {
+      loadInbox();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetUserId]);
+
+  const loadInbox = async () => {
+    try {
+      const res = await axios.get("/api/inbox");
+      setInbox(res.data.rooms || []);
+    } catch (err) {
+      console.error("Failed to load inbox", err);
+    }
+  };
+
+  const startChat = async (otherUserId) => {
+    try {
+      const roomRes = await axios.post(`/api/messages/room/${otherUserId}`);
+      setActiveRoom(roomRes.data.room);
+      setChatPartner(roomRes.data.otherUser);
+      fetchMessages(roomRes.data.room.id);
+    } catch (err) {
+      toast.error("Failed to start chat");
+    }
+  };
+
+  const fetchMessages = async (roomId) => {
+    try {
+      const res = await axios.get(`/api/messages/${roomId}`);
+      setMessages(res.data.messages || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !activeRoom) return;
+
+    try {
+      await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage });
+      setNewMessage("");
+      fetchMessages(activeRoom.id); 
+    } catch (err) {
+      toast.error("Failed to send message");
+    }
+  };
+
+  return (
+    <div className="page-container">
+      <Toaster />
+      <div className="card" style={{ display: "flex", flexDirection: "column", height: "70vh", padding: 0, overflow: "hidden" }}>
+        
+        {/* Chat Header */}
+        <div style={{ padding: "15px 20px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
+          <h2 style={{ margin: 0, fontSize: "18px" }}>
+            {chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}
+          </h2>
+        </div>
+
+        {/* Chat Messages Area */}
+        <div style={{ flex: 1, padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", background: "#ffffff" }}>
+          {!activeRoom ? (
+            <div style={{ margin: "auto", color: "#94a3b8", textAlign: "center" }}>
+              {inbox.length === 0 ? "Select a connection from their profile to start messaging." : "Your inbox is ready! Go to an Alumni Profile and click 'Message' to start chatting."}
+            </div>
+          ) : messages.length === 0 ? (
+            <div style={{ margin: "auto", color: "#94a3b8" }}>No messages yet. Say hi! 👋</div>
+          ) : (
+            messages.map((msg) => {
+              const isMe = msg.sender_id === user.id;
+              return (
+                <div key={msg.id} style={{ 
+                  alignSelf: isMe ? "flex-end" : "flex-start", 
+                  background: isMe ? "#2563eb" : "#f1f5f9", 
+                  color: isMe ? "white" : "#0f172a",
+                  padding: "10px 15px", 
+                  borderRadius: "18px", 
+                  maxWidth: "70%",
+                  borderBottomRightRadius: isMe ? "4px" : "18px",
+                  borderBottomLeftRadius: !isMe ? "4px" : "18px"
+                }}>
+                  <div style={{ fontSize: "15px", wordBreak: "break-word" }}>{msg.message}</div>
+                  <div style={{ fontSize: "10px", opacity: 0.7, marginTop: "5px", textAlign: isMe ? "right" : "left" }}>
+                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Message Input Box */}
+        {activeRoom && (
+          <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", background: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              style={{ flex: 1, padding: "12px 15px", borderRadius: "24px", border: "1px solid #cbd5e1", outline: "none" }}
+            />
+            <button type="submit" className="btn-primary" style={{ borderRadius: "24px", marginLeft: "10px", padding: "0 20px" }}>
+              Send
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ==============================
 // MAIN APP
 // ==============================
@@ -1759,7 +1889,10 @@ function App() {
           <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
           <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
-          <Route path="/messages" element={<PrivateRoute><PrivateLayout><div className="page-container">Messages coming soon</div></PrivateLayout></PrivateRoute>} />
+          
+          {/* 🟢 NEW FEATURE: The live route to view the messaging UI */}
+          <Route path="/messages" element={<PrivateRoute><PrivateLayout><MessagesPage /></PrivateLayout></PrivateRoute>} />
+          
           <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
           
           <Route path="*" element={<Navigate to="/" replace />} />
