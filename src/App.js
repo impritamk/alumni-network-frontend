@@ -235,6 +235,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // 🟢 NEW FEATURE
 
   const submit = async (e) => {
     e.preventDefault();
@@ -268,14 +269,25 @@ const LoginPage = () => {
             disabled={isLoading}
           />
           <label>Password</label>
-          <input
-            className="input-box"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={isLoading}
-          />
+          {/* 🟢 NEW FEATURE: View Password wrapper */}
+          <div style={{ position: 'relative' }}>
+            <input
+              className="input-box"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)} 
+              style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
           <button 
             className="btn-primary" 
             style={{ width: "100%" }}
@@ -308,6 +320,7 @@ const RegisterPage = () => {
     lastName: "",
     passoutYear: new Date().getFullYear(),
   });
+  const [showPassword, setShowPassword] = useState(false); // 🟢 NEW FEATURE
 
   const submit = async (e) => {
     e.preventDefault();
@@ -361,22 +374,38 @@ const RegisterPage = () => {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             required
           />
+          
           <label>Password</label>
-          <input
-            className="input-box"
-            type="password"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            required
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              className="input-box"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)} 
+              style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
+
           <label>Confirm Password</label>
-          <input
-            className="input-box"
-            type="password"
-            value={form.confirmPassword}
-            onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-            required
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              className="input-box"
+              type={showPassword ? "text" : "password"}
+              value={form.confirmPassword}
+              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+              required
+              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
+            />
+          </div>
+
           <label>Passout Year</label>
           <input
             className="input-box"
@@ -656,6 +685,7 @@ const ResetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // 🟢 NEW FEATURE
   const navigate = useNavigate();
 
   const submit = async (e) => {
@@ -702,25 +732,40 @@ const ResetPasswordPage = () => {
         <h2 className="heading" style={{ textAlign: "center" }}>Reset Password</h2>
         <form onSubmit={submit}>
           <label>New Password</label>
-          <input
-            className="input-box"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            disabled={loading}
-            placeholder="Enter new password"
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              className="input-box"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+              placeholder="Enter new password"
+              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
+            />
+            <button 
+              type="button" 
+              onClick={() => setShowPassword(!showPassword)} 
+              style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
+
           <label>Confirm Password</label>
-          <input
-            className="input-box"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            disabled={loading}
-            placeholder="Confirm password"
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              className="input-box"
+              type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              disabled={loading}
+              placeholder="Confirm password"
+              style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
+            />
+          </div>
+          
           <button 
             className="btn-primary" 
             style={{ width: "100%" }}
@@ -1099,7 +1144,7 @@ const ConnectionsPage = () => {
         toast.error("Failed to remove connection");
       }
     }
-  };
+  }
 
   const handleAccept = async (connectionId) => {
     try {
@@ -1548,13 +1593,12 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
   );
 };
 
-
 // 🟢 NEW FEATURE: APPLY JOB MODAL
 // ==============================
 const ApplyJobModal = ({ job, onClose, onSuccess }) => {
   const [form, setForm] = useState({
     coverLetter: "",
-    resume: "", // Taking a URL string based on the database schema
+    resume: "",
     phone: "",
     linkedinUrl: ""
   });
@@ -1680,13 +1724,12 @@ const ApplyJobModal = ({ job, onClose, onSuccess }) => {
   );
 };
 
-
 // ==============================
 // JOB CARD
 // ==============================
 const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false);
-  const [showApplyModal, setShowApplyModal] = useState(false); // 🟢 NEW STATE
+  const [showApplyModal, setShowApplyModal] = useState(false); 
   const { user } = useAuth();
 
   const handleDeleteJob = async () => {
@@ -1772,8 +1815,6 @@ const JobCard = ({ job, onJobDeleted }) => {
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
-        
-        {/* 🟢 NEW FEATURE: Apply button only shows if it's NOT the user's own job */}
         {user?.id !== job.posted_by && (
           <button 
             className="btn-primary"
@@ -1800,7 +1841,6 @@ const JobCard = ({ job, onJobDeleted }) => {
         )}
       </div>
 
-      {/* 🟢 NEW FEATURE: The modal rendered dynamically */}
       {showApplyModal && (
         <ApplyJobModal 
           job={job}
@@ -2033,7 +2073,6 @@ function App() {
           <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
           <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
-          
           <Route path="/messages" element={<PrivateRoute><PrivateLayout><MessagesPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
           
