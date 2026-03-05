@@ -111,7 +111,7 @@ const Navbar = () => {
       };
       
       fetchIndicators(); 
-      const interval = setInterval(fetchIndicators, 15000); 
+      const interval = setInterval(fetchIndicators, 60000); 
       return () => clearInterval(interval);
     }
   }, [user]);
@@ -2409,4 +2409,5 @@ function App() {
 }
 
 export default App;
+
 
