@@ -94,7 +94,6 @@ const AuthProvider = ({ children }) => {
 // NAVBAR COMPONENT
 // ==============================
 const Navbar = () => {
-  console.log("🎨 Navbar rendering");
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -171,8 +170,8 @@ const Navbar = () => {
       
       {/* Desktop Menu */}
       <div className="navbar-desktop-menu" style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-        <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Home</Link>
-        <Link to="/feed" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Feed</Link>
+        <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Feed</Link>
+        <Link to="/dashboard" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Dashboard</Link>
         <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
         <Link to="/connections" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Connections</Link>
         
@@ -256,8 +255,8 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {menuOpen && (
         <div className="navbar-mobile-menu">
-          <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-          <Link to="/feed" onClick={() => setMenuOpen(false)}>Feed</Link>
+          <Link to="/" onClick={() => setMenuOpen(false)}>Feed</Link>
+          <Link to="/dashboard" onClick={() => setMenuOpen(false)}>Dashboard</Link>
           <Link to="/alumni" onClick={() => setMenuOpen(false)}>Alumni</Link>
           <Link to="/connections" onClick={() => setMenuOpen(false)}>Connections</Link>
           <Link to="/messages" onClick={() => { setMenuOpen(false); setIndicators(prev => ({...prev, hasUnreadMessages: false})) }}>
@@ -326,7 +325,6 @@ const LoginPage = () => {
         window.location.href = "/";
       }, 500);
     } catch (err) {
-      console.error("Login error:", err);
       toast.error(err.response?.data?.message || "Login failed");
       setIsLoading(false);
     }
@@ -375,8 +373,7 @@ const LoginPage = () => {
           </button>
         </form>
         <p style={{ textAlign: "center", marginTop: 15 }}>
-          Don't have an account?{" "}
-          <Link to="/register" className="text-blue">Register</Link>
+          Don't have an account? <Link to="/register" className="text-blue">Register</Link>
             {" | "}
           <Link to="/forgot-password" className="text-blue">Forgot Password?</Link>
         </p>
@@ -402,7 +399,6 @@ const RegisterPage = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    
     if (form.password !== form.confirmPassword) {
       toast.error("Passwords do not match!");
       return;
@@ -662,7 +658,7 @@ const ResetPasswordPage = () => {
 };
 
 // ==============================
-// COMMUNITY FEED
+// COMMUNITY FEED (HOMEPAGE)
 // ==============================
 const FeedPage = () => {
   const { user } = useAuth();
@@ -748,7 +744,7 @@ const FeedPage = () => {
               {/* ADMIN DELETE BUTTON OR OWNER DELETE BUTTON */}
               {(user?.role === 'admin' || user?.id === post.user_id) && (
                 <button onClick={() => handleDelete(post.id)} className="btn-danger" style={{ padding: "4px 10px", fontSize: "12px" }}>
-                  Delete
+                  <i className="fas fa-trash"></i>
                 </button>
               )}
             </div>
@@ -768,10 +764,12 @@ const AdminPanel = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (search = "") => {
     try {
-      const res = await axios.get("/api/admin/users");
+      setLoading(true);
+      const res = await axios.get(`/api/admin/users?search=${search}`);
       setUsers(res.data.users);
     } catch (err) {
       toast.error("Failed to load users");
@@ -784,6 +782,11 @@ const AdminPanel = () => {
     fetchUsers();
   }, []);
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchUsers(searchTerm);
+  };
+
   const handleToggleBan = async (targetUser) => {
     const action = targetUser.is_banned ? "unban" : "ban";
     if (!window.confirm(`Are you sure you want to ${action} ${targetUser.first_name}?`)) return;
@@ -791,18 +794,28 @@ const AdminPanel = () => {
     try {
       await axios.patch(`/api/admin/users/${targetUser.id}/${action}`);
       toast.success(`User successfully ${action}ned`);
-      fetchUsers();
+      fetchUsers(searchTerm);
     } catch (err) {
       toast.error(err.response?.data?.message || `Failed to ${action} user`);
     }
   };
 
-  // Extra protection on component layer
+  const handleRoleChange = async (targetUser) => {
+    const newRole = targetUser.role === 'admin' ? 'user' : 'admin';
+    if (!window.confirm(`Are you sure you want to make ${targetUser.first_name} a ${newRole}?`)) return;
+  
+    try {
+      await axios.patch(`/api/admin/users/${targetUser.id}/role`, { role: newRole });
+      toast.success(`User is now an ${newRole}`);
+      fetchUsers(searchTerm);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update role");
+    }
+  };
+
   if (user?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
-
-  if (loading) return <div className="page-container"><p style={{ textAlign: "center" }}>Loading admin panel...</p></div>;
 
   return (
     <div className="page-container">
@@ -814,39 +827,79 @@ const AdminPanel = () => {
       
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Manage Users</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {users.map(u => (
-            <div key={u.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px", borderBottom: "1px solid #e2e8f0", background: u.is_banned ? "#fef2f2" : "transparent" }}>
-              <div>
-                <strong style={{ fontSize: "16px", color: u.is_banned ? "#991b1b" : "#0f172a" }}>{u.first_name} {u.last_name}</strong>
-                <span style={{ color: "#64748b", marginLeft: 10 }}>{u.email}</span>
-                <span style={{ 
-                  marginLeft: 15, 
-                  fontSize: "12px", 
-                  fontWeight: "bold",
-                  padding: "4px 8px",
-                  borderRadius: "12px",
-                  background: u.is_banned ? "#fecaca" : "#dcfce7",
-                  color: u.is_banned ? "#b91c1c" : "#15803d" 
-                }}>
-                  {u.is_banned ? "Banned" : "Active"}
-                </span>
-                {u.role === 'admin' && <span style={{ marginLeft: 10, fontSize: "12px", color: "#6b7280", fontWeight: "bold" }}>(Admin)</span>}
+
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <input
+            type="text"
+            className="input-box"
+            placeholder="Search users by name or email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ marginBottom: 0, flex: 1 }}
+          />
+          <button type="submit" className="btn-primary">Search</button>
+        </form>
+
+        {loading ? (
+          <p style={{ textAlign: "center" }}>Loading users...</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {users.map(u => (
+              <div key={u.id} style={{ 
+                display: "flex", 
+                flexWrap: "wrap", 
+                justifyContent: "space-between", 
+                alignItems: "center", 
+                padding: "15px", 
+                borderBottom: "1px solid #e2e8f0", 
+                background: u.is_banned ? "#fef2f2" : "transparent",
+                gap: "10px"
+              }}>
+                <div style={{ flex: "1 1 auto", minWidth: "200px" }}>
+                  <strong style={{ fontSize: "16px", color: u.is_banned ? "#991b1b" : "#0f172a" }}>{u.first_name} {u.last_name}</strong>
+                  <span style={{ color: "#64748b", marginLeft: 10 }}>{u.email}</span>
+                  <div style={{ marginTop: "5px" }}>
+                    <span style={{ 
+                      fontSize: "12px", 
+                      fontWeight: "bold",
+                      padding: "4px 8px",
+                      borderRadius: "12px",
+                      background: u.is_banned ? "#fecaca" : "#dcfce7",
+                      color: u.is_banned ? "#b91c1c" : "#15803d" 
+                    }}>
+                      {u.is_banned ? "Banned" : "Active"}
+                    </span>
+                    {u.role === 'admin' && <span style={{ marginLeft: 10, fontSize: "12px", color: "#6b7280", fontWeight: "bold" }}><i className="fas fa-star" style={{color:"#fbbf24"}}></i> Admin</span>}
+                  </div>
+                </div>
+                
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  {u.id !== user.id && (
+                    <button
+                      onClick={() => handleRoleChange(u)}
+                      className="btn-primary"
+                      style={{ padding: "8px 16px", fontSize: "13px", fontWeight: "bold", background: u.role === 'admin' ? "#64748b" : "#2563eb", border: "none" }}
+                    >
+                      <i className="fas fa-user-shield" style={{ marginRight: 6 }}></i>
+                      {u.role === 'admin' ? "Remove Admin" : "Make Admin"}
+                    </button>
+                  )}
+                  {u.role !== 'admin' && (
+                    <button
+                      onClick={() => handleToggleBan(u)}
+                      className={u.is_banned ? "btn-secondary" : "btn-danger"}
+                      style={{ padding: "8px 16px", fontSize: "13px", fontWeight: "bold" }}
+                    >
+                      <i className={`fas ${u.is_banned ? "fa-unlock" : "fa-ban"}`} style={{ marginRight: 6 }}></i>
+                      {u.is_banned ? "Unban User" : "Ban User"}
+                    </button>
+                  )}
+                </div>
               </div>
-              
-              {u.role !== 'admin' && (
-                <button
-                  onClick={() => handleToggleBan(u)}
-                  className={u.is_banned ? "btn-secondary" : "btn-danger"}
-                  style={{ padding: "8px 16px", fontSize: "13px", fontWeight: "bold" }}
-                >
-                  <i className={`fas ${u.is_banned ? "fa-unlock" : "fa-ban"}`} style={{ marginRight: 6 }}></i>
-                  {u.is_banned ? "Unban User" : "Ban User"}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+            {users.length === 0 && <p style={{textAlign:"center"}}>No users found.</p>}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -889,7 +942,7 @@ const DashboardPage = () => {
           <Link to="/alumni" className="btn-secondary" style={{ textDecoration: "none" }}>
             <i className="fas fa-search" style={{ marginRight: 5 }}></i> Find Alumni
           </Link>
-          <Link to="/feed" className="btn-primary" style={{ textDecoration: "none" }}>
+          <Link to="/" className="btn-primary" style={{ textDecoration: "none" }}>
             <i className="fas fa-newspaper" style={{ marginRight: 5 }}></i> View Feed
           </Link>
         </div>
@@ -998,54 +1051,90 @@ const DashboardPage = () => {
 const AlumniList = () => {
   const [alumni, setAlumni] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterYear, setFilterYear] = useState("");
+
+  const loadAlumni = async (search = "", year = "") => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`/api/users/directory?search=${search}&passoutYear=${year}`);
+      setAlumni(res.data.users || []);
+    } catch (err) {
+      toast.error("Failed to load alumni");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadAlumni = async () => {
-      try {
-        const res = await axios.get("/api/users/directory");
-        setAlumni(res.data.users || []);
-      } catch (err) {
-        toast.error("Failed to load alumni");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     loadAlumni();
   }, []);
 
-  if (loading) return <div className="page-container">
-    <div style={{ textAlign: "center", marginTop: "50px", color: "#6b7280" }}>
-      <i className="fas fa-spinner fa-spin fa-2x"></i>
-      <p>Loading alumni...</p>
-    </div>
-  </div>;
+  const handleSearch = (e) => {
+    e.preventDefault();
+    loadAlumni(searchTerm, filterYear);
+  };
 
   return (
     <div className="page-container">
       <Toaster />
       <h1>Alumni Directory</h1>
-      <p style={{ color: "#6b7280", marginBottom: 20 }}>Total: {alumni.length}</p>
-      <div className="grid-3">
-        {alumni.length === 0 ? (
-          <div className="card" style={{ gridColumn: "1 / -1" }}>
-            <p style={{ textAlign: "center" }}>No alumni found</p>
+      
+      <div className="card" style={{ marginBottom: 20 }}>
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+          <div style={{ flex: "1 1 200px" }}>
+            <input
+              type="text"
+              className="input-box"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ marginBottom: 0 }}
+            />
           </div>
-        ) : (
-          alumni.map((person) => (
-            <div key={person.id} className="card">
-              <h3 style={{ marginTop: 0 }}>
-                {person.first_name} {person.last_name}
-              </h3>
-              <p style={{ color: "#6b7280" }}>{person.headline || "Alumni"}</p>
-              <p><strong>Batch:</strong> {person.passout_year}</p>
-              <Link to={`/alumni/${person.id}`} className="btn-primary" style={{ textDecoration: "none", display: "inline-block" }}>
-                View Profile
-              </Link>
-            </div>
-          ))
-        )}
+          <div style={{ flex: "0 1 150px" }}>
+            <input
+              type="number"
+              className="input-box"
+              placeholder="Passout Year"
+              value={filterYear}
+              onChange={(e) => setFilterYear(e.target.value)}
+              style={{ marginBottom: 0 }}
+            />
+          </div>
+          <button type="submit" className="btn-primary" style={{ padding: "10px 20px" }}>Search</button>
+        </form>
       </div>
+
+      <p style={{ color: "#6b7280", marginBottom: 20 }}>Total found: {alumni.length}</p>
+      
+      {loading ? (
+        <div style={{ textAlign: "center", marginTop: "50px", color: "#6b7280" }}>
+          <i className="fas fa-spinner fa-spin fa-2x"></i>
+          <p>Loading alumni...</p>
+        </div>
+      ) : (
+        <div className="grid-3">
+          {alumni.length === 0 ? (
+            <div className="card" style={{ gridColumn: "1 / -1" }}>
+              <p style={{ textAlign: "center" }}>No alumni found</p>
+            </div>
+          ) : (
+            alumni.map((person) => (
+              <div key={person.id} className="card">
+                <h3 style={{ marginTop: 0 }}>
+                  {person.first_name} {person.last_name}
+                </h3>
+                <p style={{ color: "#6b7280" }}>{person.headline || "Alumni"}</p>
+                <p><strong>Batch:</strong> {person.passout_year}</p>
+                <Link to={`/alumni/${person.id}`} className="btn-primary" style={{ textDecoration: "none", display: "inline-block" }}>
+                  View Profile
+                </Link>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -1773,14 +1862,15 @@ const JobCard = ({ job, onJobDeleted }) => {
         </button>
         
         {user?.id === job.posted_by && (
-          <>
-            <button className="btn-primary" onClick={() => setShowApplicationsModal(true)}>
-              <i className="fas fa-users" style={{ marginRight: 5 }}></i> View Applications ({job.application_count || 0})
-            </button>
-            <button className="btn-danger" onClick={handleDeleteJob}>
-              <i className="fas fa-trash" style={{ marginRight: 5 }}></i> Delete Job
-            </button>
-          </>
+          <button className="btn-primary" onClick={() => setShowApplicationsModal(true)}>
+            <i className="fas fa-users" style={{ marginRight: 5 }}></i> View Applications ({job.application_count || 0})
+          </button>
+        )}
+
+        {(user?.id === job.posted_by || user?.role === 'admin') && (
+           <button className="btn-danger" onClick={handleDeleteJob}>
+            <i className="fas fa-trash" style={{ marginRight: 5 }}></i> Delete Job
+          </button>
         )}
       </div>
 
@@ -2033,8 +2123,8 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           
-          <Route path="/" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
-          <Route path="/feed" element={<PrivateRoute><PrivateLayout><FeedPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/" element={<PrivateRoute><PrivateLayout><FeedPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><PrivateLayout><AdminPanel /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
