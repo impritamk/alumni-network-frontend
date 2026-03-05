@@ -98,7 +98,7 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false }); // 🟢 NEW FEATURE: Indicators
+  const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false });
 
   // Poll for new notifications every 15 seconds
   useEffect(() => {
@@ -121,7 +121,6 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  // 🟢 NEW FEATURE: Notification Dot Style
   const Dot = () => (
     <span style={{
       position: "absolute",
@@ -129,7 +128,7 @@ const Navbar = () => {
       right: "-10px",
       width: "8px",
       height: "8px",
-      background: "#ef4444", // Red dot
+      background: "#ef4444", 
       borderRadius: "50%",
       boxShadow: "0 0 0 2px #ffffff"
     }}></span>
@@ -1499,7 +1498,6 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
         experienceLevel: form.experienceLevel
       };
       
-      console.log("Posting job with payload:", payload);
       await axios.post("/api/jobs", payload);
       toast.success("Job posted successfully!");
       onSuccess();
@@ -1784,12 +1782,84 @@ const ApplyJobModal = ({ job, onClose, onSuccess }) => {
   );
 };
 
+
+// 🟢 NEW FEATURE: VIEW APPLICATIONS MODAL
+// ==============================
+const ViewApplicationsModal = ({ job, onClose }) => {
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const res = await axios.get(`/api/jobs/${job.id}/applications`);
+        setApplications(res.data.applications || []);
+      } catch (err) {
+        toast.error("Failed to load applications");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchApplications();
+  }, [job.id]);
+
+  return (
+    <div style={{
+      position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+      background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center",
+      justifyContent: "center", zIndex: 1000, padding: "20px"
+    }}>
+      <div className="card" style={{ maxWidth: 600, width: "100%", maxHeight: "90vh", overflow: "auto", background: "#f8fafc" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div>
+            <h2 style={{ margin: 0 }}>Applicants for {job.title}</h2>
+            <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>Total: {applications.length}</p>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "#6b7280" }}>×</button>
+        </div>
+
+        {loading ? (
+          <p style={{ textAlign: "center", color: "#6b7280" }}>Loading applications...</p>
+        ) : applications.length === 0 ? (
+          <p style={{ textAlign: "center", color: "#6b7280" }}>No applications received yet.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            {applications.map((app) => (
+              <div key={app.id} style={{ background: "white", padding: "15px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+                <h3 style={{ margin: "0 0 5px 0", color: "#0f172a" }}>{app.first_name} {app.last_name}</h3>
+                <p style={{ margin: "0 0 10px 0", color: "#64748b", fontSize: "14px" }}>{app.email} • {app.headline || "Alumni"}</p>
+                
+                <div style={{ background: "#f1f5f9", padding: "10px", borderRadius: "6px", fontSize: "14px", color: "#334155", whiteSpace: "pre-wrap", marginBottom: "10px" }}>
+                  {app.cover_letter || "No cover letter provided."}
+                </div>
+
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  {app.resume_url && (
+                    <a href={app.resume_url} target="_blank" rel="noreferrer" style={{ background: "#e0f2fe", color: "#0369a1", padding: "6px 12px", borderRadius: "6px", textDecoration: "none", fontSize: "13px", fontWeight: "600" }}>
+                      📄 View Resume
+                    </a>
+                  )}
+                  <Link to={`/alumni/${app.applicant_id}`} style={{ background: "#f3e8ff", color: "#7c3aed", padding: "6px 12px", borderRadius: "6px", textDecoration: "none", fontSize: "13px", fontWeight: "600" }}>
+                    👤 View Profile
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
 // ==============================
 // JOB CARD
 // ==============================
 const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false);
-  const [showApplyModal, setShowApplyModal] = useState(false); 
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [showApplicationsModal, setShowApplicationsModal] = useState(false); 
   const { user } = useAuth();
 
   const handleDeleteJob = async () => {
@@ -1875,6 +1945,8 @@ const JobCard = ({ job, onJobDeleted }) => {
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
+        
+        {/* If the user DID NOT post the job, they can apply */}
         {user?.id !== job.posted_by && (
           <button 
             className="btn-primary"
@@ -1891,13 +1963,19 @@ const JobCard = ({ job, onJobDeleted }) => {
           {expanded ? "Show Less" : "View Details"}
         </button>
         
+        {/* If the user DID post the job, they see the applications and delete buttons */}
         {user?.id === job.posted_by && (
-          <button 
-            className="btn-danger"
-            onClick={handleDeleteJob}
-          >
-            Delete Job
-          </button>
+          <>
+            <button className="btn-primary" onClick={() => setShowApplicationsModal(true)}>
+              View Applications ({job.application_count || 0})
+            </button>
+            <button 
+              className="btn-danger"
+              onClick={handleDeleteJob}
+            >
+              Delete Job
+            </button>
+          </>
         )}
       </div>
 
@@ -1905,7 +1983,14 @@ const JobCard = ({ job, onJobDeleted }) => {
         <ApplyJobModal 
           job={job}
           onClose={() => setShowApplyModal(false)}
-          onSuccess={() => setShowApplyModal(false)}
+          onSuccess={() => { setShowApplyModal(false); if(onJobDeleted) onJobDeleted(); }}
+        />
+      )}
+
+      {showApplicationsModal && (
+        <ViewApplicationsModal 
+          job={job} 
+          onClose={() => setShowApplicationsModal(false)} 
         />
       )}
 
@@ -2056,7 +2141,6 @@ const MessagesPage = () => {
       <Toaster />
       <div className="card" style={{ display: "flex", flexDirection: "column", height: "70vh", padding: 0, overflow: "hidden" }}>
         
-        {/* 🟢 NEW FEATURE: Inbox Back Button */}
         <div style={{ padding: "15px 20px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0", display: "flex", alignItems: "center", gap: 15 }}>
           {activeRoom && (
             <button 
@@ -2073,7 +2157,6 @@ const MessagesPage = () => {
 
         <div style={{ flex: 1, padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", background: "#ffffff" }}>
           
-          {/* 🟢 NEW FEATURE: Render the beautiful list of connections in the inbox! */}
           {!activeRoom ? (
             inbox.length === 0 ? (
               <div style={{ margin: "auto", color: "#94a3b8", textAlign: "center" }}>
@@ -2093,8 +2176,16 @@ const MessagesPage = () => {
                        {item.otherUser.first_name[0]}{item.otherUser.last_name[0]}
                      </div>
                      <div>
-                       <h4 style={{ margin: 0, color: "#0f172a" }}>{item.otherUser.first_name} {item.otherUser.last_name}</h4>
-                       <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>Click to open chat</p>
+                       <h4 style={{ margin: 0, color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
+                         {item.otherUser.first_name} {item.otherUser.last_name}
+                         {/* 🟢 NEW FEATURE: Unread Dot inside the Inbox list */}
+                         {item.hasUnread && (
+                           <span style={{ width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", display: "inline-block" }}></span>
+                         )}
+                       </h4>
+                       <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
+                         {item.hasUnread ? "New message!" : "Click to open chat"}
+                       </p>
                      </div>
                   </div>
                 ))}
