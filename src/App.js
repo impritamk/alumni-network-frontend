@@ -882,57 +882,122 @@ const DashboardPage = () => {
   return (
     <div className="page-container">
       <Toaster />
-      <h1 style={{ marginBottom: 20 }}>Dashboard</h1>
-      <Link to="/alumni" className="btn-primary" style={{ marginBottom: 20, display: "inline-block" }}>
-        Browse Alumni
-      </Link>
       
-      <div className="grid-3">
-        <div className="card">
-          <p>Total Alumni</p>
-          <h2>{alumni.length}</h2>
+      {/* Welcome Banner */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 30, flexWrap: "wrap", gap: "15px" }}>
+        <div>
+          <h1 style={{ margin: "0 0 5px 0" }}>Welcome back, {user?.first_name || "Alumni"}! 👋</h1>
+          <p style={{ margin: 0, color: "#64748b" }}>Here is what's happening in your network today.</p>
         </div>
-        <div className="card">
-          <p>Active Jobs</p>
-          <h2>{jobs.length}</h2>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Link to="/alumni" className="btn-secondary" style={{ textDecoration: "none" }}>
+            <i className="fas fa-search" style={{ marginRight: 5 }}></i> Find Alumni
+          </Link>
+          <Link to="/jobs" className="btn-primary" style={{ textDecoration: "none" }}>
+            <i className="fas fa-briefcase" style={{ marginRight: 5 }}></i> View Jobs
+          </Link>
         </div>
-        <div className="card">
-          <p>Your Profile</p>
-          <h3>{user?.headline || "Not set"}</h3>
-          <Link className="text-blue" to="/profile/edit">Edit Profile</Link>
+      </div>
+      
+      {/* Stat Widgets */}
+      <div className="grid-3" style={{ marginBottom: 30 }}>
+        
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}>
+          <div style={{ background: "#e0f2fe", color: "#2563eb", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>
+            <i className="fas fa-users"></i>
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px" }}>Registered Alumni</p>
+            <h2 style={{ margin: 0, fontSize: "28px" }}>{alumni.length}+</h2>
+          </div>
         </div>
+
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}>
+          <div style={{ background: "#f3e8ff", color: "#7c3aed", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>
+            <i className="fas fa-briefcase"></i>
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px" }}>Active Job Postings</p>
+            <h2 style={{ margin: 0, fontSize: "28px" }}>{jobs.length}</h2>
+          </div>
+        </div>
+
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}>
+          <div style={{ background: "#dcfce7", color: "#15803d", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>
+            <i className="fas fa-id-badge"></i>
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "1px" }}>Your Profile</p>
+            <h3 style={{ margin: "2px 0", fontSize: "16px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "150px" }}>
+              {user?.headline || "Headline not set"}
+            </h3>
+            <Link className="text-blue" to="/profile/edit" style={{ fontSize: "13px" }}>Edit Profile →</Link>
+          </div>
+        </div>
+
       </div>
 
       <div className="grid-2">
+        {/* Newest Members Feed */}
         <div className="card">
-          <h2>Recent Alumni</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <h2 style={{ margin: 0, fontSize: "18px" }}><i className="fas fa-user-plus" style={{ marginRight: 8, color: "#64748b" }}></i> Newest Members</h2>
+            <Link to="/alumni" className="text-blue" style={{ fontSize: "14px" }}>View All</Link>
+          </div>
+          
           {alumni.length === 0 ? (
-            <p style={{ color: "#6b7280" }}>No alumni found</p>
+            <p style={{ textAlign: "center", padding: "20px 0" }}>No alumni found</p>
           ) : (
-            alumni.map((p) => (
-              <div key={p.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 8 }}>
-                {p.first_name} {p.last_name}
-              </div>
-            ))
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {alumni.slice(0, 5).map((p) => (
+                <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #e2e8f0" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                    <div style={{ width: 40, height: 40, background: "linear-gradient(135deg, #2563eb, #7c3aed)", color: "white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "14px" }}>
+                      {p.first_name[0]}{p.last_name[0]}
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: "15px" }}>{p.first_name} {p.last_name}</h4>
+                      <p style={{ margin: 0, fontSize: "13px", opacity: 0.8 }}>Batch of {p.passout_year}</p>
+                    </div>
+                  </div>
+                  <Link to={`/alumni/${p.id}`} className="btn-secondary" style={{ padding: "6px 12px", fontSize: "12px", textDecoration: "none" }}>
+                    Profile
+                  </Link>
+                </div>
+              ))}
+            </div>
           )}
         </div>
+
+        {/* Latest Opportunities Feed */}
         <div className="card">
-          <h2>Latest Jobs</h2>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <h2 style={{ margin: 0, fontSize: "18px" }}><i className="fas fa-bullhorn" style={{ marginRight: 8, color: "#64748b" }}></i> Latest Jobs</h2>
+            <Link to="/jobs" className="text-blue" style={{ fontSize: "14px" }}>Job Board</Link>
+          </div>
+
           {jobs.length === 0 ? (
-            <p style={{ color: "#6b7280" }}>No jobs found</p>
+            <p style={{ textAlign: "center", padding: "20px 0" }}>No jobs found</p>
           ) : (
-            jobs.map((job) => (
-              <div key={job.id} style={{ borderBottom: "1px solid #eee", paddingBottom: 10, marginBottom: 8 }}>
-                {job.title} – {job.company}
-              </div>
-            ))
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {jobs.slice(0, 5).map((job) => (
+                <div key={job.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid #e2e8f0" }}>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: "15px" }}>{job.title}</h4>
+                    <p style={{ margin: 0, fontSize: "13px", opacity: 0.8 }}>{job.company} • {job.location || "Remote"}</p>
+                  </div>
+                  <span style={{ background: "#dcfce7", color: "#15803d", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: "700" }}>
+                    {job.job_type || "Full-time"}
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 };
-
 // ==============================
 // ALUMNI LIST
 // ==============================
@@ -2344,3 +2409,4 @@ function App() {
 }
 
 export default App;
+
