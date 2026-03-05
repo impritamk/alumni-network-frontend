@@ -872,10 +872,6 @@ const ConnectButton = ({ userId }) => {
   const [status, setStatus] = useState("not_connected");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkConnectionStatus();
-  }, [userId]);
-
   const checkConnectionStatus = async () => {
     try {
       const res = await axios.get(`/api/connections/check/${userId}`);
@@ -886,6 +882,10 @@ const ConnectButton = ({ userId }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    checkConnectionStatus();
+  }, [userId]);
 
   const handleConnect = async () => {
     try {
