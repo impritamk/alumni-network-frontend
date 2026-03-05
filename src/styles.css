@@ -320,3 +320,25 @@ body.dark-mode .btn-secondary {
 body.dark-mode .btn-secondary:hover {
   background: #475569;
 }
+
+/* ==========================================
+   💬 CHAT BAR DARK MODE FIX
+   ========================================== */
+
+/* 1. Darken the message input box */
+body.dark-mode input[placeholder="Type a message..."] {
+  background-color: #0f172a !important;
+  border-color: #475569 !important;
+  color: #f8fafc !important;
+}
+
+body.dark-mode input[placeholder="Type a message..."]::placeholder {
+  color: #64748b !important;
+}
+
+/* 2. Darken the form container area behind the input */
+body.dark-mode form[style*="background: #f8fafc"],
+body.dark-mode form[style*="background: rgb(248, 250, 252)"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
