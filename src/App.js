@@ -520,7 +520,6 @@ const AlumniProfile = () => {
         
         {profileUser.bio && <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid var(--border-color)" }}><h3 style={{ marginTop: 0 }}>About</h3><p style={{ lineHeight: 1.6 }}>{profileUser.bio}</p></div>}
         
-        {/* 🟢 FIXED: Safe String comparison so the button doesn't vanish if ID is a string/UUID */}
         {currentUser && String(currentUser.id) !== String(id) && (
           <div style={{ marginTop: 25, display: "flex", gap: 10 }}>
             <ConnectButton userId={id} />
@@ -572,7 +571,6 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
   return (
     <div className="card" style={{ marginBottom: "15px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        {/* CLICKABLE HEADER FOR PROFILE ROUTING */}
         <div 
           className="post-header" 
           onClick={() => navigate(`/alumni/${post.user_id}`)}
@@ -1153,9 +1151,9 @@ const DashboardPage = () => {
   return (
     <div className="page-container"><Toaster /><h1 style={{ marginBottom: "20px" }}>Dashboard Overview</h1>
       <div className="grid-3" style={{ marginBottom: 30 }}>
-        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#e0f2fe", color: "#2563eb", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-users"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase" }}>Registered Alumni</p><h2 style={{ margin: 0, fontSize: "28px" }}>{alumni.length}+</h2></div></div>
-        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#f3e8ff", color: "#7c3aed", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-briefcase"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase" }}>Active Jobs</p><h2 style={{ margin: 0, fontSize: "28px" }}>{jobs.length}</h2></div></div>
-        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#dcfce7", color: "#15803d", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-id-badge"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase" }}>Your Profile</p><h3 style={{ margin: "2px 0", fontSize: "16px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "150px" }}>{user?.headline || "Headline not set"}</h3><Link className="text-blue" to="/profile/edit" style={{ fontSize: "13px" }}>Edit Profile →</Link></div></div>
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#e0f2fe", color: "#2563eb", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-users"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase", color: "var(--text-muted)" }}>Registered Alumni</p><h2 style={{ margin: 0, fontSize: "28px" }}>{alumni.length}+</h2></div></div>
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#f3e8ff", color: "#7c3aed", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-briefcase"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase", color: "var(--text-muted)" }}>Active Jobs</p><h2 style={{ margin: 0, fontSize: "28px" }}>{jobs.length}</h2></div></div>
+        <div className="card" style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: 0 }}><div style={{ background: "#dcfce7", color: "#15803d", width: "55px", height: "55px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}><i className="fas fa-id-badge"></i></div><div><p style={{ margin: 0, fontSize: "13px", fontWeight: "600", textTransform: "uppercase", color: "var(--text-muted)" }}>Your Profile</p><h3 style={{ margin: "2px 0", fontSize: "16px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "150px" }}>{user?.headline || "Headline not set"}</h3><Link className="text-blue" to="/profile/edit" style={{ fontSize: "13px" }}>Edit Profile →</Link></div></div>
       </div>
     </div>
   );
@@ -1277,7 +1275,6 @@ const EditProfile = () => {
         </form>
       </div>
       
-      {/* 🔴 RESTORED DANGER ZONE FOR ACCOUNT DELETION 🔴 */}
       <div className="card" style={{ marginTop: 20, background: "#fee2e2", border: "1px solid #fca5a5" }}>
         <h3 style={{ marginTop: 0, color: "#dc2626" }}>Danger Zone</h3>
         <p style={{ color: "#991b1b", marginBottom: 15 }}>Permanently delete your account and all associated data.</p>
