@@ -304,6 +304,11 @@ body.dark-mode .card[style*="background: #fee2e2"] p {
 body.dark-mode a.text-blue {
   color: #60a5fa !important; 
 }
+/* Remove underlines from desktop and mobile navbar links */
+.navbar-desktop-menu a,
+.navbar-mobile-menu a {
+  text-decoration: none !important;
+}
 
 /* Secondary Button Fix in Dark Mode */
 body.dark-mode .btn-secondary {
