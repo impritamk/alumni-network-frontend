@@ -1,5 +1,5 @@
 import "./styles.css";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -41,6 +41,7 @@ const AuthProvider = ({ children }) => {
       console.log("❌ No token found");
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUser = async () => {
@@ -287,7 +288,6 @@ const LoginPage = () => {
           <Link to="/register" className="text-blue">Register</Link>
             {" | "}
           <Link to="/forgot-password" className="text-blue">Forgot Password?</Link>
-
         </p>
       </div>
     </div>
@@ -742,21 +742,22 @@ const DashboardPage = () => {
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
+    // Moved load() inside useEffect to fix exhaustive-deps warning
+    const load = async () => {
+      try {
+        const [a, j] = await Promise.all([
+          axios.get("/api/users/directory?limit=10"),
+          axios.get("/api/jobs"),
+        ]);
+        setAlumni(a.data.users || []);
+        setJobs(j.data.jobs || []);
+      } catch (err) {
+        console.error("Failed to load data:", err);
+      }
+    };
+    
     load();
   }, []);
-
-  const load = async () => {
-    try {
-      const [a, j] = await Promise.all([
-        axios.get("/api/users/directory?limit=10"),
-        axios.get("/api/jobs"),
-      ]);
-      setAlumni(a.data.users || []);
-      setJobs(j.data.jobs || []);
-    } catch (err) {
-      console.error("Failed to load data:", err);
-    }
-  };
 
   return (
     <div className="page-container">
@@ -820,19 +821,20 @@ const AlumniList = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Moved loadAlumni inside useEffect to fix exhaustive-deps warning
+    const loadAlumni = async () => {
+      try {
+        const res = await axios.get("/api/users/directory");
+        setAlumni(res.data.users || []);
+      } catch (err) {
+        toast.error("Failed to load alumni");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
     loadAlumni();
   }, []);
-
-  const loadAlumni = async () => {
-    try {
-      const res = await axios.get("/api/users/directory");
-      setAlumni(res.data.users || []);
-    } catch (err) {
-      toast.error("Failed to load alumni");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return <div className="page-container">Loading alumni...</div>;
 
@@ -872,18 +874,19 @@ const ConnectButton = ({ userId }) => {
   const [status, setStatus] = useState("not_connected");
   const [loading, setLoading] = useState(true);
 
-  const checkConnectionStatus = async () => {
-    try {
-      const res = await axios.get(`/api/connections/check/${userId}`);
-      setStatus(res.data.status);
-    } catch (err) {
-      console.error("Failed to check connection status");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    // Moved checkConnectionStatus inside useEffect to fix exhaustive-deps warning
+    const checkConnectionStatus = async () => {
+      try {
+        const res = await axios.get(`/api/connections/check/${userId}`);
+        setStatus(res.data.status);
+      } catch (err) {
+        console.error("Failed to check connection status");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
     checkConnectionStatus();
   }, [userId]);
 
@@ -1053,11 +1056,9 @@ const ConnectionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("connections");
 
-  useEffect(() => {
-    loadConnections();
-  }, []);
-
-  const loadConnections = async () => {
+  // Used useCallback here because loadConnections is called inside other functions
+  // as well as the initial useEffect
+  const loadConnections = useCallback(async () => {
     try {
       const [connRes, pendRes] = await Promise.all([
         axios.get("/api/connections?status=accepted"),
@@ -1070,7 +1071,11 @@ const ConnectionsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadConnections();
+  }, [loadConnections]);
 
   const handleRemoveConnection = async (connectionId) => {
     if (window.confirm("Remove this connection?")) {
@@ -1655,11 +1660,9 @@ const JobsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  useEffect(() => {
-    loadJobs();
-  }, []);
-
-  const loadJobs = async () => {
+  // Used useCallback here because loadJobs is called inside useEffect 
+  // and passed as a prop to JobCard
+  const loadJobs = useCallback(async () => {
     try {
       const res = await axios.get("/api/jobs");
       setJobs(res.data.jobs || []);
@@ -1669,7 +1672,11 @@ const JobsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadJobs();
+  }, [loadJobs]);
 
   if (loading) {
     return <div className="page-container">Loading jobs...</div>;
