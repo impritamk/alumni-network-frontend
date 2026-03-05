@@ -342,3 +342,51 @@ body.dark-mode form[style*="background: rgb(248, 250, 252)"] {
   background-color: #1e293b !important;
   border-color: #334155 !important;
 }
+/* ==========================================
+   DARK MODE OVERRIDES (Fixes invisible text)
+   ========================================== */
+body.dark-mode {
+  /* These variables feed directly into your React components */
+  --bg-color: #0f172a !important; 
+  --card-bg: #1e293b !important;
+  background-color: var(--bg-color) !important;
+  color: #f8fafc !important;
+}
+
+/* Force Cards and Drawers to be dark */
+body.dark-mode .card,
+body.dark-mode .navbar-mobile-menu {
+  background-color: var(--card-bg) !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+/* Fix specific hardcoded text colors turning invisible */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode strong {
+  color: #f8fafc !important;
+}
+
+body.dark-mode p,
+body.dark-mode span {
+  color: #cbd5e1 !important;
+}
+
+/* Fix the Inbox Chat Partner List & Comments specific backgrounds */
+body.dark-mode div[style*="background: rgb(248, 250, 252)"],
+body.dark-mode div[style*="background: #f8fafc"],
+body.dark-mode div[style*="background: #f1f5f9"],
+body.dark-mode div[style*="background: rgba(0, 0, 0, 0.03)"] {
+  background-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+/* Fix Input Boxes in Dark Mode */
+body.dark-mode .input-box {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border: 1px solid #475569 !important;
+}
