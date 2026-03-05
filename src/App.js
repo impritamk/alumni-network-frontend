@@ -1035,21 +1035,50 @@ const MessagesPage = () => {
   const [searchParams] = useSearchParams(); 
   const targetUserId = searchParams.get("userId");
 
+  // 1. Wrap loadInbox in useCallback
   const loadInbox = useCallback(async () => { 
     try { 
       const res = await axios.get("/api/inbox"); 
       setInbox(res.data.rooms || []); 
     } catch (err) { console.error("Failed to load inbox"); } 
   }, []);
-  
-  useEffect(() => { 
-    if (targetUserId) { startChat(targetUserId); } else { loadInbox(); } 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetUserId, loadInbox]);
 
-  const startChat = async (otherUserId) => { try { const roomRes = await axios.post(`/api/messages/room/${otherUserId}`); setActiveRoom(roomRes.data.room); setChatPartner(roomRes.data.otherUser); fetchMessages(roomRes.data.room.id); } catch (err) { toast.error("Failed to start chat"); } };
-  const fetchMessages = async (roomId) => { try { const res = await axios.get(`/api/messages/${roomId}`); setMessages(res.data.messages || []); } catch (err) { console.error(err); } };
-  const sendMessage = async (e) => { e.preventDefault(); if (!newMessage.trim() || !activeRoom) return; try { await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage }); setNewMessage(""); fetchMessages(activeRoom.id); } catch (err) { toast.error("Failed to send message"); } };
+  // 2. Wrap fetchMessages in useCallback
+  const fetchMessages = useCallback(async (roomId) => { 
+    try { 
+      const res = await axios.get(`/api/messages/${roomId}`); 
+      setMessages(res.data.messages || []); 
+    } catch (err) { console.error(err); } 
+  }, []);
+
+  // 3. Wrap startChat in useCallback and pass fetchMessages as a dependency
+  const startChat = useCallback(async (otherUserId) => { 
+    try { 
+      const roomRes = await axios.post(`/api/messages/room/${otherUserId}`); 
+      setActiveRoom(roomRes.data.room); 
+      setChatPartner(roomRes.data.otherUser); 
+      fetchMessages(roomRes.data.room.id); 
+    } catch (err) { toast.error("Failed to start chat"); } 
+  }, [fetchMessages]);
+  
+  // 4. Safe useEffect that perfectly satisfies the strict ESLint build rules
+  useEffect(() => { 
+    if (targetUserId) { 
+      startChat(targetUserId); 
+    } else { 
+      loadInbox(); 
+    } 
+  }, [targetUserId, startChat, loadInbox]);
+
+  const sendMessage = async (e) => { 
+    e.preventDefault(); 
+    if (!newMessage.trim() || !activeRoom) return; 
+    try { 
+      await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage }); 
+      setNewMessage(""); 
+      fetchMessages(activeRoom.id); 
+    } catch (err) { toast.error("Failed to send message"); } 
+  };
 
   return (
     <div className="page-container"><Toaster />
@@ -1098,7 +1127,6 @@ const MessagesPage = () => {
     </div>
   );
 };
-
 // ==============================
 // DASHBOARD, ADMIN & EDIT PROFILE
 // ==============================
@@ -1319,3 +1347,4 @@ function App() {
 }
 
 export default App;
+
