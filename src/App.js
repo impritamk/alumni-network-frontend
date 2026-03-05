@@ -325,7 +325,6 @@ const RegisterPage = () => {
         lastName: form.lastName,
         passoutYear: form.passoutYear
       });
-      // Store the exact email they typed locally to autofill verify page
       localStorage.setItem("pendingEmail", form.email.toLowerCase().trim());
       toast.success("OTP sent! Verify your email.");
       window.location.href = "/verify-otp";
@@ -873,7 +872,7 @@ const AlumniList = () => {
 const ConnectButton = ({ userId }) => {
   const [status, setStatus] = useState("not_connected");
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // 🟢 NEW FEATURE: Used to navigate to chat!
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkConnectionStatus = async () => {
@@ -922,7 +921,6 @@ const ConnectButton = ({ userId }) => {
     }
   };
 
-  // 🟢 NEW FEATURE: Sends the user to the Messages page with the target ID
   const handleMessage = () => {
     navigate(`/messages?userId=${userId}`);
   };
@@ -1550,11 +1548,145 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
   );
 };
 
+
+// 🟢 NEW FEATURE: APPLY JOB MODAL
+// ==============================
+const ApplyJobModal = ({ job, onClose, onSuccess }) => {
+  const [form, setForm] = useState({
+    coverLetter: "",
+    resume: "", // Taking a URL string based on the database schema
+    phone: "",
+    linkedinUrl: ""
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      await axios.post(`/api/jobs/${job.id}/apply`, form);
+      toast.success("Application submitted successfully!");
+      onSuccess();
+    } catch (err) {
+      if (err.response?.status === 409) {
+        toast.error("You have already applied to this job");
+      } else {
+        toast.error(err.response?.data?.message || "Failed to submit application");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: "rgba(0,0,0,0.5)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 1000,
+      padding: "20px"
+    }}>
+      <div className="card" style={{ 
+        maxWidth: 500, 
+        width: "100%", 
+        maxHeight: "90vh", 
+        overflow: "auto" 
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div>
+            <h2 style={{ margin: 0 }}>Apply for {job.title}</h2>
+            <p style={{ margin: 0, color: "#6b7280", fontSize: "14px" }}>at {job.company}</p>
+          </div>
+          <button 
+            onClick={onClose}
+            style={{ 
+              background: "none", 
+              border: "none", 
+              fontSize: "24px", 
+              cursor: "pointer",
+              color: "#6b7280"
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <label>Cover Letter</label>
+          <textarea
+            className="input-box"
+            rows={5}
+            value={form.coverLetter}
+            onChange={(e) => setForm({ ...form, coverLetter: e.target.value })}
+            placeholder="Why are you a great fit for this role?"
+          />
+
+          <label>Resume Link (Google Drive, Dropbox, etc.)</label>
+          <input
+            className="input-box"
+            type="url"
+            value={form.resume}
+            onChange={(e) => setForm({ ...form, resume: e.target.value })}
+            placeholder="https://"
+          />
+
+          <label>Phone Number</label>
+          <input
+            className="input-box"
+            type="tel"
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            placeholder="+1 234 567 8900"
+          />
+
+          <label>LinkedIn Profile URL</label>
+          <input
+            className="input-box"
+            type="url"
+            value={form.linkedinUrl}
+            onChange={(e) => setForm({ ...form, linkedinUrl: e.target.value })}
+            placeholder="https://linkedin.com/in/yourprofile"
+          />
+
+          <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+            <button 
+              type="submit" 
+              className="btn-primary" 
+              style={{ flex: 1 }}
+              disabled={submitting}
+            >
+              {submitting ? "Submitting..." : "Submit Application"}
+            </button>
+            <button 
+              type="button" 
+              className="btn-secondary" 
+              style={{ flex: 1 }}
+              onClick={onClose}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+
 // ==============================
 // JOB CARD
 // ==============================
 const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false);
+  const [showApplyModal, setShowApplyModal] = useState(false); // 🟢 NEW STATE
   const { user } = useAuth();
 
   const handleDeleteJob = async () => {
@@ -1640,12 +1772,17 @@ const JobCard = ({ job, onJobDeleted }) => {
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
-        <button 
-          className="btn-primary"
-          onClick={() => toast.success("Apply feature coming soon!")}
-        >
-          Apply Now
-        </button>
+        
+        {/* 🟢 NEW FEATURE: Apply button only shows if it's NOT the user's own job */}
+        {user?.id !== job.posted_by && (
+          <button 
+            className="btn-primary"
+            onClick={() => setShowApplyModal(true)}
+          >
+            Apply Now
+          </button>
+        )}
+
         <button 
           className="btn-secondary"
           onClick={() => setExpanded(!expanded)}
@@ -1662,6 +1799,16 @@ const JobCard = ({ job, onJobDeleted }) => {
           </button>
         )}
       </div>
+
+      {/* 🟢 NEW FEATURE: The modal rendered dynamically */}
+      {showApplyModal && (
+        <ApplyJobModal 
+          job={job}
+          onClose={() => setShowApplyModal(false)}
+          onSuccess={() => setShowApplyModal(false)}
+        />
+      )}
+
     </div>
   );
 };
@@ -1739,7 +1886,8 @@ const JobsPage = () => {
   );
 };
 
-// 🟢 NEW FEATURE: MESSAGES PAGE
+// ==============================
+// MESSAGES PAGE
 // ==============================
 const MessagesPage = () => {
   const { user } = useAuth();
@@ -1749,7 +1897,6 @@ const MessagesPage = () => {
   const [chatPartner, setChatPartner] = useState(null);
   const [inbox, setInbox] = useState([]);
 
-  // Fetch the target user ID if we were directed here from the profile page
   const [searchParams] = useSearchParams();
   const targetUserId = searchParams.get("userId");
 
@@ -1809,14 +1956,12 @@ const MessagesPage = () => {
       <Toaster />
       <div className="card" style={{ display: "flex", flexDirection: "column", height: "70vh", padding: 0, overflow: "hidden" }}>
         
-        {/* Chat Header */}
         <div style={{ padding: "15px 20px", background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
           <h2 style={{ margin: 0, fontSize: "18px" }}>
             {chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}
           </h2>
         </div>
 
-        {/* Chat Messages Area */}
         <div style={{ flex: 1, padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", background: "#ffffff" }}>
           {!activeRoom ? (
             <div style={{ margin: "auto", color: "#94a3b8", textAlign: "center" }}>
@@ -1848,7 +1993,6 @@ const MessagesPage = () => {
           )}
         </div>
 
-        {/* Message Input Box */}
         {activeRoom && (
           <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", background: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
             <input
@@ -1890,9 +2034,7 @@ function App() {
           <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
           
-          {/* 🟢 NEW FEATURE: The live route to view the messaging UI */}
           <Route path="/messages" element={<PrivateRoute><PrivateLayout><MessagesPage /></PrivateLayout></PrivateRoute>} />
-          
           <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
           
           <Route path="*" element={<Navigate to="/" replace />} />
