@@ -555,6 +555,7 @@ const VerifyOtp = () => {
     </div>
   );
 };
+
 // ==============================
 // FORGOT PASSWORD PAGE
 // ==============================
@@ -729,6 +730,7 @@ const ResetPasswordPage = () => {
     </div>
   );
 };
+
 // ==============================
 // DASHBOARD
 // ==============================
@@ -1462,10 +1464,10 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           
           <Route path="/" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
@@ -1482,6 +1484,3 @@ function App() {
 }
 
 export default App;
-
-
-
