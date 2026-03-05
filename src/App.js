@@ -228,6 +228,7 @@ const LoginPage = () => {
         <form onSubmit={submit}>
           <label>Email</label>
           <input className="input-box" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} />
+          
           <label>Password</label>
           <div style={{ position: 'relative' }}>
             <input className="input-box" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} style={{ paddingRight: '40px' }} />
@@ -235,6 +236,7 @@ const LoginPage = () => {
               <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
             </button>
           </div>
+          
           <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
           </button>
@@ -278,10 +280,13 @@ const RegisterPage = () => {
             <div style={{ flex: 1 }}><label>First Name</label><input className="input-box" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required /></div>
             <div style={{ flex: 1 }}><label>Last Name</label><input className="input-box" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required /></div>
           </div>
+          
           <label>Email</label>
           <input className="input-box" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
+          
           <label>College Name</label>
           <input className="input-box" type="text" value={form.collegeName} onChange={(e) => setForm({ ...form, collegeName: e.target.value })} required />
+          
           <label>Password</label>
           <div style={{ position: 'relative' }}>
             <input className="input-box" type={showPassword ? "text" : "password"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required style={{ paddingRight: '40px' }} />
@@ -289,10 +294,13 @@ const RegisterPage = () => {
               <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
             </button>
           </div>
+          
           <label>Confirm Password</label>
           <input className="input-box" type={showPassword ? "text" : "password"} value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} required />
+          
           <label>Passout Year</label>
           <input className="input-box" type="number" value={form.passoutYear} onChange={(e) => setForm({ ...form, passoutYear: e.target.value })} required />
+          
           <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }}>Register</button>
         </form>
         <p style={{ textAlign: "center", marginTop: 15, color: "var(--text-muted)" }}>
@@ -373,6 +381,7 @@ const ForgotPasswordPage = () => {
   const [email, setEmail] = useState(""); const [submitted, setSubmitted] = useState(false); const [loading, setLoading] = useState(false); const navigate = useNavigate();
   const submit = async (e) => { e.preventDefault(); setLoading(true); try { await axios.post("/api/auth/forgot-password", { email }); setSubmitted(true); toast.success("Reset link sent!"); } catch (err) { toast.error("Failed to send reset link"); setLoading(false); } };
   if (submitted) return <div className="page-container" style={{ maxWidth: 450 }}><Toaster /><div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Check Your Email</h2><p style={{ textAlign: "center", color: "var(--text-muted)", marginBottom: 20 }}>We've sent a password reset link to:<br/><strong>{email}</strong></p><button className="btn-primary" onClick={() => navigate("/login")} style={{ width: "100%", marginTop: 20 }}>Back to Login</button></div></div>;
+  
   return (
     <div className="page-container" style={{ maxWidth: 450 }}><Toaster />
       <div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Forgot Password?</h2>
@@ -386,6 +395,7 @@ const ResetPasswordPage = () => {
   const { token } = useParams(); const [password, setPassword] = useState(""); const [confirmPassword, setConfirmPassword] = useState(""); const [loading, setLoading] = useState(false); const [success, setSuccess] = useState(false); const [showPassword, setShowPassword] = useState(false); const navigate = useNavigate();
   const submit = async (e) => { e.preventDefault(); if (password !== confirmPassword) { toast.error("Passwords do not match!"); return; } setLoading(true); try { await axios.post("/api/auth/reset-password", { token, password }); setSuccess(true); toast.success("Password reset successfully!"); setTimeout(() => navigate("/login"), 2000); } catch (err) { toast.error("Failed to reset password"); setLoading(false); } };
   if (success) return <div className="page-container" style={{ maxWidth: 450 }}><Toaster /><div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center", color: "#15803d" }}>✅ Success!</h2><p style={{ textAlign: "center", color: "var(--text-muted)" }}>Redirecting to login...</p></div></div>;
+  
   return (
     <div className="page-container" style={{ maxWidth: 450 }}><Toaster />
       <div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Reset Password</h2>
@@ -510,7 +520,8 @@ const AlumniProfile = () => {
         
         {profileUser.bio && <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid var(--border-color)" }}><h3 style={{ marginTop: 0 }}>About</h3><p style={{ lineHeight: 1.6 }}>{profileUser.bio}</p></div>}
         
-        {currentUser && currentUser.id !== parseInt(id) && (
+        {/* 🟢 FIXED: Safe String comparison so the button doesn't vanish if ID is a string/UUID */}
+        {currentUser && String(currentUser.id) !== String(id) && (
           <div style={{ marginTop: 25, display: "flex", gap: 10 }}>
             <ConnectButton userId={id} />
           </div>
@@ -561,6 +572,7 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
   return (
     <div className="card" style={{ marginBottom: "15px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        {/* CLICKABLE HEADER FOR PROFILE ROUTING */}
         <div 
           className="post-header" 
           onClick={() => navigate(`/alumni/${post.user_id}`)}
@@ -1035,7 +1047,6 @@ const MessagesPage = () => {
   const [searchParams] = useSearchParams(); 
   const targetUserId = searchParams.get("userId");
 
-  // 1. Wrap loadInbox in useCallback
   const loadInbox = useCallback(async () => { 
     try { 
       const res = await axios.get("/api/inbox"); 
@@ -1043,7 +1054,6 @@ const MessagesPage = () => {
     } catch (err) { console.error("Failed to load inbox"); } 
   }, []);
 
-  // 2. Wrap fetchMessages in useCallback
   const fetchMessages = useCallback(async (roomId) => { 
     try { 
       const res = await axios.get(`/api/messages/${roomId}`); 
@@ -1051,7 +1061,6 @@ const MessagesPage = () => {
     } catch (err) { console.error(err); } 
   }, []);
 
-  // 3. Wrap startChat in useCallback and pass fetchMessages as a dependency
   const startChat = useCallback(async (otherUserId) => { 
     try { 
       const roomRes = await axios.post(`/api/messages/room/${otherUserId}`); 
@@ -1061,13 +1070,8 @@ const MessagesPage = () => {
     } catch (err) { toast.error("Failed to start chat"); } 
   }, [fetchMessages]);
   
-  // 4. Safe useEffect that perfectly satisfies the strict ESLint build rules
   useEffect(() => { 
-    if (targetUserId) { 
-      startChat(targetUserId); 
-    } else { 
-      loadInbox(); 
-    } 
+    if (targetUserId) { startChat(targetUserId); } else { loadInbox(); } 
   }, [targetUserId, startChat, loadInbox]);
 
   const sendMessage = async (e) => { 
@@ -1127,6 +1131,7 @@ const MessagesPage = () => {
     </div>
   );
 };
+
 // ==============================
 // DASHBOARD, ADMIN & EDIT PROFILE
 // ==============================
@@ -1199,8 +1204,9 @@ const AdminPanel = () => {
   
   return (
     <div className="page-container"><Toaster />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}><i className="fas fa-shield-alt" style={{ fontSize: "28px", color: "#dc2626" }}></i><h1 style={{ margin: 0 }}>Admin Panel</h1></div>
       <div className="card">
-        <h3>Manage Users</h3>
+        <h3 style={{ marginTop: 0 }}>Manage Users</h3>
         <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px", marginBottom: "20px" }}><input type="text" className="input-box" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} /><button type="submit" className="btn-primary">Search</button></form>
         {loading ? <p>Loading...</p> : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -1347,4 +1353,3 @@ function App() {
 }
 
 export default App;
-
