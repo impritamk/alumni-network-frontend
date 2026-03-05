@@ -99,8 +99,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false });
-  const [isDark, setIsDark] = useState(document.body.classList.contains("dark-mode")); // 🟢 NEW FEATURE: Dark Mode State
+  const [isDark, setIsDark] = useState(document.body.classList.contains("dark-mode")); 
 
+  // Poll for new notifications every 60 seconds (Fixed 429 Error)
   useEffect(() => {
     if (user) {
       const fetchIndicators = async () => {
@@ -121,7 +122,6 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  // 🟢 NEW FEATURE: Dark Mode Toggle Function
   const toggleDarkMode = () => {
     document.body.classList.toggle("dark-mode");
     setIsDark(!isDark);
@@ -152,9 +152,23 @@ const Navbar = () => {
       minHeight: "60px",
       position: "relative"
     }}>
-      <Link to="/" style={{ textDecoration: "none", color: "#2563eb", fontSize: "20px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px" }}>
-        <img src="/logo-connectalumni.svg" alt="ConnectAlumni" style={{ width: "40px", height: "40px" }} />
-        <span style={{ fontFamily: "'Poppins', sans-serif" }}>ConnectAlumni</span>
+      
+      {/* 🟢 NEW: TWO-TONE LOGO & AUTO-INVERT SVG */}
+      <Link to="/" style={{ textDecoration: "none", fontSize: "22px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
+        <img 
+          src="/logo-connectalumni.svg" 
+          alt="ConnectAlumni" 
+          style={{ 
+            width: "40px", 
+            height: "40px",
+            filter: isDark ? "invert(1) brightness(2)" : "none", // Inverts black SVG to white in dark mode
+            transition: "filter 0.3s ease" 
+          }} 
+        />
+        <div style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.5px" }}>
+          <span style={{ color: isDark ? "#f8fafc" : "#0f172a", transition: "color 0.3s ease" }}>Connect</span>
+          <span style={{ color: "#2563eb" }}>Alumni</span>
+        </div>
       </Link>
       
       {/* Desktop Menu */}
@@ -191,7 +205,6 @@ const Navbar = () => {
           Hi, {user?.first_name || user?.firstName || "User"}
         </span>
 
-        {/* 🟢 NEW FEATURE: Dark Mode Icon Button */}
         <button 
           onClick={toggleDarkMode} 
           style={{ background: "none", border: "none", cursor: "pointer", fontSize: "18px", marginLeft: "5px" }}
@@ -353,7 +366,6 @@ const LoginPage = () => {
               disabled={isLoading}
               style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
             />
-            {/* 🟢 NEW FEATURE: FontAwesome Eye Icons */}
             <button 
               type="button" 
               onClick={() => setShowPassword(!showPassword)} 
@@ -459,7 +471,6 @@ const RegisterPage = () => {
               required
               style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
             />
-            {/* 🟢 NEW FEATURE: FontAwesome Eye Icons */}
             <button 
               type="button" 
               onClick={() => setShowPassword(!showPassword)} 
@@ -998,6 +1009,7 @@ const DashboardPage = () => {
     </div>
   );
 };
+
 // ==============================
 // ALUMNI LIST
 // ==============================
@@ -1449,7 +1461,7 @@ const ConnectionsPage = () => {
 };
 
 // ==============================
-// EDIT PROFILE (🟢 FEATURE: NAME EDITING ADDED)
+// EDIT PROFILE
 // ==============================
 const EditProfile = () => {
   const { user, logout } = useAuth();
@@ -1481,7 +1493,6 @@ const EditProfile = () => {
     try {
       await axios.put("/api/users/profile", form);
       toast.success("Profile updated successfully!");
-      // 🟢 Automatically refresh the page after 1 second so the Navbar name updates
       setTimeout(() => window.location.reload(), 1000); 
     } catch (err) {
       toast.error("Failed to update profile");
@@ -1625,7 +1636,6 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
         experienceLevel: form.experienceLevel
       };
       
-      console.log("Posting job with payload:", payload);
       await axios.post("/api/jobs", payload);
       toast.success("Job posted successfully!");
       onSuccess();
@@ -1910,7 +1920,8 @@ const ApplyJobModal = ({ job, onClose, onSuccess }) => {
   );
 };
 
-// 🟢 NEW FEATURE: VIEW APPLICATIONS MODAL
+// ==============================
+// VIEW APPLICATIONS MODAL
 // ==============================
 const ViewApplicationsModal = ({ job, onClose }) => {
   const [applications, setApplications] = useState([]);
@@ -1991,7 +2002,7 @@ const ViewApplicationsModal = ({ job, onClose }) => {
 const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false);
   const [showApplyModal, setShowApplyModal] = useState(false); 
-  const [showApplicationsModal, setShowApplicationsModal] = useState(false); // 🟢 NEW FEATURE
+  const [showApplicationsModal, setShowApplicationsModal] = useState(false); 
   const { user } = useAuth();
 
   const handleDeleteJob = async () => {
@@ -2095,7 +2106,7 @@ const JobCard = ({ job, onJobDeleted }) => {
           {expanded ? <><i className="fas fa-chevron-up"></i> Show Less</> : <><i className="fas fa-chevron-down"></i> View Details</>}
         </button>
         
-        {/* 🟢 NEW FEATURE: If the user DID post the job, they see the applications */}
+        {/* If the user DID post the job, they see the applications */}
         {user?.id === job.posted_by && (
           <>
             <button className="btn-primary" onClick={() => setShowApplicationsModal(true)}>
@@ -2316,7 +2327,7 @@ const MessagesPage = () => {
                      <div>
                        <h4 style={{ margin: 0, color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
                          {item.otherUser.first_name} {item.otherUser.last_name}
-                         {/* 🟢 Unread message dot next to name */}
+                         {/* Unread message dot */}
                          {item.hasUnread && (
                            <span style={{ width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", display: "inline-block" }}></span>
                          )}
@@ -2409,5 +2420,3 @@ function App() {
 }
 
 export default App;
-
-
