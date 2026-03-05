@@ -126,6 +126,7 @@ const Navbar = () => {
       <div className="navbar-desktop-menu" style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
         <Link to="/" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Home</Link>
         <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
+        <Link to="/connections" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Connections</Link>
         <Link to="/messages" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Messages</Link>
         <Link to="/jobs" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Jobs</Link>
         <Link to="/profile/edit" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Profile</Link>
@@ -172,6 +173,7 @@ const Navbar = () => {
         <div className="navbar-mobile-menu">
           <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
           <Link to="/alumni" onClick={() => setMenuOpen(false)}>Alumni</Link>
+          <Link to="/connections" onClick={() => setMenuOpen(false)}>Connections</Link>
           <Link to="/messages" onClick={() => setMenuOpen(false)}>Messages</Link>
           <Link to="/jobs" onClick={() => setMenuOpen(false)}>Jobs</Link>
           <Link to="/profile/edit" onClick={() => setMenuOpen(false)}>Profile</Link>
@@ -864,6 +866,85 @@ const AlumniList = () => {
 };
 
 // ==============================
+// CONNECT BUTTON COMPONENT
+// ==============================
+const ConnectButton = ({ userId }) => {
+  const [status, setStatus] = useState("not_connected");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkConnectionStatus();
+  }, [userId]);
+
+  const checkConnectionStatus = async () => {
+    try {
+      const res = await axios.get(`/api/connections/check/${userId}`);
+      setStatus(res.data.status);
+    } catch (err) {
+      console.error("Failed to check connection status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnect = async () => {
+    try {
+      setLoading(true);
+      await axios.post(`/api/connections/${userId}/request`);
+      setStatus("pending");
+      toast.success("Connection request sent!");
+    } catch (err) {
+      if (err.response?.status === 409) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Failed to send connection request");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMessage = () => {
+    toast.success("Messaging feature coming soon!");
+  };
+
+  if (loading) {
+    return <button className="btn-primary" disabled>Loading...</button>;
+  }
+
+  if (status === "accepted") {
+    return (
+      <div style={{ display: "flex", gap: 8 }}>
+        <button 
+          className="btn-primary"
+          onClick={handleMessage}
+        >
+          💬 Message
+        </button>
+      </div>
+    );
+  }
+
+  if (status === "pending") {
+    return (
+      <button className="btn-secondary" disabled>
+        ⏳ Request Pending
+      </button>
+    );
+  }
+
+  return (
+    <button 
+      className="btn-primary"
+      onClick={handleConnect}
+      disabled={loading}
+    >
+      🔗 Connect
+    </button>
+  );
+};
+
+// ==============================
 // ALUMNI PROFILE
 // ==============================
 const AlumniProfile = () => {
@@ -942,12 +1023,7 @@ const AlumniProfile = () => {
         )}
         
         <div style={{ marginTop: 25, display: "flex", gap: 10 }}>
-          <button 
-            className="btn-primary" 
-            onClick={() => toast.success("Connect feature coming soon!")}
-          >
-            Connect
-          </button>
+          <ConnectButton userId={id} />
           <button 
             className="btn-secondary" 
             onClick={() => toast.success("Messaging feature coming soon!")}
@@ -964,6 +1040,197 @@ const AlumniProfile = () => {
       >
         ← Back to Alumni List
       </Link>
+    </div>
+  );
+};
+
+// ==============================
+// CONNECTIONS PAGE
+// ==============================
+const ConnectionsPage = () => {
+  const [connections, setConnections] = useState([]);
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("connections");
+
+  useEffect(() => {
+    loadConnections();
+  }, []);
+
+  const loadConnections = async () => {
+    try {
+      const [connRes, pendRes] = await Promise.all([
+        axios.get("/api/connections?status=accepted"),
+        axios.get("/api/connections/pending-requests")
+      ]);
+      setConnections(connRes.data.connections || []);
+      setPending(pendRes.data.pending || []);
+    } catch (err) {
+      toast.error("Failed to load connections");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveConnection = async (connectionId) => {
+    if (window.confirm("Remove this connection?")) {
+      try {
+        await axios.delete(`/api/connections/${connectionId}`);
+        toast.success("Connection removed");
+        loadConnections();
+      } catch (err) {
+        toast.error("Failed to remove connection");
+      }
+    }
+  };
+
+  const handleAccept = async (connectionId) => {
+    try {
+      await axios.post(`/api/connections/${connectionId}/accept`);
+      toast.success("Connection accepted!");
+      loadConnections();
+    } catch (err) {
+      toast.error("Failed to accept connection");
+    }
+  };
+
+  const handleReject = async (connectionId) => {
+    try {
+      await axios.delete(`/api/connections/${connectionId}/reject`);
+      toast.success("Connection rejected");
+      loadConnections();
+    } catch (err) {
+      toast.error("Failed to reject connection");
+    }
+  };
+
+  if (loading) return <div className="page-container">Loading...</div>;
+
+  return (
+    <div className="page-container">
+      <Toaster />
+      <h1>My Network</h1>
+
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, borderBottom: "2px solid #e5e7eb" }}>
+        <button
+          onClick={() => setTab("connections")}
+          style={{
+            background: "none",
+            border: "none",
+            padding: "12px 0",
+            fontSize: "16px",
+            fontWeight: tab === "connections" ? "700" : "500",
+            color: tab === "connections" ? "#2563eb" : "#6b7280",
+            borderBottom: tab === "connections" ? "3px solid #2563eb" : "none",
+            cursor: "pointer"
+          }}
+        >
+          Connections ({connections.length})
+        </button>
+        <button
+          onClick={() => setTab("pending")}
+          style={{
+            background: "none",
+            border: "none",
+            padding: "12px 0",
+            fontSize: "16px",
+            fontWeight: tab === "pending" ? "700" : "500",
+            color: tab === "pending" ? "#2563eb" : "#6b7280",
+            borderBottom: tab === "pending" ? "3px solid #2563eb" : "none",
+            cursor: "pointer"
+          }}
+        >
+          Pending ({pending.length})
+        </button>
+      </div>
+
+      {tab === "connections" && (
+        <div>
+          {connections.length === 0 ? (
+            <div className="card">
+              <p style={{ textAlign: "center", color: "#6b7280" }}>
+                No connections yet. Start connecting with alumni!
+              </p>
+            </div>
+          ) : (
+            <div className="grid-3">
+              {connections.map((conn) => (
+                <div key={conn.connection_id} className="card">
+                  <h3 style={{ marginTop: 0 }}>
+                    {conn.first_name} {conn.last_name}
+                  </h3>
+                  <p style={{ color: "#6b7280", fontSize: "14px" }}>
+                    {conn.headline || "Alumni"}
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#9ca3af" }}>
+                    Batch {conn.passout_year}
+                  </p>
+                  <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                    <button
+                      className="btn-secondary"
+                      onClick={() => window.location.href = `/alumni/${conn.id}`}
+                      style={{ flex: 1, fontSize: "13px", padding: "6px" }}
+                    >
+                      View Profile
+                    </button>
+                    <button
+                      className="btn-danger"
+                      onClick={() => handleRemoveConnection(conn.id)}
+                      style={{ flex: 1, fontSize: "13px", padding: "6px" }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "pending" && (
+        <div>
+          {pending.length === 0 ? (
+            <div className="card">
+              <p style={{ textAlign: "center", color: "#6b7280" }}>
+                No pending connection requests
+              </p>
+            </div>
+          ) : (
+            <div className="grid-2">
+              {pending.map((req) => (
+                <div key={req.connection_id} className="card" style={{ background: "#f0f4ff" }}>
+                  <h3 style={{ marginTop: 0, color: "#2563eb" }}>
+                    {req.first_name} {req.last_name}
+                  </h3>
+                  <p style={{ color: "#6b7280", fontSize: "14px" }}>
+                    {req.headline || "Alumni"}
+                  </p>
+                  <p style={{ fontSize: "13px", color: "#9ca3af", marginBottom: 15 }}>
+                    Batch {req.passout_year}
+                  </p>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      className="btn-primary"
+                      onClick={() => handleAccept(req.connection_id)}
+                      style={{ flex: 1, fontSize: "13px", padding: "8px" }}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="btn-secondary"
+                      onClick={() => handleReject(req.connection_id)}
+                      style={{ flex: 1, fontSize: "13px", padding: "8px" }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -1472,6 +1739,7 @@ function App() {
           <Route path="/" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
+          <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
           <Route path="/messages" element={<PrivateRoute><PrivateLayout><div className="page-container">Messages coming soon</div></PrivateLayout></PrivateRoute>} />
           <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
