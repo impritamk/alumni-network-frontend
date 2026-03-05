@@ -99,8 +99,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false });
+  const [isDark, setIsDark] = useState(document.body.classList.contains("dark-mode")); // 🟢 NEW FEATURE: Dark Mode State
 
-  // Poll for new notifications every 15 seconds
   useEffect(() => {
     if (user) {
       const fetchIndicators = async () => {
@@ -110,8 +110,8 @@ const Navbar = () => {
         } catch (err) { }
       };
       
-      fetchIndicators(); // Initial fetch
-      const interval = setInterval(fetchIndicators, 15000); // Check every 15s
+      fetchIndicators(); 
+      const interval = setInterval(fetchIndicators, 15000); 
       return () => clearInterval(interval);
     }
   }, [user]);
@@ -119,6 +119,12 @@ const Navbar = () => {
   const doLogout = () => {
     logout();
     navigate("/login");
+  };
+
+  // 🟢 NEW FEATURE: Dark Mode Toggle Function
+  const toggleDarkMode = () => {
+    document.body.classList.toggle("dark-mode");
+    setIsDark(!isDark);
   };
 
   const Dot = () => (
@@ -135,7 +141,7 @@ const Navbar = () => {
   );
 
   return (
-    <div style={{
+    <div className="card" style={{
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -143,11 +149,8 @@ const Navbar = () => {
       margin: "12px 16px",
       borderRadius: "12px",
       borderBottom: "none",
-      background: "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
-      boxShadow: "0 4px 16px rgba(37, 99, 235, 0.1)",
       minHeight: "60px",
-      position: "relative",
-      border: "1px solid #e0e7ff"
+      position: "relative"
     }}>
       <Link to="/" style={{ textDecoration: "none", color: "#2563eb", fontSize: "20px", fontWeight: "700", display: "flex", alignItems: "center", gap: "10px" }}>
         <img src="/logo-connectalumni.svg" alt="ConnectAlumni" style={{ width: "40px", height: "40px" }} />
@@ -160,7 +163,6 @@ const Navbar = () => {
         <Link to="/alumni" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Alumni</Link>
         <Link to="/connections" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Connections</Link>
         
-        {/* Messages Link with Notification Dot */}
         <Link 
           to="/messages" 
           onClick={() => setIndicators(prev => ({...prev, hasUnreadMessages: false}))}
@@ -172,7 +174,6 @@ const Navbar = () => {
           {indicators.hasUnreadMessages && <Dot />}
         </Link>
 
-        {/* Jobs Link with Notification Dot */}
         <Link 
           to="/jobs" 
           onClick={() => setIndicators(prev => ({...prev, hasNewJobs: false}))}
@@ -185,9 +186,20 @@ const Navbar = () => {
         </Link>
 
         <Link to="/profile/edit" style={{ color: "#6b7280", fontWeight: "500", fontSize: "14px", transition: "all 0.3s" }} onMouseEnter={(e) => e.target.style.color = "#2563eb"} onMouseLeave={(e) => e.target.style.color = "#6b7280"}>Profile</Link>
+        
         <span style={{ color: "#6b7280", fontWeight: "500" }}>
           Hi, {user?.first_name || user?.firstName || "User"}
         </span>
+
+        {/* 🟢 NEW FEATURE: Dark Mode Icon Button */}
+        <button 
+          onClick={toggleDarkMode} 
+          style={{ background: "none", border: "none", cursor: "pointer", fontSize: "18px", marginLeft: "5px" }}
+          title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        >
+          <i className={isDark ? "fas fa-sun" : "fas fa-moon"} style={{ color: isDark ? "#fbbf24" : "#6b7280" }}></i>
+        </button>
+
         <button 
           onClick={doLogout}
           style={{
@@ -238,6 +250,9 @@ const Navbar = () => {
             Jobs {indicators.hasNewJobs && "🔴"}
           </Link>
           <Link to="/profile/edit" onClick={() => setMenuOpen(false)}>Profile</Link>
+          <button onClick={toggleDarkMode} style={{ background: "none", border: "none", color: "#6b7280", textAlign: "left", padding: "10px 0" }}>
+            {isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}
+          </button>
           <button 
             onClick={() => { doLogout(); setMenuOpen(false); }}
           >
@@ -264,7 +279,7 @@ const PrivateRoute = ({ children }) => {
         height: '100vh',
         fontSize: '20px'
       }}>
-        Loading...
+        <i className="fas fa-spinner fa-spin" style={{ color: "#2563eb", marginRight: "10px" }}></i> Loading...
       </div>
     );
   }
@@ -338,23 +353,24 @@ const LoginPage = () => {
               disabled={isLoading}
               style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
             />
+            {/* 🟢 NEW FEATURE: FontAwesome Eye Icons */}
             <button 
               type="button" 
               onClick={() => setShowPassword(!showPassword)} 
               style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
-              {showPassword ? "🙈" : "👁️"}
+              <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"} style={{ color: "#6b7280", fontSize: "16px" }}></i>
             </button>
           </div>
           <button 
             className="btn-primary" 
-            style={{ width: "100%" }}
+            style={{ width: "100%", marginTop: "10px" }}
             disabled={isLoading}
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
-        <p style={{ textAlign: "center", marginTop: 10 }}>
+        <p style={{ textAlign: "center", marginTop: 15 }}>
           Don't have an account?{" "}
           <Link to="/register" className="text-blue">Register</Link>
             {" | "}
@@ -443,12 +459,13 @@ const RegisterPage = () => {
               required
               style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
             />
+            {/* 🟢 NEW FEATURE: FontAwesome Eye Icons */}
             <button 
               type="button" 
               onClick={() => setShowPassword(!showPassword)} 
               style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
-              {showPassword ? "🙈" : "👁️"}
+              <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"} style={{ color: "#6b7280", fontSize: "16px" }}></i>
             </button>
           </div>
 
@@ -472,11 +489,11 @@ const RegisterPage = () => {
             onChange={(e) => setForm({ ...form, passoutYear: e.target.value })}
             required
           />
-          <button className="btn-primary" style={{ width: "100%" }}>
+          <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }}>
             Register
           </button>
         </form>
-        <p style={{ textAlign: "center", marginTop: 10 }}>
+        <p style={{ textAlign: "center", marginTop: 15 }}>
           Already have an account?{" "}
           <Link to="/login" className="text-blue">Login</Link>
         </p>
@@ -806,7 +823,7 @@ const ResetPasswordPage = () => {
               onClick={() => setShowPassword(!showPassword)} 
               style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
-              {showPassword ? "🙈" : "👁️"}
+              <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"} style={{ color: "#6b7280", fontSize: "16px" }}></i>
             </button>
           </div>
 
@@ -826,7 +843,7 @@ const ResetPasswordPage = () => {
           
           <button 
             className="btn-primary" 
-            style={{ width: "100%" }}
+            style={{ width: "100%", marginTop: "10px" }}
             disabled={loading}
           >
             {loading ? "Resetting..." : "Reset Password"}
@@ -938,7 +955,12 @@ const AlumniList = () => {
     loadAlumni();
   }, []);
 
-  if (loading) return <div className="page-container">Loading alumni...</div>;
+  if (loading) return <div className="page-container">
+    <div style={{ textAlign: "center", marginTop: "50px", color: "#6b7280" }}>
+      <i className="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Loading alumni...</p>
+    </div>
+  </div>;
 
   return (
     <div className="page-container">
@@ -1029,7 +1051,7 @@ const ConnectButton = ({ userId }) => {
   };
 
   if (loading) {
-    return <button className="btn-primary" disabled>Loading...</button>;
+    return <button className="btn-primary" disabled><i className="fas fa-spinner fa-spin"></i></button>;
   }
 
   if (status === "accepted") {
@@ -1039,13 +1061,13 @@ const ConnectButton = ({ userId }) => {
           className="btn-primary"
           onClick={handleMessage}
         >
-          💬 Message
+          <i className="fas fa-comment-dots" style={{ marginRight: 5 }}></i> Message
         </button>
         <button 
           className="btn-danger"
           onClick={handleRemove}
         >
-          ✕ Disconnect
+          <i className="fas fa-times" style={{ marginRight: 5 }}></i> Disconnect
         </button>
       </div>
     );
@@ -1054,7 +1076,7 @@ const ConnectButton = ({ userId }) => {
   if (status === "pending") {
     return (
       <button className="btn-secondary" disabled>
-        ⏳ Request Pending
+        <i className="fas fa-hourglass-half" style={{ marginRight: 5 }}></i> Request Pending
       </button>
     );
   }
@@ -1065,7 +1087,7 @@ const ConnectButton = ({ userId }) => {
       onClick={handleConnect}
       disabled={loading}
     >
-      🔗 Connect
+      <i className="fas fa-user-plus" style={{ marginRight: 5 }}></i> Connect
     </button>
   );
 };
@@ -1101,7 +1123,8 @@ const AlumniProfile = () => {
   if (loading) {
     return (
       <div className="page-container">
-        <div className="card">
+        <div className="card" style={{ textAlign: "center", color: "#6b7280" }}>
+          <i className="fas fa-spinner fa-spin fa-2x"></i>
           <p>Loading profile...</p>
         </div>
       </div>
@@ -1112,8 +1135,8 @@ const AlumniProfile = () => {
     return (
       <div className="page-container">
         <Toaster />
-        <div className="card">
-          <h2>User Not Found</h2>
+        <div className="card" style={{ textAlign: "center" }}>
+          <h2><i className="fas fa-user-slash" style={{ color: "#ef4444", marginRight: 10 }}></i>User Not Found</h2>
           <p style={{ color: "#6b7280", marginBottom: 15 }}>
             {error || "This user profile could not be found."}
           </p>
@@ -1135,10 +1158,10 @@ const AlumniProfile = () => {
         </p>
         
         <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #eee" }}>
-          <p><b>Batch:</b> {user.passout_year || "N/A"}</p>
-          {user.email && <p><b>Email:</b> {user.email}</p>}
-          {user.current_company && <p><b>Company:</b> {user.current_company}</p>}
-          {user.location && <p><b>Location:</b> {user.location}</p>}
+          <p><b><i className="fas fa-graduation-cap" style={{ color: "#2563eb", width: 20 }}></i> Batch:</b> {user.passout_year || "N/A"}</p>
+          {user.email && <p><b><i className="fas fa-envelope" style={{ color: "#2563eb", width: 20 }}></i> Email:</b> {user.email}</p>}
+          {user.current_company && <p><b><i className="fas fa-building" style={{ color: "#2563eb", width: 20 }}></i> Company:</b> {user.current_company}</p>}
+          {user.location && <p><b><i className="fas fa-map-marker-alt" style={{ color: "#2563eb", width: 20 }}></i> Location:</b> {user.location}</p>}
         </div>
         
         {user.bio && (
@@ -1224,7 +1247,12 @@ const ConnectionsPage = () => {
     }
   };
 
-  if (loading) return <div className="page-container">Loading...</div>;
+  if (loading) return <div className="page-container">
+    <div style={{ textAlign: "center", marginTop: "50px", color: "#6b7280" }}>
+      <i className="fas fa-spinner fa-spin fa-2x"></i>
+      <p>Loading network...</p>
+    </div>
+  </div>;
 
   return (
     <div className="page-container">
@@ -1356,12 +1384,14 @@ const ConnectionsPage = () => {
 };
 
 // ==============================
-// EDIT PROFILE
+// EDIT PROFILE (🟢 FEATURE: NAME EDITING ADDED)
 // ==============================
 const EditProfile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
     headline: "",
     bio: "",
     location: "",
@@ -1371,6 +1401,8 @@ const EditProfile = () => {
   useEffect(() => {
     if (user) {
       setForm({
+        firstName: user.first_name || "",
+        lastName: user.last_name || "",
         headline: user.headline || "",
         bio: user.bio || "",
         location: user.location || "",
@@ -1383,7 +1415,9 @@ const EditProfile = () => {
     e.preventDefault();
     try {
       await axios.put("/api/users/profile", form);
-      toast.success("Profile updated!");
+      toast.success("Profile updated successfully!");
+      // 🟢 Automatically refresh the page after 1 second so the Navbar name updates
+      setTimeout(() => window.location.reload(), 1000); 
     } catch (err) {
       toast.error("Failed to update profile");
     }
@@ -1418,12 +1452,36 @@ const EditProfile = () => {
       <div className="card">
         <h2>Edit Profile</h2>
         <form onSubmit={submit}>
+          
+          <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ flex: 1 }}>
+              <label>First Name</label>
+              <input
+                className="input-box"
+                value={form.firstName}
+                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                required
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label>Last Name</label>
+              <input
+                className="input-box"
+                value={form.lastName}
+                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
           <label>Headline</label>
           <input
             className="input-box"
             value={form.headline}
             onChange={(e) => setForm({ ...form, headline: e.target.value })}
+            placeholder="e.g. Software Engineer at Google"
           />
+          
           <label>Bio</label>
           <textarea
             className="input-box"
@@ -1431,18 +1489,22 @@ const EditProfile = () => {
             value={form.bio}
             onChange={(e) => setForm({ ...form, bio: e.target.value })}
           />
+          
           <label>Location</label>
           <input
             className="input-box"
             value={form.location}
             onChange={(e) => setForm({ ...form, location: e.target.value })}
+            placeholder="e.g. New York, NY"
           />
+          
           <label>Company</label>
           <input
             className="input-box"
             value={form.currentCompany}
             onChange={(e) => setForm({ ...form, currentCompany: e.target.value })}
           />
+          
           <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>
             Save Changes
           </button>
@@ -1459,7 +1521,7 @@ const EditProfile = () => {
           onClick={handleDeleteAccount}
           style={{ width: "100%" }}
         >
-          🗑️ Delete My Account
+          <i className="fas fa-trash-alt" style={{ marginRight: 5 }}></i> Delete My Account
         </button>
       </div>
     </div>
@@ -1498,6 +1560,7 @@ const CreateJobModal = ({ onClose, onSuccess }) => {
         experienceLevel: form.experienceLevel
       };
       
+      console.log("Posting job with payload:", payload);
       await axios.post("/api/jobs", payload);
       toast.success("Job posted successfully!");
       onSuccess();
@@ -1782,7 +1845,6 @@ const ApplyJobModal = ({ job, onClose, onSuccess }) => {
   );
 };
 
-
 // 🟢 NEW FEATURE: VIEW APPLICATIONS MODAL
 // ==============================
 const ViewApplicationsModal = ({ job, onClose }) => {
@@ -1819,9 +1881,15 @@ const ViewApplicationsModal = ({ job, onClose }) => {
         </div>
 
         {loading ? (
-          <p style={{ textAlign: "center", color: "#6b7280" }}>Loading applications...</p>
+          <div style={{ textAlign: "center", padding: "20px", color: "#6b7280" }}>
+             <i className="fas fa-spinner fa-spin fa-2x"></i>
+             <p>Loading applications...</p>
+          </div>
         ) : applications.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#6b7280" }}>No applications received yet.</p>
+          <div style={{ textAlign: "center", padding: "20px", color: "#6b7280" }}>
+             <i className="fas fa-folder-open fa-2x" style={{ marginBottom: 10 }}></i>
+             <p>No applications received yet.</p>
+          </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {applications.map((app) => (
@@ -1836,11 +1904,11 @@ const ViewApplicationsModal = ({ job, onClose }) => {
                 <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                   {app.resume_url && (
                     <a href={app.resume_url} target="_blank" rel="noreferrer" style={{ background: "#e0f2fe", color: "#0369a1", padding: "6px 12px", borderRadius: "6px", textDecoration: "none", fontSize: "13px", fontWeight: "600" }}>
-                      📄 View Resume
+                      <i className="fas fa-file-alt" style={{ marginRight: 4 }}></i> View Resume
                     </a>
                   )}
                   <Link to={`/alumni/${app.applicant_id}`} style={{ background: "#f3e8ff", color: "#7c3aed", padding: "6px 12px", borderRadius: "6px", textDecoration: "none", fontSize: "13px", fontWeight: "600" }}>
-                    👤 View Profile
+                    <i className="fas fa-user" style={{ marginRight: 4 }}></i> View Profile
                   </Link>
                 </div>
               </div>
@@ -1852,14 +1920,13 @@ const ViewApplicationsModal = ({ job, onClose }) => {
   );
 };
 
-
 // ==============================
 // JOB CARD
 // ==============================
 const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false);
-  const [showApplyModal, setShowApplyModal] = useState(false);
-  const [showApplicationsModal, setShowApplicationsModal] = useState(false); 
+  const [showApplyModal, setShowApplyModal] = useState(false); 
+  const [showApplicationsModal, setShowApplicationsModal] = useState(false); // 🟢 NEW FEATURE
   const { user } = useAuth();
 
   const handleDeleteJob = async () => {
@@ -1893,7 +1960,7 @@ const JobCard = ({ job, onJobDeleted }) => {
                 borderRadius: "6px",
                 fontSize: "14px"
               }}>
-                {job.job_type}
+                <i className="fas fa-briefcase" style={{ marginRight: 4 }}></i> {job.job_type}
               </span>
             )}
             {job.experience_level && (
@@ -1904,7 +1971,7 @@ const JobCard = ({ job, onJobDeleted }) => {
                 borderRadius: "6px",
                 fontSize: "14px"
               }}>
-                {job.experience_level}
+                <i className="fas fa-chart-line" style={{ marginRight: 4 }}></i> {job.experience_level}
               </span>
             )}
             {job.salary_range && (
@@ -1915,7 +1982,7 @@ const JobCard = ({ job, onJobDeleted }) => {
                 borderRadius: "6px",
                 fontSize: "14px"
               }}>
-                {job.salary_range}
+                <i className="fas fa-money-bill-wave" style={{ marginRight: 4 }}></i> {job.salary_range}
               </span>
             )}
           </div>
@@ -1952,7 +2019,7 @@ const JobCard = ({ job, onJobDeleted }) => {
             className="btn-primary"
             onClick={() => setShowApplyModal(true)}
           >
-            Apply Now
+            <i className="fas fa-paper-plane" style={{ marginRight: 5 }}></i> Apply Now
           </button>
         )}
 
@@ -1960,20 +2027,20 @@ const JobCard = ({ job, onJobDeleted }) => {
           className="btn-secondary"
           onClick={() => setExpanded(!expanded)}
         >
-          {expanded ? "Show Less" : "View Details"}
+          {expanded ? <><i className="fas fa-chevron-up"></i> Show Less</> : <><i className="fas fa-chevron-down"></i> View Details</>}
         </button>
         
-        {/* If the user DID post the job, they see the applications and delete buttons */}
+        {/* 🟢 NEW FEATURE: If the user DID post the job, they see the applications */}
         {user?.id === job.posted_by && (
           <>
             <button className="btn-primary" onClick={() => setShowApplicationsModal(true)}>
-              View Applications ({job.application_count || 0})
+              <i className="fas fa-users" style={{ marginRight: 5 }}></i> View Applications ({job.application_count || 0})
             </button>
             <button 
               className="btn-danger"
               onClick={handleDeleteJob}
             >
-              Delete Job
+              <i className="fas fa-trash" style={{ marginRight: 5 }}></i> Delete Job
             </button>
           </>
         )}
@@ -2023,7 +2090,12 @@ const JobsPage = () => {
   }, [loadJobs]);
 
   if (loading) {
-    return <div className="page-container">Loading jobs...</div>;
+    return <div className="page-container">
+      <div style={{ textAlign: "center", marginTop: "50px", color: "#6b7280" }}>
+        <i className="fas fa-spinner fa-spin fa-2x"></i>
+        <p>Loading jobs...</p>
+      </div>
+    </div>;
   }
 
   return (
@@ -2036,7 +2108,7 @@ const JobsPage = () => {
           className="btn-primary"
           onClick={() => setShowCreateModal(true)}
         >
-          + Post a Job
+          <i className="fas fa-plus" style={{ marginRight: 5 }}></i> Post a Job
         </button>
       </div>
 
@@ -2147,7 +2219,7 @@ const MessagesPage = () => {
               onClick={() => { setActiveRoom(null); setChatPartner(null); loadInbox(); }}
               style={{ background: "none", border: "none", color: "#2563eb", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}
             >
-              ← Back
+              <i className="fas fa-arrow-left"></i> Back
             </button>
           )}
           <h2 style={{ margin: 0, fontSize: "18px" }}>
@@ -2160,7 +2232,8 @@ const MessagesPage = () => {
           {!activeRoom ? (
             inbox.length === 0 ? (
               <div style={{ margin: "auto", color: "#94a3b8", textAlign: "center" }}>
-                Your inbox is ready! Go to an Alumni Profile and click 'Message' to start chatting.
+                <i className="fas fa-inbox fa-3x" style={{ marginBottom: 10, color: "#cbd5e1" }}></i>
+                <p>Your inbox is empty. Go to an Alumni Profile to start chatting!</p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -2178,12 +2251,12 @@ const MessagesPage = () => {
                      <div>
                        <h4 style={{ margin: 0, color: "#0f172a", display: "flex", alignItems: "center", gap: "8px" }}>
                          {item.otherUser.first_name} {item.otherUser.last_name}
-                         {/* 🟢 NEW FEATURE: Unread Dot inside the Inbox list */}
+                         {/* 🟢 Unread message dot next to name */}
                          {item.hasUnread && (
                            <span style={{ width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", display: "inline-block" }}></span>
                          )}
                        </h4>
-                       <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
+                       <p style={{ margin: 0, fontSize: "13px", color: item.hasUnread ? "#ef4444" : "#64748b", fontWeight: item.hasUnread ? "bold" : "normal" }}>
                          {item.hasUnread ? "New message!" : "Click to open chat"}
                        </p>
                      </div>
@@ -2192,7 +2265,10 @@ const MessagesPage = () => {
               </div>
             )
           ) : messages.length === 0 ? (
-            <div style={{ margin: "auto", color: "#94a3b8" }}>No messages yet. Say hi! 👋</div>
+            <div style={{ margin: "auto", color: "#94a3b8", textAlign: "center" }}>
+               <i className="fas fa-comments fa-3x" style={{ marginBottom: 10, color: "#cbd5e1" }}></i>
+               <p>No messages yet. Say hi! 👋</p>
+            </div>
           ) : (
             messages.map((msg) => {
               const isMe = msg.sender_id === user.id;
@@ -2226,8 +2302,8 @@ const MessagesPage = () => {
               placeholder="Type a message..."
               style={{ flex: 1, padding: "12px 15px", borderRadius: "24px", border: "1px solid #cbd5e1", outline: "none" }}
             />
-            <button type="submit" className="btn-primary" style={{ borderRadius: "24px", marginLeft: "10px", padding: "0 20px" }}>
-              Send
+            <button type="submit" className="btn-primary" style={{ borderRadius: "50%", width: "45px", height: "45px", marginLeft: "10px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <i className="fas fa-paper-plane"></i>
             </button>
           </form>
         )}
