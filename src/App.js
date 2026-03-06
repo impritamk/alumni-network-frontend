@@ -1086,10 +1086,33 @@ const MessagesPage = () => {
     <div className="page-container"><Toaster />
       <div className="card" style={{ display: "flex", flexDirection: "column", height: "70vh", padding: 0, overflow: "hidden" }}>
         
-        <div style={{ padding: "15px 20px", background: "var(--bg-color)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", gap: 15 }}>
-          {activeRoom && <button onClick={() => { setActiveRoom(null); setChatPartner(null); loadInbox(); }} style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}><i className="fas fa-arrow-left"></i> Back</button>}
-          <h2 style={{ margin: 0, fontSize: "18px" }}>{chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}</h2>
-        </div>
+        <div style={{ padding: "15px 20px", background: "var(--bg-color)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+  <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
+    {activeRoom && <button onClick={() => { setActiveRoom(null); setChatPartner(null); loadInbox(); }} style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}><i className="fas fa-arrow-left"></i> Back</button>}
+    <h2 style={{ margin: 0, fontSize: "18px" }}>{chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}</h2>
+  </div>
+  
+  {/* NEW DELETE BUTTON */}
+  {activeRoom && (
+    <button 
+      onClick={async () => {
+        if(window.confirm("Are you sure you want to permanently delete this entire chat history?")) {
+          try {
+            await axios.delete(`/api/messages/room/${activeRoom.id}`);
+            setActiveRoom(null);
+            setChatPartner(null);
+            loadInbox();
+            toast.success("Chat deleted");
+          } catch(err) { toast.error("Failed to delete chat"); }
+        }
+      }} 
+      className="btn-danger" 
+      style={{ padding: "6px 12px", fontSize: "13px" }}
+    >
+      <i className="fas fa-trash"></i> Delete Chat
+    </button>
+  )}
+</div>
 
         <div style={{ flex: 1, padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", background: "var(--card-bg)" }}>
           {!activeRoom ? (
@@ -1350,6 +1373,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
