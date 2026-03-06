@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+import { io } from "socket.io-client";
 
 // ==============================
 // AXIOS CONFIG
@@ -1035,6 +1036,9 @@ const ConnectionsPage = () => {
 // ==============================
 // MESSAGES PAGE
 // ==============================
+// ==============================
+// MESSAGES PAGE
+// ==============================
 const MessagesPage = () => {
   const { user } = useAuth(); 
   const [messages, setMessages] = useState([]); 
@@ -1067,7 +1071,32 @@ const MessagesPage = () => {
       fetchMessages(roomRes.data.room.id); 
     } catch (err) { toast.error("Failed to start chat"); } 
   }, [fetchMessages]);
-  
+
+  // --- NEW SOCKET.IO REAL-TIME LISTENER ---
+  useEffect(() => {
+    // Connect to the backend
+    const socket = io(API_URL);
+
+    if (activeRoom) {
+      // Join the virtual room for this specific chat
+      socket.emit("joinRoom", activeRoom.id);
+
+      // Listen for the backend broadcasting a new message
+      socket.on("receiveMessage", (newMsg) => {
+        // Only add it to the screen if it came from the OTHER person
+        if (newMsg.sender_id !== user.id) {
+          setMessages((prevMessages) => [...prevMessages, newMsg]);
+        }
+      });
+    }
+
+    // Clean up the connection when you leave the page
+    return () => {
+      socket.disconnect();
+    };
+  }, [activeRoom, user.id]);
+  // ----------------------------------------
+
   useEffect(() => { 
     if (targetUserId) { startChat(targetUserId); } else { loadInbox(); } 
   }, [targetUserId, startChat, loadInbox]);
@@ -1076,10 +1105,24 @@ const MessagesPage = () => {
     e.preventDefault(); 
     if (!newMessage.trim() || !activeRoom) return; 
     try { 
-      await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage }); 
+      const res = await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage }); 
+      
+      // Instantly add our own message to the screen locally
+      setMessages(prev => [...prev, res.data.message]);
       setNewMessage(""); 
-      fetchMessages(activeRoom.id); 
     } catch (err) { toast.error("Failed to send message"); } 
+  };
+
+  const deleteChat = async () => {
+    if(window.confirm("Are you sure you want to permanently delete this entire chat history?")) {
+      try {
+        await axios.delete(`/api/messages/room/${activeRoom.id}`);
+        setActiveRoom(null);
+        setChatPartner(null);
+        loadInbox();
+        toast.success("Chat deleted");
+      } catch(err) { toast.error("Failed to delete chat"); }
+    }
   };
 
   return (
@@ -1087,32 +1130,18 @@ const MessagesPage = () => {
       <div className="card" style={{ display: "flex", flexDirection: "column", height: "70vh", padding: 0, overflow: "hidden" }}>
         
         <div style={{ padding: "15px 20px", background: "var(--bg-color)", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-  <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
-    {activeRoom && <button onClick={() => { setActiveRoom(null); setChatPartner(null); loadInbox(); }} style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}><i className="fas fa-arrow-left"></i> Back</button>}
-    <h2 style={{ margin: 0, fontSize: "18px" }}>{chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}</h2>
-  </div>
-  
-  {/* NEW DELETE BUTTON */}
-  {activeRoom && (
-    <button 
-      onClick={async () => {
-        if(window.confirm("Are you sure you want to permanently delete this entire chat history?")) {
-          try {
-            await axios.delete(`/api/messages/room/${activeRoom.id}`);
-            setActiveRoom(null);
-            setChatPartner(null);
-            loadInbox();
-            toast.success("Chat deleted");
-          } catch(err) { toast.error("Failed to delete chat"); }
-        }
-      }} 
-      className="btn-danger" 
-      style={{ padding: "6px 12px", fontSize: "13px" }}
-    >
-      <i className="fas fa-trash"></i> Delete Chat
-    </button>
-  )}
-</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
+            {activeRoom && <button onClick={() => { setActiveRoom(null); setChatPartner(null); loadInbox(); }} style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontSize: "14px", fontWeight: "bold" }}><i className="fas fa-arrow-left"></i> Back</button>}
+            <h2 style={{ margin: 0, fontSize: "18px" }}>{chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}</h2>
+          </div>
+          
+          {/* Delete Chat Button */}
+          {activeRoom && (
+            <button onClick={deleteChat} className="btn-danger" style={{ padding: "6px 12px", fontSize: "13px" }}>
+              <i className="fas fa-trash"></i> Delete Chat
+            </button>
+          )}
+        </div>
 
         <div style={{ flex: 1, padding: "20px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", background: "var(--card-bg)" }}>
           {!activeRoom ? (
@@ -1152,7 +1181,6 @@ const MessagesPage = () => {
     </div>
   );
 };
-
 // ==============================
 // DASHBOARD, ADMIN & EDIT PROFILE
 // ==============================
@@ -1373,6 +1401,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
