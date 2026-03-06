@@ -291,7 +291,7 @@ const LoginPage = () => {
             onClick={(e) => {
               e.preventDefault();
               // This instantly logs them in using the credentials you made in Step 1
-              login("guest@example.com", "Guest123!")
+              login("alumninetworkplatform@gmail.com", "Guest123!")
                 .then(() => {
                   toast.success("Welcome, Guest!");
                   setTimeout(() => { window.location.href = "/"; }, 500);
@@ -476,6 +476,7 @@ const ResetPasswordPage = () => {
 // CONNECT BUTTON COMPONENT
 // ==============================
 const ConnectButton = ({ userId }) => {
+  const { user } = useAuth();
   const [status, setStatus] = useState("not_connected"); 
   const [loading, setLoading] = useState(true); 
   const navigate = useNavigate();
@@ -491,7 +492,13 @@ const ConnectButton = ({ userId }) => {
     checkConnectionStatus(); 
   }, [userId]);
 
-  const handleConnect = async () => { 
+  const handleConnect = async () => {
+    // --- 2. ADD THIS CHECK ---
+    if (user?.email === 'alumninetworkplatform@gmail.com') {
+      toast.error("🔒 Guest accounts cannot send connection requests.");
+      return;
+    }
+    // -------------------------
     try { 
       setLoading(true); 
       await axios.post(`/api/connections/${userId}/request`); 
@@ -504,6 +511,12 @@ const ConnectButton = ({ userId }) => {
   };
 
   const handleRemove = async () => { 
+    // --- 3. ADD THIS CHECK ---
+    if (user?.email === 'alumninetworkplatform@gmail.com') {
+      toast.error("🔒 Guest accounts cannot modify connections.");
+      return;
+    }
+    // -------------------------
     if (window.confirm("Are you sure you want to remove this connection?")) { 
       try { 
         setLoading(true); 
@@ -718,7 +731,7 @@ const FeedPage = () => {
     e.preventDefault(); 
     
     // Check if it's the guest
-    if (user?.email === 'guest@example.com') {
+    if (user?.email === 'alumninetworkplatform@gmail.com') {
       toast.error("🔒 Please register a full account to post on the feed!");
       return; // Stop the function here
     }
@@ -787,7 +800,7 @@ const JobFormModal = ({ job, onClose, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   
   const handleSubmit = async (e) => { 
-    if (user?.email === 'guest@example.com') {
+    if (user?.email === 'alumninetworkplatform@gmail.com') {
       toast.error("🔒 Please create an account to post or edit jobs!");
       return; 
     } 
@@ -1012,6 +1025,7 @@ const JobsPage = () => {
 // CONNECTIONS PAGE
 // ==============================
 const ConnectionsPage = () => {
+  const { user } = useAuth();
   const [connections, setConnections] = useState([]); 
   const [pending, setPending] = useState([]); 
   const [loading, setLoading] = useState(true); 
@@ -1028,7 +1042,8 @@ const ConnectionsPage = () => {
   
   useEffect(() => { loadConnections(); }, [loadConnections]);
   
-  const handleRemoveConnection = async (connectionId) => { 
+  const handleRemoveConnection = async (connectionId) => {
+    if (user?.email === 'alumninetworkplatform@gmail.com') { toast.error("🔒 Guest accounts cannot modify connections."); return; } // <-- ADD CHECK
     if (window.confirm("Remove this connection?")) { 
       try { 
         await axios.delete(`/api/connections/${connectionId}`); 
@@ -1039,6 +1054,7 @@ const ConnectionsPage = () => {
   };
   
   const handleAccept = async (connectionId) => { 
+    if (user?.email === 'alumninetworkplatform@gmail.com') { toast.error("🔒 Guest accounts cannot modify connections."); return; } // <-- ADD CHECK
     try { 
       await axios.post(`/api/connections/${connectionId}/accept`); 
       toast.success("Accepted!"); 
@@ -1047,6 +1063,7 @@ const ConnectionsPage = () => {
   };
 
   const handleReject = async (connectionId) => { 
+    if (user?.email === 'alumninetworkplatform@gmail.com') { toast.error("🔒 Guest accounts cannot modify connections."); return; } // <-- ADD CHECK
     try { 
       await axios.delete(`/api/connections/${connectionId}/reject`); 
       toast.success("Rejected"); 
@@ -1173,6 +1190,13 @@ const MessagesPage = () => {
   const sendMessage = async (e) => { 
     e.preventDefault(); 
     if (!newMessage.trim() || !activeRoom) return; 
+    // --- ADD THIS CHECK ---
+    if (user?.email === 'alumninetworkplatform@gmail.com') {
+      toast.error("🔒 Guest accounts cannot send messages.");
+      setNewMessage(""); // Clear what they typed
+      return;
+    }
+    // ----------------------
     try { 
       const res = await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage }); 
       
@@ -1359,7 +1383,7 @@ const EditProfile = () => {
   const submit = async (e) => { 
     e.preventDefault(); 
     // Check if it's the guest
-    if (user?.email === 'guest@example.com') {
+    if (user?.email === 'alumninetworkplatform@gmail.com') {
       toast.error("🔒 Guest profiles cannot be modified. Please create your own account!");
       return; 
     }
@@ -1493,6 +1517,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
