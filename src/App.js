@@ -167,7 +167,7 @@ const Navbar = () => {
         {user?.role === 'admin' && <Link to="/admin" className="drawer-link" onClick={() => setMenuOpen(false)} style={{ color: '#ef4444', fontWeight: 'bold' }}>Admin Panel</Link>}
         <Link to="/profile/edit" className="drawer-link" onClick={() => setMenuOpen(false)}>Edit Profile</Link>
         <button onClick={toggleDarkMode} style={{ background: "none", border: "none", color: "var(--text-muted)", textAlign: "left", padding: "10px 0", fontSize: '18px', cursor: "pointer" }}>{isDark ? "☀️ Light Mode" : "🌙 Dark Mode"}</button>
-        <button onClick={doLogout} className="btn-danger" style={{ marginTop: 'auto', marginBottom: '20px' }}>Logout</button>
+        <button onClick={doLogout} className="btn-danger" style={{ marginTop: 'auto', marginBottom: '50px' }}>Logout</button>
       </div>
     </div>
   );
@@ -1350,4 +1350,5 @@ function App() {
 }
 
 export default App;
+
 
