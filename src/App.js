@@ -6,10 +6,26 @@ import toast, { Toaster } from "react-hot-toast";
 import { io } from "socket.io-client";
 
 // ==============================
-// AXIOS CONFIG
+// AXIOS CONFIG & INTERCEPTOR
 // ==============================
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
 axios.defaults.baseURL = API_URL;
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // If the backend says the token is expired/invalid, log them out instantly
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      delete axios.defaults.headers.common["Authorization"];
+      // Only redirect if they aren't already on the login page
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login?expired=true";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // ==============================
 // AUTH CONTEXT
@@ -257,6 +273,9 @@ const LoginPage = () => {
           </div>
           
           <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Login"}
+          </button>
+            <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
@@ -1054,9 +1073,6 @@ const ConnectionsPage = () => {
 // ==============================
 // MESSAGES PAGE
 // ==============================
-// ==============================
-// MESSAGES PAGE
-// ==============================
 const MessagesPage = () => {
   const { user } = useAuth(); 
   const [messages, setMessages] = useState([]); 
@@ -1389,6 +1405,24 @@ const AlumniList = () => {
 };
 
 // ==============================
+// 404 NOT FOUND PAGE
+// ==============================
+const NotFoundPage = () => {
+  return (
+    <div className="page-container" style={{ textAlign: "center", marginTop: "10vh" }}>
+      <h1 style={{ fontSize: "80px", margin: "0", color: "var(--primary)" }}>404</h1>
+      <h2 style={{ marginTop: "10px" }}>Page Not Found</h2>
+      <p style={{ color: "var(--text-muted)", marginBottom: "30px" }}>
+        Looks like this page got lost in the campus network.
+      </p>
+      <Link to="/" className="btn-primary" style={{ display: "inline-block" }}>
+        Return to Feed
+      </Link>
+    </div>
+  );
+};
+
+// ==============================
 // MAIN APP ROUTER
 // ==============================
 function App() {
@@ -1411,7 +1445,7 @@ function App() {
           <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
           <Route path="/messages" element={<PrivateRoute><PrivateLayout><MessagesPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>
     </Router>
@@ -1419,6 +1453,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
