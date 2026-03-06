@@ -275,12 +275,6 @@ const LoginPage = () => {
           <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
           </button>
-            <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
-            <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
           
           {/* --- NEW GUEST LOGIN BUTTON --- */}
           <button 
@@ -795,6 +789,7 @@ const FeedPage = () => {
 // JOB MODALS (CREATE/EDIT, APPLY, VIEW)
 // ==============================
 const JobFormModal = ({ job, onClose, onSuccess }) => {
+  const { user } = useAuth();
   const isEdit = !!job; 
   const [form, setForm] = useState(job || { title: "", company: "", description: "", requirements: "", location: "", salaryRange: "", jobType: "Full-time", experienceLevel: "Mid-level" }); 
   const [submitting, setSubmitting] = useState(false);
@@ -1395,6 +1390,12 @@ const EditProfile = () => {
   };
   
   const handleDeleteAccount = async () => { 
+    // --- ADD THIS GUEST CHECK ---
+    if (user?.email === 'alumninetworkplatform@gmail.com') {
+      toast.error("🔒 Guest accounts cannot be deleted.");
+      return; 
+    }
+    // ----------------------------
     const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone."); 
     if (!confirmed) return; 
     const doubleConfirm = window.confirm("Type 'DELETE' in your mind - this will permanently delete all your data including jobs, applications, and profile."); 
@@ -1517,6 +1518,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
