@@ -278,6 +278,31 @@ const LoginPage = () => {
             <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
           </button>
+            <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Login"}
+          </button>
+          
+          {/* --- NEW GUEST LOGIN BUTTON --- */}
+          <button 
+            type="button" 
+            className="btn-secondary" 
+            style={{ width: "100%", marginTop: "10px" }} 
+            disabled={isLoading}
+            onClick={(e) => {
+              e.preventDefault();
+              // This instantly logs them in using the credentials you made in Step 1
+              login("guest@example.com", "Guest123!")
+                .then(() => {
+                  toast.success("Welcome, Guest!");
+                  setTimeout(() => { window.location.href = "/"; }, 500);
+                })
+                .catch(() => toast.error("Guest login failed."));
+            }}
+          >
+            <i className="fas fa-user-secret" style={{ marginRight: "8px" }}></i> 
+            Login as Guest
+          </button>
+          {/* ------------------------------ */}
         </form>
         <p style={{ textAlign: "center", marginTop: 15, color: "var(--text-muted)" }}>
           Don't have an account? <Link to="/register" className="text-blue">Register</Link> {" | "} <Link to="/forgot-password" className="text-blue">Forgot Password?</Link>
@@ -691,6 +716,13 @@ const FeedPage = () => {
   
   const handleSubmit = async (e) => { 
     e.preventDefault(); 
+    
+    // Check if it's the guest
+    if (user?.email === 'guest@example.com') {
+      toast.error("🔒 Please register a full account to post on the feed!");
+      return; // Stop the function here
+    }
+
     try { 
       await axios.post("/api/posts", { content }); 
       setContent(""); 
@@ -755,7 +787,10 @@ const JobFormModal = ({ job, onClose, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   
   const handleSubmit = async (e) => { 
-    e.preventDefault(); 
+    if (user?.email === 'guest@example.com') {
+      toast.error("🔒 Please create an account to post or edit jobs!");
+      return; 
+    } 
     setSubmitting(true); 
     try { 
       if (isEdit) { 
@@ -1323,6 +1358,11 @@ const EditProfile = () => {
   
   const submit = async (e) => { 
     e.preventDefault(); 
+    // Check if it's the guest
+    if (user?.email === 'guest@example.com') {
+      toast.error("🔒 Guest profiles cannot be modified. Please create your own account!");
+      return; 
+    }
     try { 
       await axios.put("/api/users/profile", form); 
       toast.success("Updated!"); 
@@ -1453,6 +1493,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
