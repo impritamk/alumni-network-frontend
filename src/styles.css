@@ -231,3 +231,36 @@ body.dark-mode .job-tag-green { background-color: rgba(34, 197, 94, 0.2); color:
   padding: 10px 0;
   border-bottom: 1px solid var(--border-color);
 }
+/* ==========================================
+   CHAT BUBBLES
+   ========================================== */
+.message-bubble {
+  padding: 10px 15px;
+  border-radius: 18px;
+  max-width: 75%;
+  margin-bottom: 5px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  position: relative;
+}
+
+.message-mine {
+  background-color: var(--primary);
+  color: white;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+  margin-left: auto; /* Pushes to the right */
+}
+
+.message-theirs {
+  background-color: #e2e8f0;
+  color: var(--text-main);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+  margin-right: auto; /* Pushes to the left */
+}
+
+body.dark-mode .message-theirs {
+  background-color: #334155;
+  color: #f8fafc;
+}
