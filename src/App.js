@@ -78,7 +78,16 @@ const Navbar = () => {
   const navigate = useNavigate(); 
   const [menuOpen, setMenuOpen] = useState(false);
   const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false });
-  const [isDark, setIsDark] = useState(document.body.classList.contains("dark-mode")); 
+  // 1. Check local storage FIRST when the component loads
+  const [isDark, setIsDark] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const isDarkMode = savedTheme === "dark";
+    // Apply the class immediately if they prefer dark mode
+    if (isDarkMode) {
+      document.body.classList.add("dark-mode");
+    }
+    return isDarkMode;
+  }); 
   
   useEffect(() => { 
     if (user) { 
@@ -99,9 +108,18 @@ const Navbar = () => {
     navigate("/login"); 
   };
 
+  // 2. Update the toggle function to save their choice to long-term memory
   const toggleDarkMode = () => { 
-    document.body.classList.toggle("dark-mode"); 
-    setIsDark(!isDark); 
+    const newMode = !isDark;
+    setIsDark(newMode);
+    
+    if (newMode) {
+      document.body.classList.add("dark-mode");
+      localStorage.setItem("theme", "dark"); // Save to memory
+    } else {
+      document.body.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light"); // Save to memory
+    }
   };
 
   const Dot = () => (
@@ -1401,6 +1419,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
