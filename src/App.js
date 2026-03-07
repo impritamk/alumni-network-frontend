@@ -357,27 +357,32 @@ const LoginPage = () => {
             {isLoading ? "Logging in..." : "Login"}
           </button>
           
-          {/* --- NEW GUEST LOGIN BUTTON --- */}
-          <button 
-            type="button" 
-            className="btn-secondary" 
-            style={{ width: "100%", marginTop: "10px" }} 
-            disabled={isLoading}
-            onClick={(e) => {
-              e.preventDefault();
-              // This instantly logs them in using the credentials you made in Step 1
-              login("alumninetworkplatform@gmail.com", "Guest123!")
-                .then(() => {
+            {/* --- NEW GUEST LOGIN BUTTON --- */}
+            <button 
+              type="button" 
+              className="btn-secondary" 
+              style={{ width: "100%", marginTop: "10px" }} 
+              disabled={isLoading}
+              onClick={async (e) => {
+                e.preventDefault();
+                setIsLoading(true); // <-- This instantly disables the buttons and shows loading
+                try {
+                  await login("alumninetworkplatform@gmail.com", "Guest123!");
                   toast.success("Welcome, Guest!");
                   setTimeout(() => { window.location.href = "/"; }, 500);
-                })
-                .catch(() => toast.error("Guest login failed."));
-            }}
-          >
-            <i className="fas fa-user-secret" style={{ marginRight: "8px" }}></i> 
-            Login as Guest
-          </button>
-          {/* ------------------------------ */}
+                } catch (err) {
+                  toast.error("Guest login failed.");
+                  setIsLoading(false); // Re-enable buttons if it fails
+                }
+              }}
+            >
+              {isLoading ? (
+                <><i className="fas fa-spinner fa-spin" style={{ marginRight: "8px" }}></i> Logging in...</>
+              ) : (
+                <><i className="fas fa-user-secret" style={{ marginRight: "8px" }}></i> Login as Guest</>
+              )}
+            </button>
+            {/* ------------------------------ */}
         </form>
         <p style={{ textAlign: "center", marginTop: 15, color: "var(--text-muted)" }}>
           Don't have an account? <Link to="/register" className="text-blue">Register</Link> {" | "} <Link to="/forgot-password" className="text-blue">Forgot Password?</Link>
@@ -1673,6 +1678,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
