@@ -236,18 +236,39 @@ const PrivateLayout = ({ children }) => {
 // PUBLIC LANDING PAGE
 // ==============================
 const LandingPage = () => {
+  // --- NEW: Theme state & toggle for guests ---
+  const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
+
+  const toggleDarkMode = () => { 
+    const newMode = !isDark;
+    setIsDark(newMode);
+    if (newMode) {
+      document.body.classList.add("dark-mode");
+      localStorage.setItem("theme", "dark"); 
+    } else {
+      document.body.classList.remove("dark-mode");
+      localStorage.setItem("theme", "light"); 
+    }
+  };
+  // --------------------------------------------
+
   return (
     <div className="page-container">
       {/* Navbar for Unauthenticated Users */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <div style={{ fontSize: "22px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
-          <img src="/logo-connectalumni.svg" alt="Logo" style={{ width: "40px", height: "40px", filter: document.body.classList.contains("dark-mode") ? "invert(1) brightness(2)" : "none" }} />
+          <img src="/logo-connectalumni.svg" alt="Logo" style={{ width: "40px", height: "40px", filter: isDark ? "invert(1) brightness(2)" : "none" }} />
           <div style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.5px" }}>
             <span style={{ color: "var(--text-main)" }}>Connect</span>
             <span style={{ color: "var(--primary)" }}>Alumni</span>
           </div>
         </div>
-        <div>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          {/* NEW TOGGLE BUTTON */}
+          <button onClick={toggleDarkMode} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", marginRight: "20px" }}>
+            <i className={isDark ? "fas fa-sun" : "fas fa-moon"} style={{ color: isDark ? "#fbbf24" : "#64748b" }}></i>
+          </button>
+          
           <Link to="/login" className="btn-secondary" style={{ marginRight: "10px" }}>Login</Link>
           <Link to="/register" className="btn-primary">Register</Link>
         </div>
@@ -1617,6 +1638,14 @@ const IndexRoute = () => {
 // MAIN APP ROUTER
 // ==============================
 function App() {
+  // --- NEW: Global Theme Initialization ---
+  useEffect(() => {
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark-mode");
+    }
+  }, []);
+  // ----------------------------------------
+
   return (
     <Router>
       <AuthProvider>
@@ -1644,6 +1673,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
