@@ -264,3 +264,60 @@ body.dark-mode .message-theirs {
   background-color: #334155;
   color: #f8fafc;
 }
+/* ==========================================
+   LANDING PAGE STYLES
+   ========================================== */
+.landing-hero {
+  text-align: center;
+  padding: 80px 20px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0.0) 100%);
+  border-radius: 16px;
+  margin-bottom: 40px;
+}
+
+.landing-title {
+  font-size: 48px;
+  font-weight: 800;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: -1px;
+  margin-bottom: 15px;
+  color: var(--text-main);
+}
+
+.landing-subtitle {
+  font-size: 20px;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto 30px auto;
+  line-height: 1.6;
+}
+
+.feature-icon {
+  font-size: 32px;
+  color: var(--primary);
+  margin-bottom: 15px;
+}
+
+/* ==========================================
+   SKELETON LOADERS
+   ========================================== */
+@keyframes shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.skeleton {
+  background-color: var(--border-color);
+  animation: shimmer 2s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+body.dark-mode .skeleton {
+  background-color: #334155;
+}
+
+.skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.skeleton-title { height: 18px; width: 40%; margin-bottom: 10px; }
+.skeleton-text { height: 14px; width: 100%; margin-bottom: 8px; }
+.skeleton-text-short { height: 14px; width: 70%; }
