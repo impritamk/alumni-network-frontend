@@ -1,5 +1,5 @@
 import "./styles.css";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
@@ -230,6 +230,66 @@ const PrivateLayout = ({ children }) => {
       <div className="app-content" style={{ flex: 1 }}>{children}</div>
     </div>
   ); 
+};
+
+// ==============================
+// PUBLIC LANDING PAGE
+// ==============================
+const LandingPage = () => {
+  return (
+    <div className="page-container">
+      {/* Navbar for Unauthenticated Users */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <div style={{ fontSize: "22px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
+          <img src="/logo-connectalumni.svg" alt="Logo" style={{ width: "40px", height: "40px", filter: document.body.classList.contains("dark-mode") ? "invert(1) brightness(2)" : "none" }} />
+          <div style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.5px" }}>
+            <span style={{ color: "var(--text-main)" }}>Connect</span>
+            <span style={{ color: "var(--primary)" }}>Alumni</span>
+          </div>
+        </div>
+        <div>
+          <Link to="/login" className="btn-secondary" style={{ marginRight: "10px" }}>Login</Link>
+          <Link to="/register" className="btn-primary">Register</Link>
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <div className="landing-hero">
+        <h1 className="landing-title">Your Campus. Your Network. Your Future.</h1>
+        <p className="landing-subtitle">
+          The exclusive networking platform built for the students and alumni of Chaibasa Engineering College to connect, share opportunities, and grow together.
+        </p>
+        <Link to="/register" className="btn-primary" style={{ padding: "14px 28px", fontSize: "18px" }}>Join the Network</Link>
+      </div>
+
+      {/* Why I Built This */}
+      <div className="card" style={{ padding: "40px 30px", marginBottom: "40px", textAlign: "center" }}>
+        <h2 style={{ marginTop: 0 }}>The Mission</h2>
+        <p style={{ color: "var(--text-muted)", fontSize: "16px", lineHeight: 1.8, maxWidth: "800px", margin: "0 auto" }}>
+          Built by Pritam, this platform solves a real problem: keeping our college community connected after graduation. Whether you are a senior offering referrals, a fresher looking for guidance, or a student wanting to explore career paths, this is our secure, dedicated space to collaborate outside of noisy public social media.
+        </p>
+      </div>
+
+      {/* Features Grid */}
+      <div className="grid-3" style={{ marginBottom: "40px" }}>
+        <div className="card" style={{ textAlign: "center", padding: "30px 20px" }}>
+          <i className="fas fa-comments feature-icon"></i>
+          <h3>Real-Time Messaging</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>Chat instantly with peers using our secure WebSocket infrastructure. No refreshing required.</p>
+        </div>
+        <div className="card" style={{ textAlign: "center", padding: "30px 20px" }}>
+          <i className="fas fa-briefcase feature-icon"></i>
+          <h3>Exclusive Job Board</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>Find internships and full-time roles posted directly by alumni working in the industry.</p>
+        </div>
+        <div className="card" style={{ textAlign: "center", padding: "30px 20px" }}>
+          <i className="fas fa-shield-check feature-icon"></i>
+          <h3>Data Privacy</h3>
+          <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>Your data stays within our network. Strict backend JWT verification and role-based access keeps the community safe.</p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 // ==============================
@@ -747,8 +807,36 @@ const FeedPage = () => {
     } catch (err) { toast.error("Failed to delete"); } 
   };
 
-  if (loading) return <div className="page-container"><p style={{ textAlign: "center", color: "var(--text-muted)" }}>Loading feed...</p></div>;
-  
+  if (loading) {
+    return (
+      <div className="page-container" style={{ maxWidth: 700 }}>
+        {/* Skeleton for the input box */}
+        <div className="card" style={{ marginBottom: 20 }}>
+          <div className="skeleton skeleton-text" style={{ height: "60px" }}></div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
+            <div className="skeleton" style={{ width: "100px", height: "35px" }}></div>
+            <div className="skeleton" style={{ width: "80px", height: "35px" }}></div>
+          </div>
+        </div>
+        
+        {/* Skeletons for the posts */}
+        {[1, 2, 3].map(i => (
+          <div key={i} className="card" style={{ marginBottom: "15px" }}>
+            <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+              <div className="skeleton skeleton-avatar"></div>
+              <div style={{ flex: 1 }}>
+                <div className="skeleton skeleton-title"></div>
+                <div className="skeleton skeleton-text-short" style={{ height: "10px" }}></div>
+              </div>
+            </div>
+            <div className="skeleton skeleton-text"></div>
+            <div className="skeleton skeleton-text"></div>
+            <div className="skeleton skeleton-text-short"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }  
   return (
     <div className="page-container" style={{ maxWidth: 700 }}>
       <Toaster />
@@ -1122,6 +1210,8 @@ const ConnectionsPage = () => {
 // ==============================
 const MessagesPage = () => {
   const { user } = useAuth(); 
+  const [isTyping, setIsTyping] = useState(false); // Tracks if the OTHER person is typing
+  const typingTimeoutRef = useRef(null); // Holds our 2-second timer
   const [messages, setMessages] = useState([]); 
   const [newMessage, setNewMessage] = useState(""); 
   const [activeRoom, setActiveRoom] = useState(null); 
@@ -1153,34 +1243,52 @@ const MessagesPage = () => {
     } catch (err) { toast.error("Failed to start chat"); } 
   }, [fetchMessages]);
 
-  // --- NEW SOCKET.IO REAL-TIME LISTENER ---
+// --- NEW SOCKET.IO REAL-TIME LISTENER ---
   useEffect(() => {
     // Connect to the backend
     const socket = io(API_URL);
 
     if (activeRoom) {
-      // Join the virtual room for this specific chat
       socket.emit("joinRoom", activeRoom.id);
 
-      // Listen for the backend broadcasting a new message
       socket.on("receiveMessage", (newMsg) => {
-        // Only add it to the screen if it came from the OTHER person
         if (newMsg.sender_id !== user.id) {
           setMessages((prevMessages) => [...prevMessages, newMsg]);
+          setIsTyping(false); // Instantly hide typing indicator when message arrives
         }
       });
+
+      // NEW: Listen for typing status
+      socket.on("userTyping", () => setIsTyping(true));
+      socket.on("userStoppedTyping", () => setIsTyping(false));
     }
 
-    // Clean up the connection when you leave the page
     return () => {
       socket.disconnect();
     };
   }, [activeRoom, user.id]);
-  // ----------------------------------------
 
   useEffect(() => { 
     if (targetUserId) { startChat(targetUserId); } else { loadInbox(); } 
   }, [targetUserId, startChat, loadInbox]);
+
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+
+    // Don't emit typing events if it's the guest account
+    if (activeRoom && user?.email !== 'alumninetworkplatform@gmail.com') {
+      const socket = io(API_URL); // Connect temporarily to emit
+      socket.emit("typing", activeRoom.id);
+
+      // Clear the previous timer if they are still typing
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+      // Set a new 2-second timer. If they don't type for 2 seconds, stop it.
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("stopTyping", activeRoom.id);
+      }, 2000);
+    }
+  };
 
   const sendMessage = async (e) => { 
     e.preventDefault(); 
@@ -1260,8 +1368,13 @@ const MessagesPage = () => {
         </div>
 
         {activeRoom && (
+          {isTyping && chatPartner && (
+          <div style={{ padding: "0 20px 10px", fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic" }}>
+            {chatPartner.first_name} is typing...
+          </div>
+        )}
           <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", background: "var(--bg-color)", borderTop: "1px solid var(--border-color)" }}>
-            <input type="text" className="input-box" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." style={{ flex: 1, borderRadius: "24px", marginBottom: 0 }} />
+            <input type="text" className="input-box" value={newMessage} onChange={handleTyping} placeholder="Type a message..." style={{ flex: 1, borderRadius: "24px", marginBottom: 0 }} />
             <button type="submit" className="btn-primary" style={{ borderRadius: "50%", width: "45px", height: "45px", marginLeft: "10px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><i className="fas fa-paper-plane"></i></button>
           </form>
         )}
@@ -1487,6 +1600,17 @@ const NotFoundPage = () => {
   );
 };
 
+// Smart routing: Shows Feed if logged in, Landing Page if not.
+const IndexRoute = () => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return null; // Wait for auth check to finish
+  if (user) {
+    return <PrivateLayout><FeedPage /></PrivateLayout>;
+  }
+  return <LandingPage />;
+};
+
 // ==============================
 // MAIN APP ROUTER
 // ==============================
@@ -1501,7 +1625,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
           
-          <Route path="/" element={<PrivateRoute><PrivateLayout><FeedPage /></PrivateLayout></PrivateRoute>} />
+          <Route path="/" element={<IndexRoute />} />
           <Route path="/dashboard" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><PrivateLayout><AdminPanel /></PrivateLayout></PrivateRoute>} />
           <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
@@ -1518,6 +1642,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
