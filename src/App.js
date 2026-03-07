@@ -1485,13 +1485,17 @@ const AdminPanel = () => {
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}><i className="fas fa-shield-alt" style={{ fontSize: "28px", color: "#dc2626" }}></i><h1 style={{ margin: 0 }}>Admin Panel</h1></div>
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Manage Users</h3>
-        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px", marginBottom: "20px" }}><input type="text" className="input-box" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} /><button type="submit" className="btn-primary">Search</button></form>
+        {/* CHANGED PLACEHOLDER */}
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px", marginBottom: "20px" }}><input type="text" className="input-box" placeholder="Search by name, email, or batch..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} /><button type="submit" className="btn-primary">Search</button></form>
         {loading ? <p>Loading...</p> : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {users.map(u => (
               <div key={u.id} style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", padding: "15px", borderBottom: "1px solid var(--border-color)", gap: "10px" }}>
                 <div>
-                  <strong>{u.first_name} {u.last_name}</strong> <span style={{ color: "var(--text-muted)", marginLeft: 10 }}>{u.email}</span>
+                  <strong>{u.first_name} {u.last_name}</strong> 
+                  <span style={{ color: "var(--text-muted)", marginLeft: 10 }}>{u.email}</span>
+                  {/* SHOW BATCH SO SEARCH RESULTS MAKE SENSE */}
+                  <span style={{ color: "var(--text-muted)", marginLeft: 10 }}>• Batch {u.passout_year}</span>
                   {u.role === 'admin' && <span className="admin-badge">ADMIN</span>}
                 </div>
                 <div style={{ display: "flex", gap: "8px" }}>
@@ -1505,7 +1509,6 @@ const AdminPanel = () => {
       </div>
     </div>
   );
-};
 
 const EditProfile = () => {
   const { user, logout } = useAuth(); 
@@ -1597,7 +1600,8 @@ const AlumniList = () => {
   return (
     <div className="page-container"><Toaster /><h1>Alumni Directory</h1>
       <div className="card" style={{ marginBottom: 20 }}>
-        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px" }}><input type="text" className="input-box" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} /><button type="submit" className="btn-primary">Search</button></form>
+        {/* CHANGED PLACEHOLDER */}
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px" }}><input type="text" className="input-box" placeholder="Search by name, email, or batch (e.g., 2026)..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} /><button type="submit" className="btn-primary">Search</button></form>
       </div>
       {loading ? <p>Loading...</p> : (
         <div className="grid-3">
@@ -1678,6 +1682,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
