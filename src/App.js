@@ -255,7 +255,7 @@ const LandingPage = () => {
   return (
     <div className="page-container">
       {/* Navbar for Unauthenticated Users */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "15px" }}>
+      <div className="landing-nav">
         <div style={{ fontSize: "22px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
           <img src="/logo-connectalumni.svg" alt="Logo" style={{ width: "40px", height: "40px", filter: isDark ? "invert(1) brightness(2)" : "none" }} />
           <div style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.5px" }}>
@@ -263,9 +263,9 @@ const LandingPage = () => {
             <span style={{ color: "var(--primary)" }}>Alumni</span>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          {/* NEW TOGGLE BUTTON */}
-          <button onClick={toggleDarkMode} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", marginRight: "20px" }}>
+        
+        <div className="landing-nav-buttons" style={{ display: "flex", alignItems: "center" }}>
+          <button onClick={toggleDarkMode} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", marginRight: "15px" }}>
             <i className={isDark ? "fas fa-sun" : "fas fa-moon"} style={{ color: isDark ? "#fbbf24" : "#64748b" }}></i>
           </button>
           
@@ -304,7 +304,7 @@ const LandingPage = () => {
           <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>Find internships and full-time roles posted directly by alumni working in the industry.</p>
         </div>
         <div className="card" style={{ textAlign: "center", padding: "30px 20px" }}>
-          <i className="fas fa-shield-check feature-icon"></i>
+          <i className="fas fa-shield-alt feature-icon"></i>
           <h3>Data Privacy</h3>
           <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>Your data stays within our network. Strict backend JWT verification and role-based access keeps the community safe.</p>
         </div>
@@ -1678,6 +1678,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
