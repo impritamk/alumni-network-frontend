@@ -321,3 +321,28 @@ body.dark-mode .skeleton {
 .skeleton-title { height: 18px; width: 40%; margin-bottom: 10px; }
 .skeleton-text { height: 14px; width: 100%; margin-bottom: 8px; }
 .skeleton-text-short { height: 14px; width: 70%; }
+
+/* ==========================================
+   MOBILE RESPONSIVENESS (LANDING PAGE)
+   ========================================== */
+@media (max-width: 768px) {
+  .landing-hero {
+    padding: 40px 15px; /* Less empty space on mobile */
+  }
+  
+  .landing-title {
+    font-size: 32px; /* Shrink the massive title */
+    line-height: 1.2;
+  }
+  
+  .landing-subtitle {
+    font-size: 16px; /* Shrink the subtitle */
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-title {
+    font-size: 28px; /* Even smaller for very tiny phones */
+  }
+}
