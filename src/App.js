@@ -266,7 +266,7 @@ const LandingPage = () => {
       <div className="card" style={{ padding: "40px 30px", marginBottom: "40px", textAlign: "center" }}>
         <h2 style={{ marginTop: 0 }}>The Mission</h2>
         <p style={{ color: "var(--text-muted)", fontSize: "16px", lineHeight: 1.8, maxWidth: "800px", margin: "0 auto" }}>
-          Built by Pritam, this platform solves a real problem: keeping our college community connected after graduation. Whether you are a senior offering referrals, a fresher looking for guidance, or a student wanting to explore career paths, this is our secure, dedicated space to collaborate outside of noisy public social media.
+          This platform solves a real problem: keeping our college community connected after graduation. Whether you are a senior offering referrals, a fresher looking for guidance, or a student wanting to explore career paths, this is our secure, dedicated space to collaborate outside of noisy public social media.
         </p>
       </div>
 
@@ -1644,6 +1644,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
