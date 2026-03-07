@@ -1368,15 +1368,17 @@ const MessagesPage = () => {
         </div>
 
         {activeRoom && (
-          {isTyping && chatPartner && (
-          <div style={{ padding: "0 20px 10px", fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic" }}>
-            {chatPartner.first_name} is typing...
-          </div>
-        )}
-          <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", background: "var(--bg-color)", borderTop: "1px solid var(--border-color)" }}>
-            <input type="text" className="input-box" value={newMessage} onChange={handleTyping} placeholder="Type a message..." style={{ flex: 1, borderRadius: "24px", marginBottom: 0 }} />
-            <button type="submit" className="btn-primary" style={{ borderRadius: "50%", width: "45px", height: "45px", marginLeft: "10px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><i className="fas fa-paper-plane"></i></button>
-          </form>
+          <>
+            {isTyping && chatPartner && (
+              <div style={{ padding: "0 20px 10px", fontSize: "12px", color: "var(--text-muted)", fontStyle: "italic" }}>
+                {chatPartner.first_name} is typing...
+              </div>
+            )}
+            <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", background: "var(--bg-color)", borderTop: "1px solid var(--border-color)" }}>
+              <input type="text" className="input-box" value={newMessage} onChange={handleTyping} placeholder="Type a message..." style={{ flex: 1, borderRadius: "24px", marginBottom: 0 }} />
+              <button type="submit" className="btn-primary" style={{ borderRadius: "50%", width: "45px", height: "45px", marginLeft: "10px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><i className="fas fa-paper-plane"></i></button>
+            </form>
+          </>
         )}
       </div>
     </div>
@@ -1642,6 +1644,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
