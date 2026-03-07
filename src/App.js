@@ -1509,6 +1509,7 @@ const AdminPanel = () => {
       </div>
     </div>
   );
+};
 
 const EditProfile = () => {
   const { user, logout } = useAuth(); 
@@ -1680,5 +1681,4 @@ function App() {
     </Router>
   );
 }
-
 export default App;
