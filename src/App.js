@@ -255,7 +255,7 @@ const LandingPage = () => {
   return (
     <div className="page-container">
       {/* Navbar for Unauthenticated Users */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "15px" }}>
         <div style={{ fontSize: "22px", fontWeight: "800", display: "flex", alignItems: "center", gap: "10px" }}>
           <img src="/logo-connectalumni.svg" alt="Logo" style={{ width: "40px", height: "40px", filter: isDark ? "invert(1) brightness(2)" : "none" }} />
           <div style={{ fontFamily: "'Poppins', sans-serif", letterSpacing: "-0.5px" }}>
@@ -1678,6 +1678,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
