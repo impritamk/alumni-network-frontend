@@ -740,7 +740,9 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
               {post.role === 'admin' && <span className="admin-badge">ADMIN</span>}
             </h4>
             <span className="college-display" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Chaibasa Engineering College</span>
-            <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "var(--text-muted)" }}>{new Date(post.created_at).toLocaleString()}</p>
+            <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "var(--text-muted)" }}>
+              {new Date(post.created_at).toLocaleDateString('en-GB')} at {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
           </div>
         </div>
         
@@ -777,8 +779,10 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
                     {c.first_name} {c.last_name}
                     {c.role === 'admin' && <span className="admin-badge">ADMIN</span>}
                   </strong>
-                  <span style={{ fontSize: "10px", color: "var(--text-muted)", display: "block", marginBottom: "5px" }}>{new Date(c.created_at).toLocaleDateString()}</span>
-                  <p style={{ margin: 0, fontSize: "14px" }}>{c.content}</p>
+                  <span style={{ fontSize: "10px", color: "var(--text-muted)", display: "block", marginBottom: "5px" }}>
+                    {new Date(c.created_at).toLocaleDateString('en-GB')}
+                  </span>
+                <p style={{ margin: 0, fontSize: "14px" }}>{c.content}</p>
                 </div>
                 {(user?.role === 'admin' || user?.id === c.user_id) && <button onClick={() => handleDeleteComment(c.id)} style={{ background: "none", border: "none", color: "var(--danger)", cursor: "pointer", alignSelf: "flex-start", padding: "5px" }}><i className="fas fa-times"></i></button>}
               </div>
@@ -1682,3 +1686,4 @@ function App() {
   );
 }
 export default App;
+
