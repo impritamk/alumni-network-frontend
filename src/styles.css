@@ -231,6 +231,7 @@ body.dark-mode .job-tag-green { background-color: rgba(34, 197, 94, 0.2); color:
   padding: 10px 0;
   border-bottom: 1px solid var(--border-color);
 }
+
 /* ==========================================
    CHAT BUBBLES
    ========================================== */
@@ -264,6 +265,7 @@ body.dark-mode .message-theirs {
   background-color: #334155;
   color: #f8fafc;
 }
+
 /* ==========================================
    LANDING PAGE STYLES
    ========================================== */
@@ -344,5 +346,27 @@ body.dark-mode .skeleton {
 @media (max-width: 480px) {
   .landing-title {
     font-size: 28px; /* Even smaller for very tiny phones */
+  }
+}
+
+/* ==========================================
+   LANDING PAGE NAVBAR RESPONSIVENESS
+   ========================================== */
+.landing-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+@media (max-width: 600px) {
+  .landing-nav {
+    flex-direction: column;
+    gap: 20px; /* Adds space between the Logo and the Buttons */
+  }
+  
+  .landing-nav-buttons {
+    width: 100%;
+    justify-content: center; /* Centers the buttons perfectly */
   }
 }
