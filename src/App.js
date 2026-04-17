@@ -1657,11 +1657,19 @@ const AdminPanel = () => {
 const EditProfile = () => {
   const { user, logout } = useAuth(); 
   const navigate = useNavigate();
-  const [form, setForm] = useState({ firstName: "", lastName: "", headline: "", bio: "", location: "", currentCompany: "", collegeName: "" });
+  const [form, setForm] = useState({ firstName: "", lastName: "", headline: "", bio: "", location: "", company: "", collegeName: "" });
   
-  useEffect(() => { 
-    if (user) setForm({ firstName: user.first_name||"", lastName: user.last_name||"", headline: user.headline||"", bio: user.bio||"", location: user.location||"", currentCompany: user.current_company||"", collegeName: user.college_name||"Chaibasa Engineering College" }); 
-  }, [user]);
+ useEffect(() => { 
+  if (user) setForm({ 
+    firstName: user.first_name||"", 
+    lastName: user.last_name||"", 
+    headline: user.headline||"", 
+    bio: user.bio||"", 
+    location: user.location||"", 
+    company: user.company||"", // <-- Changed this line
+    collegeName: user.college_name||"Chaibasa Engineering College" 
+  }); 
+}, [user]);
   
   const submit = async (e) => { 
     e.preventDefault(); 
@@ -1708,7 +1716,7 @@ const EditProfile = () => {
           <label>Headline</label><input className="input-box" value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} />
           <label>Bio</label><textarea className="input-box" rows={4} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
           <label>Location</label><input className="input-box" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-          <label>Company</label><input className="input-box" value={form.currentCompany} onChange={(e) => setForm({ ...form, currentCompany: e.target.value })} />
+          <label>Company</label><input className="input-box" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
           <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>Save Changes</button>
         </form>
       </div>
