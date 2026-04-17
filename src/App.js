@@ -1445,13 +1445,38 @@ const DashboardPage = () => {
   );
 };
 
+// --- NEW: Array of our funny templates ---
+const EMAIL_TEMPLATES = [
+  {
+    subject: "Hello World! (It's been a while) 👋",
+    message: "Just a quick ping to see how you are doing!\n\nThe ConnectAlumni network has been growing, and your batchmates are missing you. We have some fresh job postings and new conversations happening right now.\n\nTake a quick break from your screen and come say hi!"
+  },
+  {
+    subject: "Error 404: Alumni Not Found 🔍",
+    message: "We ran a search for you on the network recently, but you were nowhere to be found!\n\nDon't worry, we saved your spot. The Chaibasa Engineering community has been sharing some great new job referrals and interview tips this week.\n\nLog back in and let us know what you've been working on lately!"
+  },
+  {
+    subject: "While your code is compiling... ⏳",
+    message: "...why not check in with your college network?\n\nWe know you are busy, but there are some new job opportunities and alumni discussions waiting for you. It only takes a minute to see what’s new.\n\nGrab some water, stretch your legs, and come see what your batchmates are up to!"
+  }
+];
+
+const getRandomTemplate = () => {
+  return EMAIL_TEMPLATES[Math.floor(Math.random() * EMAIL_TEMPLATES.length)];
+};
+
 const AdminPanel = () => {
   const { user } = useAuth(); 
   const [users, setUsers] = useState([]); 
   const [loading, setLoading] = useState(true); 
   const [searchTerm, setSearchTerm] = useState("");
-  // --- NEW: State to track email loading ---
+  
+  // State for the Custom Email Form (Initializes with a random template!)
   const [isEmailing, setIsEmailing] = useState(false);
+  const [emailForm, setEmailForm] = useState({
+    targetEmail: "",
+    ...getRandomTemplate() // Spreads the random subject and message into the state
+  });
   
   const fetchUsers = async (search = "") => { 
     try { 
@@ -1486,49 +1511,119 @@ const AdminPanel = () => {
     } catch (err) { toast.error("Failed"); } 
   };
 
-  // --- NEW: The Broadcast Function ---
-  const sendManualEmail = async () => {
-    // Adding a double confirmation so you don't accidentally spam everyone!
-    const target = window.prompt("Enter a specific email to send a test to, or type 'ALL' to email everyone:");
-    if (!target) return; // They clicked cancel
+  // --- NEW: Function to cycle templates without reloading ---
+  const shuffleTemplate = (e) => {
+    e.preventDefault(); // Stop form submission
+    const newTemp = getRandomTemplate();
+    setEmailForm(prev => ({ ...prev, subject: newTemp.subject, message: newTemp.message }));
+  };
+
+  const handleSendBroadcast = async (e) => {
+    e.preventDefault();
+    if (!emailForm.targetEmail.trim()) {
+      const confirmed = window.confirm("🚨 WARNING: You left the target email blank. This will send an email to EVERY verified user on the platform. Are you sure?");
+      if (!confirmed) return;
+    }
 
     setIsEmailing(true);
     try {
       await axios.post("/api/admin/broadcast-email", {
-        // If they typed 'ALL', send undefined so it triggers the "everyone" logic
-        targetEmail: target.toUpperCase() === 'ALL' ? undefined : target.toLowerCase().trim(),
-        subject: "Message from ConnectAlumni Admin",
-        message: "This is a manual notification sent from the admin panel."
+        targetEmail: emailForm.targetEmail.trim() || undefined,
+        subject: emailForm.subject,
+        message: emailForm.message
       });
       toast.success("Emails successfully sent!");
+      // Reset form but pick a new random template for next time!
+      setEmailForm({ targetEmail: "", ...getRandomTemplate() });
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to send emails");
     } finally {
       setIsEmailing(false);
     }
   };
-  // -----------------------------------
   
   if (user?.role !== 'admin') return <Navigate to="/" replace />;
   
   return (
-    <div className="page-container"><Toaster />
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <i className="fas fa-shield-alt" style={{ fontSize: "28px", color: "#dc2626" }}></i>
-          <h1 style={{ margin: 0 }}>Admin Panel</h1>
+    <div className="page-container" style={{ maxWidth: 900 }}>
+      <Toaster />
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+        <i className="fas fa-shield-alt" style={{ fontSize: "28px", color: "#dc2626" }}></i>
+        <h1 style={{ margin: 0 }}>Admin Panel</h1>
+      </div>
+
+      <div className="card" style={{ marginBottom: "30px", borderLeft: "4px solid #8b5cf6" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "10px" }}>
+          <div>
+            <h3 style={{ marginTop: 0, display: "flex", alignItems: "center", gap: "10px" }}>
+              <i className="fas fa-paper-plane" style={{ color: "#8b5cf6" }}></i> Send Custom Email Broadcast
+            </h3>
+            <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "20px" }}>
+              Write a custom message, or cycle through our templates. Leave "Target Email" blank to email <strong>everyone</strong>.
+            </p>
+          </div>
+          
+          {/* --- THE SHUFFLE BUTTON --- */}
+          <button 
+            onClick={shuffleTemplate} 
+            className="btn-secondary" 
+            style={{ padding: "6px 12px", fontSize: "13px" }}
+            type="button"
+          >
+            🎲 Shuffle Template
+          </button>
         </div>
         
-        {/* --- NEW: The Broadcast Button --- */}
-        <button 
-          onClick={sendManualEmail} 
-          className="btn-primary" 
-          disabled={isEmailing}
-          style={{ background: "#8b5cf6" }} // Purple to make it stand out
-        >
-          {isEmailing ? "Sending..." : "📨 Send Broadcast Email"}
-        </button>
-        {/* ------------------------------- */}
+        <form onSubmit={handleSendBroadcast}>
+          <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 250px" }}>
+              <label>Target Email (Optional)</label>
+              <input 
+                className="input-box" 
+                type="email" 
+                placeholder="Leave blank for ALL users..." 
+                value={emailForm.targetEmail} 
+                onChange={(e) => setEmailForm({...emailForm, targetEmail: e.target.value})} 
+                disabled={isEmailing}
+              />
+            </div>
+            <div style={{ flex: "1 1 350px" }}>
+              <label>Email Subject *</label>
+              <input 
+                className="input-box" 
+                type="text" 
+                value={emailForm.subject} 
+                onChange={(e) => setEmailForm({...emailForm, subject: e.target.value})} 
+                required 
+                disabled={isEmailing}
+              />
+            </div>
+          </div>
+          
+          <label>Message Body *</label>
+          <textarea 
+            className="input-box" 
+            rows="5" 
+            value={emailForm.message} 
+            onChange={(e) => setEmailForm({...emailForm, message: e.target.value})} 
+            required 
+            disabled={isEmailing}
+            style={{ resize: "vertical" }}
+          />
+          
+          <button 
+            type="submit" 
+            className="btn-primary" 
+            disabled={isEmailing}
+            style={{ background: "#8b5cf6", width: "100%", marginTop: "10px" }}
+          >
+            {isEmailing ? (
+              <><i className="fas fa-spinner fa-spin" style={{ marginRight: 5 }}></i> Sending Emails...</>
+            ) : (
+              <><i className="fas fa-envelope" style={{ marginRight: 5 }}></i> Send Broadcast</>
+            )}
+          </button>
+        </form>
       </div>
 
       <div className="card">
@@ -1559,7 +1654,6 @@ const AdminPanel = () => {
     </div>
   );
 };
-
 const EditProfile = () => {
   const { user, logout } = useAuth(); 
   const navigate = useNavigate();
