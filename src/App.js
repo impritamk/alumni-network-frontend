@@ -318,6 +318,8 @@ const LandingPage = () => {
 // ==============================
 const LoginPage = () => {
   const { login } = useAuth(); 
+  const navigate = useNavigate();
+  
   const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState(""); 
   const [isLoading, setIsLoading] = useState(false); 
@@ -329,7 +331,7 @@ const LoginPage = () => {
     try { 
       await login(email, password); 
       toast.success("Login successful!"); 
-      setTimeout(() => { window.location.href = "/"; }, 500); 
+      navigate("/");
     } catch (err) { 
       toast.error(err.response?.data?.message || "Login failed"); 
       setIsLoading(false); 
@@ -369,7 +371,7 @@ const LoginPage = () => {
                 try {
                   await login("alumninetworkplatform@gmail.com", "Guest123!");
                   toast.success("Welcome, Guest!");
-                  setTimeout(() => { window.location.href = "/"; }, 500);
+                  navigate("/"); // Instant transition!
                 } catch (err) {
                   toast.error("Guest login failed.");
                   setIsLoading(false); // Re-enable buttons if it fails
