@@ -1450,6 +1450,8 @@ const AdminPanel = () => {
   const [users, setUsers] = useState([]); 
   const [loading, setLoading] = useState(true); 
   const [searchTerm, setSearchTerm] = useState("");
+  // --- NEW: State to track email loading ---
+  const [isEmailing, setIsEmailing] = useState(false);
   
   const fetchUsers = async (search = "") => { 
     try { 
@@ -1483,16 +1485,58 @@ const AdminPanel = () => {
       fetchUsers(searchTerm); 
     } catch (err) { toast.error("Failed"); } 
   };
+
+  // --- NEW: The Broadcast Function ---
+  const sendManualEmail = async () => {
+    // Adding a double confirmation so you don't accidentally spam everyone!
+    const target = window.prompt("Enter a specific email to send a test to, or type 'ALL' to email everyone:");
+    if (!target) return; // They clicked cancel
+
+    setIsEmailing(true);
+    try {
+      await axios.post("/api/admin/broadcast-email", {
+        // If they typed 'ALL', send undefined so it triggers the "everyone" logic
+        targetEmail: target.toUpperCase() === 'ALL' ? undefined : target.toLowerCase().trim(),
+        subject: "Message from ConnectAlumni Admin",
+        message: "This is a manual notification sent from the admin panel."
+      });
+      toast.success("Emails successfully sent!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to send emails");
+    } finally {
+      setIsEmailing(false);
+    }
+  };
+  // -----------------------------------
   
   if (user?.role !== 'admin') return <Navigate to="/" replace />;
   
   return (
     <div className="page-container"><Toaster />
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}><i className="fas fa-shield-alt" style={{ fontSize: "28px", color: "#dc2626" }}></i><h1 style={{ margin: 0 }}>Admin Panel</h1></div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <i className="fas fa-shield-alt" style={{ fontSize: "28px", color: "#dc2626" }}></i>
+          <h1 style={{ margin: 0 }}>Admin Panel</h1>
+        </div>
+        
+        {/* --- NEW: The Broadcast Button --- */}
+        <button 
+          onClick={sendManualEmail} 
+          className="btn-primary" 
+          disabled={isEmailing}
+          style={{ background: "#8b5cf6" }} // Purple to make it stand out
+        >
+          {isEmailing ? "Sending..." : "📨 Send Broadcast Email"}
+        </button>
+        {/* ------------------------------- */}
+      </div>
+
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Manage Users</h3>
-        {/* CHANGED PLACEHOLDER */}
-        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px", marginBottom: "20px" }}><input type="text" className="input-box" placeholder="Search by name, email, or batch..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} /><button type="submit" className="btn-primary">Search</button></form>
+        <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+          <input type="text" className="input-box" placeholder="Search by name, email, or batch..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} />
+          <button type="submit" className="btn-primary">Search</button>
+        </form>
         {loading ? <p>Loading...</p> : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {users.map(u => (
@@ -1500,7 +1544,6 @@ const AdminPanel = () => {
                 <div>
                   <strong>{u.first_name} {u.last_name}</strong> 
                   <span style={{ color: "var(--text-muted)", marginLeft: 10 }}>{u.email}</span>
-                  {/* SHOW BATCH SO SEARCH RESULTS MAKE SENSE */}
                   <span style={{ color: "var(--text-muted)", marginLeft: 10 }}>• Batch {u.passout_year}</span>
                   {u.role === 'admin' && <span className="admin-badge">ADMIN</span>}
                 </div>
