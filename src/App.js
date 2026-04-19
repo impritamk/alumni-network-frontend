@@ -741,11 +741,9 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
           onClick={() => navigate(`/alumni/${post.user_id}`)}
           style={{ cursor: "pointer", display: "flex", gap: "10px" }}
         >
-          <img 
-  src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.first_name}`} 
-  alt="avatar" 
-  style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
-/>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+          {post.first_name[0]}
+          </div>
           <div>
             <h4 style={{ margin: "0 0 2px 0", color: "inherit", display: "flex", alignItems: "center" }}>
               {post.first_name} {post.last_name}
@@ -1399,11 +1397,7 @@ const MessagesPage = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {inbox.map((item) => (
                   <div key={item.room.id} onClick={() => startChat(item.otherUser.id)} style={{ display: "flex", alignItems: "center", gap: "15px", padding: "15px", border: "1px solid var(--border-color)", borderRadius: "12px", cursor: "pointer" }}>
-                    <img 
-  src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.otherUser.first_name}`} 
-  alt="avatar" 
-  style={{ width: 45, height: 45, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
-/>
+                    <div style={{ width: 45, height: 45, background: "var(--primary)", color: "white", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "bold" }}>{item.otherUser.first_name[0]}</div>
                     <div>
                        <h4 style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>{item.otherUser.first_name} {item.otherUser.last_name}{item.hasUnread && <span style={{ width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", display: "inline-block" }}></span>}</h4>
                        <p style={{ margin: 0, fontSize: "13px", color: item.hasUnread ? "#ef4444" : "var(--text-muted)", fontWeight: item.hasUnread ? "bold" : "normal" }}>{item.hasUnread ? "New message!" : "Click to open chat"}</p>
@@ -1544,11 +1538,7 @@ const DashboardPage = () => {
                 {batchmates.map((peer, index) => (
                   <div key={peer.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 20px", borderBottom: index < batchmates.length - 1 ? "1px solid var(--border-color)" : "none" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                     <img 
-  src={`https://api.dicebear.com/7.x/initials/svg?seed=${peer.first_name}`} 
-  alt="avatar" 
-  style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
-/>
+                     <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>{peer.first_name[0]}</div>
                         <div>
                         <h4 style={{ margin: 0 }}>{peer.first_name} {peer.last_name}</h4>
                         <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{peer.headline || "Alumni"}</p>
