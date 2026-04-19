@@ -742,7 +742,7 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
           style={{ cursor: "pointer", display: "flex", gap: "10px" }}
         >
           <img 
-  src={`https://api.dicebear.com/7.x/identicon/svg?seed=${post.user_id}`} 
+  src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${post.user_id}`} 
   alt="avatar" 
   style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
 />
@@ -1399,11 +1399,11 @@ const MessagesPage = () => {
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {inbox.map((item) => (
                   <div key={item.room.id} onClick={() => startChat(item.otherUser.id)} style={{ display: "flex", alignItems: "center", gap: "15px", padding: "15px", border: "1px solid var(--border-color)", borderRadius: "12px", cursor: "pointer" }}>
-                     <img 
-                      src={`https://api.dicebear.com/7.x/identicon/svg?seed=${item.otherUser.id}`} 
-                      alt="avatar" 
-                      style={{ width: 45, height: 45, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
-                    />
+                    <img 
+  src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.first_name}`} 
+  alt="avatar" 
+  style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
+/>
                     <div>
                        <h4 style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>{item.otherUser.first_name} {item.otherUser.last_name}{item.hasUnread && <span style={{ width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", display: "inline-block" }}></span>}</h4>
                        <p style={{ margin: 0, fontSize: "13px", color: item.hasUnread ? "#ef4444" : "var(--text-muted)", fontWeight: item.hasUnread ? "bold" : "normal" }}>{item.hasUnread ? "New message!" : "Click to open chat"}</p>
@@ -1545,10 +1545,10 @@ const DashboardPage = () => {
                   <div key={peer.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 20px", borderBottom: index < batchmates.length - 1 ? "1px solid var(--border-color)" : "none" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <img 
-                        src={`https://api.dicebear.com/7.x/identicon/svg?seed=${peer.id}`} 
-                        alt="avatar" 
-                        style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
-                      />
+  src={`https://api.dicebear.com/7.x/shapes/svg?seed=${post.user_id}`} 
+  alt="avatar" 
+  style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
+/>
                         <div>
                         <h4 style={{ margin: 0 }}>{peer.first_name} {peer.last_name}</h4>
                         <p style={{ margin: 0, fontSize: "12px", color: "var(--text-muted)" }}>{peer.headline || "Alumni"}</p>
