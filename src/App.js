@@ -1400,9 +1400,9 @@ const MessagesPage = () => {
                 {inbox.map((item) => (
                   <div key={item.room.id} onClick={() => startChat(item.otherUser.id)} style={{ display: "flex", alignItems: "center", gap: "15px", padding: "15px", border: "1px solid var(--border-color)", borderRadius: "12px", cursor: "pointer" }}>
                     <img 
-  src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.otherUser.first_name}`} 
+  src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${item.otherUser.id}`} 
   alt="avatar" 
-  style={{ width: 45, height: 45, borderRadius: '50%', backgroundColor: '#f8fafc' }} 
+  style={{ width: 45, height: 45, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
 />
                     <div>
                        <h4 style={{ margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>{item.otherUser.first_name} {item.otherUser.last_name}{item.hasUnread && <span style={{ width: "8px", height: "8px", background: "#ef4444", borderRadius: "50%", display: "inline-block" }}></span>}</h4>
@@ -1545,9 +1545,9 @@ const DashboardPage = () => {
                   <div key={peer.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 20px", borderBottom: index < batchmates.length - 1 ? "1px solid var(--border-color)" : "none" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <img 
-  src={`https://api.dicebear.com/7.x/initials/svg?seed=${peer.first_name}`} 
+  src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${peer.id}`} 
   alt="avatar" 
-  style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#f8fafc' }} 
+  style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
 />
                         <div>
                         <h4 style={{ margin: 0 }}>{peer.first_name} {peer.last_name}</h4>
