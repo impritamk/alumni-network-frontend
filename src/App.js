@@ -742,7 +742,7 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
           style={{ cursor: "pointer", display: "flex", gap: "10px" }}
         >
           <img 
-  src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${post.user_id}`} 
+  src={`https://api.dicebear.com/7.x/initials/svg?seed=${post.first_name}`} 
   alt="avatar" 
   style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
 />
@@ -1400,7 +1400,7 @@ const MessagesPage = () => {
                 {inbox.map((item) => (
                   <div key={item.room.id} onClick={() => startChat(item.otherUser.id)} style={{ display: "flex", alignItems: "center", gap: "15px", padding: "15px", border: "1px solid var(--border-color)", borderRadius: "12px", cursor: "pointer" }}>
                     <img 
-  src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${item.otherUser.id}`} 
+  src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.otherUser.first_name}`} 
   alt="avatar" 
   style={{ width: 45, height: 45, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
 />
@@ -1544,8 +1544,8 @@ const DashboardPage = () => {
                 {batchmates.map((peer, index) => (
                   <div key={peer.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 20px", borderBottom: index < batchmates.length - 1 ? "1px solid var(--border-color)" : "none" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <img 
-  src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${peer.id}`} 
+                     <img 
+  src={`https://api.dicebear.com/7.x/initials/svg?seed=${peer.first_name}`} 
   alt="avatar" 
   style={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--bg-color)' }} 
 />
