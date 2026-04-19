@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate, us
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { io } from "socket.io-client";
-
+import Microlink from '@microlink/react';
 // ==============================
 // AXIOS CONFIG & INTERCEPTOR
 // ==============================
@@ -698,6 +698,13 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
   const [isLiking, setIsLiking] = useState(false);
   const navigate = useNavigate();
 
+  // --- NEW: URL Extraction Logic ---
+  // This Regex looks for anything starting with http:// or https://
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const urls = post.content.match(urlRegex);
+  const firstUrl = urls ? urls[0] : null; // We will generate a preview for the first link found
+  // ---------------------------------
+
   const handleLike = async () => { 
     if (isLiking) return; 
     setIsLiking(true); 
@@ -732,6 +739,7 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
         <div 
           className="post-header" 
           onClick={() => navigate(`/alumni/${post.user_id}`)}
+          style={{ cursor: "pointer", display: "flex", gap: "10px" }}
         >
           <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
             {post.first_name[0]}
@@ -753,7 +761,20 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
         )}
       </div>
       
-      <p style={{ margin: "10px 0 15px 0", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{post.content}</p>
+      {/* The original text content */}
+      <p style={{ margin: "15px 0", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{post.content}</p>
+      
+      {/* --- NEW: Visual Link Preview Card --- */}
+      {firstUrl && (
+        <div style={{ marginBottom: "15px", overflow: "hidden", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+          <Microlink 
+            url={firstUrl} 
+            style={{ width: '100%', border: 'none', borderRadius: '8px' }} 
+            size="large" // Changes it to a big beautiful card with a large image
+          />
+        </div>
+      )}
+      {/* ------------------------------------- */}
       
       <div style={{ display: "flex", gap: "15px", borderTop: "1px solid var(--border-color)", paddingTop: "10px" }}>
         <button onClick={handleLike} disabled={isLiking} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: post.user_liked ? "var(--danger)" : "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
@@ -795,7 +816,6 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
     </div>
   );
 };
-
 const FeedPage = () => {
   const { user } = useAuth(); 
   const [posts, setPosts] = useState([]); 
