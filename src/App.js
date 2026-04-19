@@ -1260,19 +1260,6 @@ const ConnectionsPage = () => {
 // ==============================
 // MESSAGES PAGE
 // ==============================
-Here is the fully updated `MessagesPage` component. I kept your original initial-based avatars just as you requested. 
-
-I added three key pieces to make the read receipts work:
-1.  The frontend automatically tells the server `markAsRead` the second you open a chat room.
-2.  If you have a chat open and a new message arrives, it instantly fires `markAsRead` again so the sender knows you saw it live.
-3.  The frontend listens for the `messagesRead` event from the server and instantly updates your local state so the checkmarks turn blue.
-
-Replace your entire `MessagesPage` component with this:
-
-```javascript
-// ==============================
-// MESSAGES PAGE
-// ==============================
 const MessagesPage = () => {
   const { user } = useAuth(); 
   const [isTyping, setIsTyping] = useState(false); 
