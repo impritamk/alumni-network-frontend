@@ -1260,10 +1260,23 @@ const ConnectionsPage = () => {
 // ==============================
 // MESSAGES PAGE
 // ==============================
+Here is the fully updated `MessagesPage` component. I kept your original initial-based avatars just as you requested. 
+
+I added three key pieces to make the read receipts work:
+1.  The frontend automatically tells the server `markAsRead` the second you open a chat room.
+2.  If you have a chat open and a new message arrives, it instantly fires `markAsRead` again so the sender knows you saw it live.
+3.  The frontend listens for the `messagesRead` event from the server and instantly updates your local state so the checkmarks turn blue.
+
+Replace your entire `MessagesPage` component with this:
+
+```javascript
+// ==============================
+// MESSAGES PAGE
+// ==============================
 const MessagesPage = () => {
   const { user } = useAuth(); 
-  const [isTyping, setIsTyping] = useState(false); // Tracks if the OTHER person is typing
-  const typingTimeoutRef = useRef(null); // Holds our 2-second timer
+  const [isTyping, setIsTyping] = useState(false); 
+  const typingTimeoutRef = useRef(null); 
   const [messages, setMessages] = useState([]); 
   const [newMessage, setNewMessage] = useState(""); 
   const [activeRoom, setActiveRoom] = useState(null); 
@@ -1295,24 +1308,38 @@ const MessagesPage = () => {
     } catch (err) { toast.error("Failed to start chat"); } 
   }, [fetchMessages]);
 
-// --- NEW SOCKET.IO REAL-TIME LISTENER ---
+// --- UPDATED SOCKET.IO REAL-TIME LISTENER ---
   useEffect(() => {
-    // Connect to the backend
     const socket = io(API_URL);
 
     if (activeRoom) {
       socket.emit("joinRoom", activeRoom.id);
+      
+      // 1. Tell the server we just opened the chat and read everything
+      socket.emit("markAsRead", { roomId: activeRoom.id, userId: user.id });
 
       socket.on("receiveMessage", (newMsg) => {
         if (newMsg.sender_id !== user.id) {
           setMessages((prevMessages) => [...prevMessages, newMsg]);
-          setIsTyping(false); // Instantly hide typing indicator when message arrives
+          setIsTyping(false);
+          
+          // 2. We are actively looking at the chat, so mark this new incoming message as read immediately
+          socket.emit("markAsRead", { roomId: activeRoom.id, userId: user.id });
         }
       });
 
-      // NEW: Listen for typing status
       socket.on("userTyping", () => setIsTyping(true));
       socket.on("userStoppedTyping", () => setIsTyping(false));
+
+      // 3. Listen for the OTHER person reading OUR messages
+      socket.on("messagesRead", ({ readerId }) => {
+        if (readerId !== user.id) {
+          // Update all our sent messages to show the blue double tick
+          setMessages(prev => prev.map(msg => 
+            msg.sender_id === user.id ? { ...msg, read_status: 'read' } : msg
+          ));
+        }
+      });
     }
 
     return () => {
@@ -1327,15 +1354,12 @@ const MessagesPage = () => {
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
 
-    // Don't emit typing events if it's the guest account
     if (activeRoom && user?.email !== 'alumninetworkplatform@gmail.com') {
-      const socket = io(API_URL); // Connect temporarily to emit
+      const socket = io(API_URL);
       socket.emit("typing", activeRoom.id);
 
-      // Clear the previous timer if they are still typing
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
-      // Set a new 2-second timer. If they don't type for 2 seconds, stop it.
       typingTimeoutRef.current = setTimeout(() => {
         socket.emit("stopTyping", activeRoom.id);
       }, 2000);
@@ -1345,17 +1369,16 @@ const MessagesPage = () => {
   const sendMessage = async (e) => { 
     e.preventDefault(); 
     if (!newMessage.trim() || !activeRoom) return; 
-    // --- ADD THIS CHECK ---
+    
     if (user?.email === 'alumninetworkplatform@gmail.com') {
       toast.error("🔒 Guest accounts cannot send messages.");
-      setNewMessage(""); // Clear what they typed
+      setNewMessage(""); 
       return;
     }
-    // ----------------------
+    
     try { 
       const res = await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage }); 
       
-      // Instantly add our own message to the screen locally
       setMessages(prev => [...prev, res.data.message]);
       setNewMessage(""); 
     } catch (err) { toast.error("Failed to send message"); } 
@@ -1383,7 +1406,6 @@ const MessagesPage = () => {
             <h2 style={{ margin: 0, fontSize: "18px" }}>{chatPartner ? `Chat with ${chatPartner.first_name} ${chatPartner.last_name}` : "Messages Inbox"}</h2>
           </div>
           
-          {/* Delete Chat Button */}
           {activeRoom && (
             <button onClick={deleteChat} className="btn-danger" style={{ padding: "6px 12px", fontSize: "13px" }}>
               <i className="fas fa-trash"></i> Delete Chat
@@ -1412,7 +1434,34 @@ const MessagesPage = () => {
               return (
                 <div key={msg.id} className={isMe ? 'message-bubble message-mine' : 'message-bubble message-theirs'}>
                   <div>{msg.message}</div>
-                  <div style={{ fontSize: "10px", opacity: 0.7, marginTop: "5px", textAlign: isMe ? "right" : "left" }}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  
+                  {/* --- UPDATED MESSAGE METADATA (TIME + CHECKMARKS) --- */}
+                  <div style={{ 
+                    fontSize: "10px", 
+                    opacity: 0.8, 
+                    marginTop: "5px", 
+                    display: "flex", 
+                    justifyContent: isMe ? "flex-end" : "flex-start", 
+                    alignItems: "center", 
+                    gap: "6px" 
+                  }}>
+                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    
+                    {/* Only show checkmarks if I sent the message */}
+                    {isMe && (
+                      <span style={{ fontSize: "11px", color: msg.read_status === 'read' ? "#3b82f6" : "inherit" }}>
+                        {msg.read_status === 'read' ? (
+                          <i className="fas fa-check-double"></i> /* Blue Double Tick */
+                        ) : msg.read_status === 'delivered' ? (
+                          <i className="fas fa-check-double"></i> /* Grey Double Tick */
+                        ) : (
+                          <i className="fas fa-check"></i> /* Single Grey Tick */
+                        )}
+                      </span>
+                    )}
+                  </div>
+                  {/* ---------------------------------------------------- */}
+
                 </div>
               );
             })
@@ -1436,6 +1485,7 @@ const MessagesPage = () => {
     </div>
   );
 };
+```
 // ==============================
 // DASHBOARD, ADMIN & EDIT PROFILE
 // ==============================
