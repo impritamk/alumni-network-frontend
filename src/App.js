@@ -869,11 +869,7 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
         <button onClick={handleShare} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
           <i className="fas fa-share"></i> Share
         </button>
-        {!isSingleView && (
-          <button onClick={() => navigate(`/post/${post.id}`)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: "var(--primary)", fontWeight: "bold", fontSize: "14px", marginLeft: "auto" }}>
-            <i className="fas fa-expand"></i> View Post
-          </button>
-        )}
+        
       </div>
 
       {showComments && (
