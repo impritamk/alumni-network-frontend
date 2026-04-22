@@ -720,20 +720,17 @@ const AlumniProfile = () => {
 };
 
 // ==============================
-// COMMUNITY FEED (HOMEPAGE)
+// COMMUNITY FEED & POSTS
 // ==============================
-const PostItem = ({ post, user, onDelete, onRefresh }) => {
-  const [showComments, setShowComments] = useState(false); 
+const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false, isSingleView = false }) => {
+  const [showComments, setShowComments] = useState(defaultShowComments); 
   const [commentText, setCommentText] = useState(""); 
   const [isLiking, setIsLiking] = useState(false);
   const navigate = useNavigate();
 
-  // --- NEW: URL Extraction Logic ---
-  // This Regex looks for anything starting with http:// or https://
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const urls = post.content.match(urlRegex);
-  const firstUrl = urls ? urls[0] : null; // We will generate a preview for the first link found
-  // ---------------------------------
+  const firstUrl = urls ? urls[0] : null; 
 
   const handleLike = async () => { 
     if (isLiking) return; 
@@ -761,6 +758,12 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
       await axios.delete(`/api/posts/comments/${commentId}`); 
       onRefresh(); 
     } catch (err) { toast.error("Failed to delete comment"); } 
+  };
+
+  const handleShare = () => {
+    const link = `${window.location.origin}/post/${post.id}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Link copied to clipboard!");
   };
   
   return (
@@ -791,28 +794,29 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
         )}
       </div>
       
-      {/* The original text content */}
       <p style={{ margin: "15px 0", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{post.content}</p>
       
-      {/* --- NEW: Visual Link Preview Card --- */}
       {firstUrl && (
         <div style={{ marginBottom: "15px", overflow: "hidden", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
-          <Microlink 
-            url={firstUrl} 
-            style={{ width: '100%', border: 'none', borderRadius: '8px' }} 
-            size="large" // Changes it to a big beautiful card with a large image
-          />
+          <Microlink url={firstUrl} style={{ width: '100%', border: 'none', borderRadius: '8px' }} size="large" />
         </div>
       )}
-      {/* ------------------------------------- */}
       
-      <div style={{ display: "flex", gap: "15px", borderTop: "1px solid var(--border-color)", paddingTop: "10px" }}>
+      <div style={{ display: "flex", gap: "15px", borderTop: "1px solid var(--border-color)", paddingTop: "10px", flexWrap: "wrap" }}>
         <button onClick={handleLike} disabled={isLiking} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: post.user_liked ? "var(--danger)" : "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
           <i className={post.user_liked ? "fas fa-heart" : "far fa-heart"}></i> {post.like_count || 0} Likes
         </button>
         <button onClick={() => setShowComments(!showComments)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
           <i className="far fa-comment"></i> {post.comments?.length || 0} Comments
         </button>
+        <button onClick={handleShare} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
+          <i className="fas fa-share"></i> Share
+        </button>
+        {!isSingleView && (
+          <button onClick={() => navigate(`/post/${post.id}`)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: "var(--primary)", fontWeight: "bold", fontSize: "14px", marginLeft: "auto" }}>
+            <i className="fas fa-expand"></i> View Post
+          </button>
+        )}
       </div>
 
       {showComments && (
@@ -846,6 +850,51 @@ const PostItem = ({ post, user, onDelete, onRefresh }) => {
     </div>
   );
 };
+
+const SinglePostPage = () => {
+  const { id } = useParams();
+  const { user } = useAuth();
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const fetchPost = useCallback(async () => {
+    try {
+      const res = await axios.get(`/api/posts/${id}`);
+      setPost(res.data.post);
+    } catch (err) { 
+      toast.error("Failed to load post"); 
+      navigate("/");
+    } finally { 
+      setLoading(false); 
+    }
+  }, [id, navigate]);
+
+  useEffect(() => { fetchPost(); }, [fetchPost]);
+
+  const handleDelete = async (postId) => { 
+    if (!window.confirm("Delete post?")) return; 
+    try { 
+      await axios.delete(`/api/posts/${postId}`); 
+      toast.success("Deleted"); 
+      navigate("/");
+    } catch (err) { toast.error("Failed to delete"); } 
+  };
+
+  if (loading) return <PageSkeleton />;
+  if (!post) return null;
+
+  return (
+    <div className="page-container" style={{ maxWidth: 700 }}>
+      <Toaster />
+      <button onClick={() => navigate(-1)} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", marginBottom: "15px", fontWeight: "bold" }}>
+        <i className="fas fa-arrow-left"></i> Back
+      </button>
+      <PostItem post={post} user={user} onDelete={handleDelete} onRefresh={fetchPost} defaultShowComments={true} isSingleView={true} />
+    </div>
+  );
+};
+
 const FeedPage = () => {
   const { user } = useAuth(); 
   const [posts, setPosts] = useState([]); 
@@ -853,29 +902,51 @@ const FeedPage = () => {
   const [loading, setLoading] = useState(true); 
   const [sortOption, setSortOption] = useState("latest");
   
-  const fetchPosts = useCallback(async () => { 
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const LIMIT = 10;
+  
+  const fetchPosts = useCallback(async (pageNum = 1, isNewSort = false) => { 
     try { 
-      const res = await axios.get(`/api/posts?sort=${sortOption}`); 
-      setPosts(res.data.posts); 
+      if (pageNum === 1 && isNewSort) setLoading(true);
+      
+      const res = await axios.get(`/api/posts?sort=${sortOption}&page=${pageNum}&limit=${LIMIT}`); 
+      
+      if (pageNum === 1) {
+        setPosts(res.data.posts);
+      } else {
+        setPosts(prev => [...prev, ...res.data.posts]);
+      }
+      
+      setHasMore(res.data.posts.length === LIMIT);
     } catch (err) { toast.error("Failed to load posts"); } 
     finally { setLoading(false); } 
   }, [sortOption]);
   
-  useEffect(() => { fetchPosts(); }, [fetchPosts]);
+  // Refetch when sort option changes
+  useEffect(() => { 
+    setPage(1);
+    fetchPosts(1, true); 
+  }, [sortOption, fetchPosts]);
+  
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchPosts(nextPage, false);
+  };
   
   const handleSubmit = async (e) => { 
     e.preventDefault(); 
-    
-    // Check if it's the guest
     if (user?.email === 'alumninetworkplatform@gmail.com') {
       toast.error("🔒 Please register a full account to post on the feed!");
-      return; // Stop the function here
+      return; 
     }
-
     try { 
       await axios.post("/api/posts", { content }); 
       setContent(""); 
-      fetchPosts(); 
+      setPage(1);
+      fetchPosts(1, true); 
       toast.success("Posted!"); 
     } catch (err) { toast.error("Failed to post"); } 
   };
@@ -884,41 +955,14 @@ const FeedPage = () => {
     if (!window.confirm("Delete post?")) return; 
     try { 
       await axios.delete(`/api/posts/${postId}`); 
-      fetchPosts(); 
+      setPage(1);
+      fetchPosts(1, true); 
       toast.success("Deleted"); 
     } catch (err) { toast.error("Failed to delete"); } 
   };
 
-  if (loading) {
-    return (
-      <div className="page-container" style={{ maxWidth: 700 }}>
-        {/* Skeleton for the input box */}
-        <div className="card" style={{ marginBottom: 20 }}>
-          <div className="skeleton skeleton-text" style={{ height: "60px" }}></div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }}>
-            <div className="skeleton" style={{ width: "100px", height: "35px" }}></div>
-            <div className="skeleton" style={{ width: "80px", height: "35px" }}></div>
-          </div>
-        </div>
-        
-        {/* Skeletons for the posts */}
-        {[1, 2, 3].map(i => (
-          <div key={i} className="card" style={{ marginBottom: "15px" }}>
-            <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
-              <div className="skeleton skeleton-avatar"></div>
-              <div style={{ flex: 1 }}>
-                <div className="skeleton skeleton-title"></div>
-                <div className="skeleton skeleton-text-short" style={{ height: "10px" }}></div>
-              </div>
-            </div>
-            <div className="skeleton skeleton-text"></div>
-            <div className="skeleton skeleton-text"></div>
-            <div className="skeleton skeleton-text-short"></div>
-          </div>
-        ))}
-      </div>
-    );
-  }  
+  if (loading) return <PageSkeleton />;
+  
   return (
     <div className="page-container" style={{ maxWidth: 700 }}>
       <Toaster />
@@ -948,8 +992,17 @@ const FeedPage = () => {
       </div>
       
       <div style={{ display: "flex", flexDirection: "column" }}>
-        {posts.map(post => <PostItem key={post.id} post={post} user={user} onDelete={handleDelete} onRefresh={fetchPosts} />)}
+        {posts.map(post => <PostItem key={post.id} post={post} user={user} onDelete={handleDelete} onRefresh={() => fetchPosts(page, false)} />)}
         {posts.length === 0 && <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px" }}>No posts yet. Break the ice!</p>}
+        
+        {hasMore && posts.length > 0 && (
+          <button onClick={loadMore} className="btn-secondary" style={{ width: '100%', marginTop: '15px', padding: '12px', fontWeight: 'bold' }}>
+            Load More Posts
+          </button>
+        )}
+        {!hasMore && posts.length > 0 && (
+          <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px", fontSize: "14px" }}>You have reached the end of the feed.</p>
+        )}
       </div>
     </div>
   );
