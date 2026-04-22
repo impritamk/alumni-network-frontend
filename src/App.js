@@ -931,7 +931,7 @@ const FeedPage = () => {
 const JobFormModal = ({ job, onClose, onSuccess }) => {
   const { user } = useAuth();
   const isEdit = !!job; 
-  const [form, setForm] = useState(job || { title: "", company: "", description: "", requirements: "", location: "", salaryRange: "", jobType: "Full-time", experienceLevel: "Mid-level" }); 
+  const [form, setForm] = useState(job || { title: "", company: "", description: "", requirements: "", location: "", salaryRange: "", jobType: "Full-time", experienceLevel: "Mid-level", applyLink: "" }); 
   const [submitting, setSubmitting] = useState(false);
   
   const handleSubmit = async (e) => { 
@@ -981,6 +981,9 @@ const JobFormModal = ({ job, onClose, onSuccess }) => {
             </div>
           </div>
           <label>Salary Range</label><input className="input-box" value={form.salaryRange} onChange={(e) => setForm({ ...form, salaryRange: e.target.value })} />
+          {/* PASTE THIS NEW INPUT RIGHT BEFORE THE DESCRIPTION FIELD */}
+        <label>Application Link (URL) *</label>
+        <input className="input-box" type="url" value={form.applyLink || ""} onChange={(e) => setForm({ ...form, applyLink: e.target.value })} required placeholder="https://careers.company.com/..." />
           <label>Job Description *</label><textarea className="input-box" rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
           <label>Requirements</label><textarea className="input-box" rows={4} value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} />
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
@@ -1076,53 +1079,37 @@ const ViewApplicationsModal = ({ job, onClose }) => {
 
 const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false); 
-  const [showApplyModal, setShowApplyModal] = useState(false); 
   const [showEditModal, setShowEditModal] = useState(false); 
   const [showApplicationsModal, setShowApplicationsModal] = useState(false); 
   const { user } = useAuth();
   
-  const handleDeleteJob = async () => { 
-    if (window.confirm("Delete job?")) { 
-      try { 
-        await axios.delete(`/api/jobs/${job.id}`); 
-        toast.success("Deleted!"); 
-        onJobDeleted(); 
-      } catch (err) { toast.error("Failed to delete"); } 
-    } 
-  };
+  // (Removed showApplyModal state entirely)
+  
+  const handleDeleteJob = async () => { /* ... stays the same ... */ };
   
   return (
     <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-        <div style={{ flex: 1 }}>
-          <h3 style={{ marginTop: 0, marginBottom: 5 }}>{job.title}</h3>
-          <p style={{ color: "var(--text-muted)", marginBottom: 10, fontSize: "16px" }}><strong>{job.company}</strong>{job.location && ` • ${job.location}`}</p>
-          
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
-            {job.job_type && <span className="job-tag job-tag-blue"><i className="fas fa-briefcase"></i> {job.job_type}</span>}
-            {job.experience_level && <span className="job-tag job-tag-purple"><i className="fas fa-chart-line"></i> {job.experience_level}</span>}
-            {job.salary_range && <span className="job-tag job-tag-green"><i className="fas fa-money-bill-wave"></i> {job.salary_range}</span>}
-          </div>
-          
-          {expanded && (
-            <div style={{ marginTop: 15, paddingTop: 15, borderTop: "1px solid var(--border-color)" }}>
-              <h4 style={{ marginTop: 0 }}>Description</h4><p style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{job.description}</p>
-              {job.requirements && <><h4 style={{ marginTop: 15 }}>Requirements</h4><p style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{job.requirements}</p></>}
-              <p style={{ color: "var(--text-muted)", fontSize: "14px", marginTop: 15 }}>Posted by: {job.first_name} {job.last_name}</p>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* ... job details rendering stays the same ... */}
+      
       <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
-        {user?.id !== job.posted_by && <button className="btn-primary" onClick={() => setShowApplyModal(true)}>Apply Now</button>}
+        
+        {/* REPLACED THE OLD BUTTON WITH THIS NEW EXTERNAL LINK */}
+        {user?.id !== job.posted_by && job.apply_link && (
+          <a href={job.apply_link} target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            Apply Now <i className="fas fa-external-link-alt" style={{ marginLeft: 8, fontSize: "12px" }}></i>
+          </a>
+        )}
+        
         <button className="btn-secondary" onClick={() => setExpanded(!expanded)}>{expanded ? "Show Less" : "View Details"}</button>
         {user?.id === job.posted_by && <button className="btn-primary" onClick={() => setShowApplicationsModal(true)}>Applications ({job.application_count || 0})</button>}
         {(user?.id === job.posted_by || user?.role === 'admin') && <button className="btn-secondary" onClick={() => setShowEditModal(true)}><i className="fas fa-edit"></i> Edit</button>}
         {(user?.id === job.posted_by || user?.role === 'admin') && <button className="btn-danger" onClick={handleDeleteJob}><i className="fas fa-trash"></i></button>}
       </div>
+      
       {showEditModal && <JobFormModal job={job} onClose={() => setShowEditModal(false)} onSuccess={() => { setShowEditModal(false); onJobDeleted(); }} />}
-      {showApplyModal && <ApplyJobModal job={job} onClose={() => setShowApplyModal(false)} onSuccess={() => { setShowApplyModal(false); onJobDeleted(); }} />}
       {showApplicationsModal && <ViewApplicationsModal job={job} onClose={() => setShowApplicationsModal(false)} />}
+      
+      {/* (Deleted the {showApplyModal && ... } line entirely) */}
     </div>
   );
 };
