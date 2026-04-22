@@ -1014,7 +1014,17 @@ const FeedPage = () => {
       toast.success("Deleted"); 
     } catch (err) { toast.error("Failed to delete"); } 
   };
-
+  // Add this right under handleDelete...
+  const refreshAllLoadedPosts = async () => {
+    try {
+      // Fetches all posts from page 1 up to whatever page they are currently on
+      const res = await axios.get(`/api/posts?sort=${sortOption}&page=1&limit=${page * LIMIT}`);
+      setPosts(res.data.posts);
+    } catch (err) { 
+      console.error("Failed to silently refresh posts"); 
+    }
+  };
+  
   if (loading) return <PageSkeleton />;
   
   return (
@@ -1046,7 +1056,7 @@ const FeedPage = () => {
       </div>
       
       <div style={{ display: "flex", flexDirection: "column" }}>
-        {posts.map(post => <PostItem key={post.id} post={post} user={user} onDelete={handleDelete} onRefresh={() => fetchPosts(page, false)} />)}
+        {posts.map(post => <PostItem key={post.id} post={post} user={user} onDelete={handleDelete} onRefresh={refreshAllLoadedPosts} />)}
         {posts.length === 0 && <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px" }}>No posts yet. Break the ice!</p>}
         
         {hasMore && posts.length > 0 && (
