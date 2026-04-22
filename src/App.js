@@ -765,13 +765,26 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
     navigator.clipboard.writeText(link);
     toast.success("Link copied to clipboard!");
   };
+
+  // NEW: Function to handle clicking the empty space of the card
+  const handleCardClick = () => {
+    if (!isSingleView) {
+      navigate(`/post/${post.id}`);
+    }
+  };
   
   return (
-    <div className="card" style={{ marginBottom: "15px" }}>
+    <div 
+      className="card" 
+      onClick={handleCardClick}
+      // NEW: Add a pointer cursor if it's clickable
+      style={{ marginBottom: "15px", cursor: !isSingleView ? "pointer" : "default", transition: "transform 0.2s" }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div 
           className="post-header" 
-          onClick={() => navigate(`/alumni/${post.user_id}`)}
+          // NEW: Stop propagation so clicking the profile doesn't open the post
+          onClick={(e) => { e.stopPropagation(); navigate(`/alumni/${post.user_id}`); }}
           style={{ cursor: "pointer", display: "flex", gap: "10px" }}
         >
           <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
@@ -790,19 +803,22 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
         </div>
         
         {(user?.role === 'admin' || user?.id === post.user_id) && (
-          <button onClick={() => onDelete(post.id)} className="btn-danger" style={{ padding: "4px 10px", fontSize: "12px" }}><i className="fas fa-trash"></i></button>
+          // NEW: Stop propagation on delete button
+          <button onClick={(e) => { e.stopPropagation(); onDelete(post.id); }} className="btn-danger" style={{ padding: "4px 10px", fontSize: "12px" }}><i className="fas fa-trash"></i></button>
         )}
       </div>
       
       <p style={{ margin: "15px 0", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{post.content}</p>
       
       {firstUrl && (
-        <div style={{ marginBottom: "15px", overflow: "hidden", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
+        // NEW: Stop propagation if they click the link preview
+        <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: "15px", overflow: "hidden", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
           <Microlink url={firstUrl} style={{ width: '100%', border: 'none', borderRadius: '8px' }} size="large" />
         </div>
       )}
       
-      <div style={{ display: "flex", gap: "15px", borderTop: "1px solid var(--border-color)", paddingTop: "10px", flexWrap: "wrap" }}>
+      {/* NEW: Stop propagation on the whole action bar */}
+      <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: "15px", borderTop: "1px solid var(--border-color)", paddingTop: "10px", flexWrap: "wrap" }}>
         <button onClick={handleLike} disabled={isLiking} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: post.user_liked ? "var(--danger)" : "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
           <i className={post.user_liked ? "fas fa-heart" : "far fa-heart"}></i> {post.like_count || 0} Likes
         </button>
@@ -820,7 +836,8 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
       </div>
 
       {showComments && (
-        <div style={{ marginTop: "15px", background: "var(--bg-color)", padding: "15px", borderRadius: "8px" }}>
+        // NEW: Stop propagation on the comments container
+        <div onClick={(e) => e.stopPropagation()} style={{ marginTop: "15px", background: "var(--bg-color)", padding: "15px", borderRadius: "8px" }}>
           <form onSubmit={handleComment} style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
             <input type="text" className="input-box" placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} style={{ marginBottom: 0, flex: 1 }} />
             <button type="submit" className="btn-primary" disabled={!commentText.trim()}>Post</button>
