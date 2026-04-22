@@ -1072,7 +1072,8 @@ const FeedPage = () => {
 const JobFormModal = ({ job, onClose, onSuccess }) => {
   const { user } = useAuth();
   const isEdit = !!job; 
-  const [form, setForm] = useState(job || { title: "", company: "", description: "", requirements: "", location: "", salaryRange: "", jobType: "Full-time", experienceLevel: "Mid-level", applyLink: "" }); 
+  // This safely maps the database's apply_link to React's applyLink when editing!
+  const [form, setForm] = useState(job ? { ...job, applyLink: job.apply_link || "" } : { title: "", company: "", description: "", requirements: "", location: "", salaryRange: "", jobType: "Full-time", experienceLevel: "Mid-level", applyLink: "" });
   const [submitting, setSubmitting] = useState(false);
   
   const handleSubmit = async (e) => { 
