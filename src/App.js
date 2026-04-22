@@ -1159,7 +1159,11 @@ const FeedPage = () => {
           <button onClick={loadMore} className="btn-secondary" style={{ width: '100%', marginTop: '15px', padding: '12px', fontWeight: 'bold' }}>
             Load More Posts
           </button>
-{/* --- NEW: Back to Top Button --- */}
+        )}
+        {!hasMore && posts.length > 0 && (
+          <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px", fontSize: "14px" }}>You have reached the end of the feed.</p>
+        )}
+        {/* --- NEW: Back to Top Button --- */}
         <button 
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
           style={{ 
@@ -1178,10 +1182,6 @@ const FeedPage = () => {
         >
           <i className="fas fa-arrow-up"></i> Back to top
         </button>
-        )}
-        {!hasMore && posts.length > 0 && (
-          <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px", fontSize: "14px" }}>You have reached the end of the feed.</p>
-        )}
       </div>
     </div>
   );
