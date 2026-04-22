@@ -5,6 +5,7 @@ import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { io } from "socket.io-client";
 import Microlink from '@microlink/react';
+
 // ==============================
 // AXIOS CONFIG & INTERCEPTOR
 // ==============================
@@ -231,6 +232,7 @@ const PrivateLayout = ({ children }) => {
     </div>
   ); 
 };
+
 // ==============================
 // GLOBAL LOADING SKELETON
 // ==============================
@@ -258,6 +260,7 @@ const PageSkeleton = () => {
     </div>
   );
 };
+
 // ==============================
 // PUBLIC LANDING PAGE
 // ==============================
@@ -343,6 +346,7 @@ const LandingPage = ({ onExploreAsGuest }) => {
     </div>
   );
 };
+
 // ==============================
 // AUTH PAGES (LOGIN / REGISTER / OTP)
 // ==============================
@@ -662,7 +666,7 @@ const ConnectButton = ({ userId }) => {
 };
 
 // ==============================
-// ALUMNI PROFILE
+// ALUMNI PROFILE PAGE
 // ==============================
 const AlumniProfile = () => {
   const { id } = useParams(); 
@@ -686,35 +690,72 @@ const AlumniProfile = () => {
     fetchUser(); 
   }, [id]);
 
-  if (loading) return <div className="page-container"><div className="card" style={{ textAlign: "center", color: "var(--text-muted)" }}><i className="fas fa-spinner fa-spin fa-2x"></i><p>Loading profile...</p></div></div>;
+  if (loading) return <PageSkeleton />;
   if (error || !profileUser) return <div className="page-container"><Toaster /><div className="card" style={{ textAlign: "center" }}><h2><i className="fas fa-user-slash" style={{ color: "var(--danger)", marginRight: 10 }}></i>User Not Found</h2><p style={{ color: "var(--text-muted)", marginBottom: 15 }}>{error || "This user profile could not be found."}</p><Link to="/alumni" className="btn-primary" style={{ display: "inline-block" }}>Back to Alumni List</Link></div></div>;
   
   return (
-    <div className="page-container"><Toaster />
+    <div className="page-container" style={{ maxWidth: 800 }}><Toaster />
       <div className="card">
-        <h2 style={{ display: 'flex', alignItems: 'center' }}>
-          {profileUser.first_name} {profileUser.last_name}
-          {profileUser.role === 'admin' && <span className="admin-badge">ADMIN</span>}
-        </h2>
-        <p style={{ color: "var(--text-muted)", fontSize: "18px", marginTop: 5 }}>{profileUser.headline || "Alumni"}</p>
-        
-        <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid var(--border-color)" }}>
-          <p><b><i className="fas fa-graduation-cap" style={{ color: "var(--primary)", width: 20 }}></i> Batch:</b> {profileUser.passout_year || "N/A"}</p>
-          <p><b><i className="fas fa-university" style={{ color: "var(--primary)", width: 20 }}></i> College:</b> {profileUser.college_name || "Chaibasa Engineering College"}</p>
-          {profileUser.email && <p><b><i className="fas fa-envelope" style={{ color: "var(--primary)", width: 20 }}></i> Email:</b> {profileUser.email}</p>}
-          {profileUser.current_company && <p><b><i className="fas fa-building" style={{ color: "var(--primary)", width: 20 }}></i> Company:</b> {profileUser.current_company}</p>}
-          {profileUser.location && <p><b><i className="fas fa-map-marker-alt" style={{ color: "var(--primary)", width: 20 }}></i> Location:</b> {profileUser.location}</p>}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "15px" }}>
+          <div>
+            <h2 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+              {profileUser.first_name} {profileUser.last_name}
+              {profileUser.role === 'admin' && <span className="admin-badge" style={{ marginLeft: "10px" }}>ADMIN</span>}
+            </h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "18px", marginTop: 5, marginBottom: 10 }}>{profileUser.headline || "Alumni"}</p>
+            
+            {/* Networking Goals Badge */}
+            {profileUser.open_to && (
+              <span style={{ display: "inline-block", background: "#f3e8ff", color: "#7c3aed", padding: "6px 12px", borderRadius: "20px", fontSize: "13px", fontWeight: "600", marginBottom: "15px" }}>
+                <i className="fas fa-hands-helping" style={{ marginRight: "6px" }}></i> 
+                Open To: {profileUser.open_to}
+              </span>
+            )}
+          </div>
+
+          {/* Social Links rendering */}
+          <div style={{ display: "flex", gap: "15px" }}>
+            {profileUser.linkedin_url && (
+              <a href={profileUser.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: "#0077b5", fontSize: "28px", transition: "transform 0.2s" }} title="LinkedIn Profile" onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.1)"} onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}>
+                <i className="fab fa-linkedin"></i>
+              </a>
+            )}
+            {profileUser.github_url && (
+              <a href={profileUser.github_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--text-main)", fontSize: "28px", transition: "transform 0.2s" }} title="GitHub/Portfolio" onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.1)"} onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}>
+                <i className="fab fa-github"></i>
+              </a>
+            )}
+          </div>
         </div>
         
-        {profileUser.bio && <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid var(--border-color)" }}><h3 style={{ marginTop: 0 }}>About</h3><p style={{ lineHeight: 1.6 }}>{profileUser.bio}</p></div>}
+        {/* Main Info Grid */}
+        <div style={{ marginTop: 10, paddingTop: 20, borderTop: "1px solid var(--border-color)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "15px" }}>
+          <p style={{ margin: 0 }}><b><i className="fas fa-graduation-cap" style={{ color: "var(--primary)", width: 25 }}></i> Batch:</b> {profileUser.passout_year || "N/A"}</p>
+          {profileUser.student_id && <p style={{ margin: 0 }}><b><i className="fas fa-id-card" style={{ color: "var(--primary)", width: 25 }}></i> Student ID:</b> {profileUser.student_id}</p>}
+          {profileUser.branch && <p style={{ margin: 0 }}><b><i className="fas fa-code-branch" style={{ color: "var(--primary)", width: 25 }}></i> Branch:</b> {profileUser.branch}</p>}
+          <p style={{ margin: 0 }}><b><i className="fas fa-university" style={{ color: "var(--primary)", width: 25 }}></i> College:</b> {profileUser.college_name || "Chaibasa Engineering College"}</p>
+          {profileUser.email && <p style={{ margin: 0 }}><b><i className="fas fa-envelope" style={{ color: "var(--primary)", width: 25 }}></i> Email:</b> <a href={`mailto:${profileUser.email}`} style={{ color: "var(--primary)", textDecoration: "none" }}>{profileUser.email}</a></p>}
+          {profileUser.mobile_no && <p style={{ margin: 0 }}><b><i className="fas fa-phone" style={{ color: "var(--primary)", width: 25 }}></i> Mobile:</b> {profileUser.mobile_no}</p>}
+          {profileUser.company && <p style={{ margin: 0 }}><b><i className="fas fa-building" style={{ color: "var(--primary)", width: 25 }}></i> Company:</b> {profileUser.company}</p>}
+          {profileUser.location && <p style={{ margin: 0 }}><b><i className="fas fa-map-marker-alt" style={{ color: "var(--primary)", width: 25 }}></i> Location:</b> {profileUser.location}</p>}
+        </div>
+
+        {/* Bio */}
+        {profileUser.bio && (
+          <div style={{ marginTop: 25, paddingTop: 20, borderTop: "1px solid var(--border-color)" }}>
+            <h3 style={{ marginTop: 0 }}>About</h3>
+            <p style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{profileUser.bio}</p>
+          </div>
+        )}
         
+        {/* Connect Buttons */}
         {currentUser && String(currentUser.id) !== String(id) && (
           <div style={{ marginTop: 25, display: "flex", gap: 10 }}>
             <ConnectButton userId={id} />
           </div>
         )}
       </div>
-      <Link to="/alumni" className="text-blue" style={{ display: "inline-block", marginTop: 20, fontSize: "16px" }}>← Back to Alumni List</Link>
+      <Link to="/alumni" className="text-blue" style={{ display: "inline-block", marginTop: 20, fontSize: "16px", fontWeight: "600" }}>← Back to Directory</Link>
     </div>
   );
 };
@@ -1081,9 +1122,8 @@ const JobFormModal = ({ job, onClose, onSuccess }) => {
             </div>
           </div>
           <label>Salary Range</label><input className="input-box" value={form.salaryRange} onChange={(e) => setForm({ ...form, salaryRange: e.target.value })} />
-          {/* PASTE THIS NEW INPUT RIGHT BEFORE THE DESCRIPTION FIELD */}
-        <label>Application Link (URL) *</label>
-        <input className="input-box" type="url" value={form.applyLink || ""} onChange={(e) => setForm({ ...form, applyLink: e.target.value })} required placeholder="https://careers.company.com/..." />
+          <label>Application Link (URL) *</label>
+          <input className="input-box" type="url" value={form.applyLink || ""} onChange={(e) => setForm({ ...form, applyLink: e.target.value })} required placeholder="https://careers.company.com/..." />
           <label>Job Description *</label><textarea className="input-box" rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} required />
           <label>Requirements</label><textarea className="input-box" rows={4} value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} />
           <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
@@ -1095,10 +1135,10 @@ const JobFormModal = ({ job, onClose, onSuccess }) => {
     </div>
   );
 };
+
 const JobCard = ({ job, onJobDeleted }) => {
   const [expanded, setExpanded] = useState(false); 
   const [showEditModal, setShowEditModal] = useState(false); 
-  // 1. Removed the showApplicationsModal state
   const { user } = useAuth();
   
   const handleDeleteJob = async () => { 
@@ -1144,18 +1184,15 @@ const JobCard = ({ job, onJobDeleted }) => {
         
         <button className="btn-secondary" onClick={() => setExpanded(!expanded)}>{expanded ? "Show Less" : "View Details"}</button>
         
-        {/* 2. Removed the "View Applications" button from here */}
-        
         {(user?.id === job.posted_by || user?.role === 'admin') && <button className="btn-secondary" onClick={() => setShowEditModal(true)}><i className="fas fa-edit"></i> Edit</button>}
         {(user?.id === job.posted_by || user?.role === 'admin') && <button className="btn-danger" onClick={handleDeleteJob}><i className="fas fa-trash"></i></button>}
       </div>
       
       {showEditModal && <JobFormModal job={job} onClose={() => setShowEditModal(false)} onSuccess={() => { setShowEditModal(false); onJobDeleted(); }} />}
-      
-      {/* 3. Removed the ViewApplicationsModal render logic from here */}
     </div>
   );
 };
+
 const JobsPage = () => {
   const [jobs, setJobs] = useState([]); 
   const [loading, setLoading] = useState(true); 
@@ -1857,26 +1894,32 @@ const AdminPanel = () => {
     </div>
   );
 };
+
 const EditProfile = () => {
   const { user, logout } = useAuth(); 
   const navigate = useNavigate();
-  const [form, setForm] = useState({ firstName: "", lastName: "", headline: "", bio: "", location: "", company: "", collegeName: "" });
+  const [form, setForm] = useState({ firstName: "", lastName: "", headline: "", bio: "", location: "", company: "", collegeName: "", studentId: "", mobileNo: "", branch: "", linkedinUrl: "", githubUrl: "", openTo: "" });
   
- useEffect(() => { 
-  if (user) setForm({ 
-    firstName: user.first_name||"", 
-    lastName: user.last_name||"", 
-    headline: user.headline||"", 
-    bio: user.bio||"", 
-    location: user.location||"", 
-    company: user.company||"", // <-- Changed this line
-    collegeName: user.college_name||"Chaibasa Engineering College" 
-  }); 
-}, [user]);
+  useEffect(() => { 
+    if (user) setForm({ 
+      firstName: user.first_name||"", 
+      lastName: user.last_name||"", 
+      headline: user.headline||"", 
+      bio: user.bio||"", 
+      location: user.location||"", 
+      company: user.company||"", 
+      collegeName: user.college_name||"Chaibasa Engineering College",
+      studentId: user.student_id||"",
+      mobileNo: user.mobile_no||"",
+      branch: user.branch||"",
+      linkedinUrl: user.linkedin_url||"",
+      githubUrl: user.github_url||"",
+      openTo: user.open_to||""
+    }); 
+  }, [user]);
   
   const submit = async (e) => { 
     e.preventDefault(); 
-    // Check if it's the guest
     if (user?.email === 'alumninetworkplatform@gmail.com') {
       toast.error("🔒 Guest profiles cannot be modified. Please create your own account!");
       return; 
@@ -1889,12 +1932,10 @@ const EditProfile = () => {
   };
   
   const handleDeleteAccount = async () => { 
-    // --- ADD THIS GUEST CHECK ---
     if (user?.email === 'alumninetworkplatform@gmail.com') {
       toast.error("🔒 Guest accounts cannot be deleted.");
       return; 
     }
-    // ----------------------------
     const confirmed = window.confirm("Are you sure you want to delete your account? This action cannot be undone."); 
     if (!confirmed) return; 
     const doubleConfirm = window.confirm("Type 'DELETE' in your mind - this will permanently delete all your data including jobs, applications, and profile."); 
@@ -1908,18 +1949,61 @@ const EditProfile = () => {
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: 600 }}><Toaster />
+    <div className="page-container" style={{ maxWidth: 700 }}><Toaster />
       <div className="card"><h2>Edit Profile</h2>
         <form onSubmit={submit}>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <div style={{ flex: 1 }}><label>First Name</label><input className="input-box" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required /></div>
-            <div style={{ flex: 1 }}><label>Last Name</label><input className="input-box" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required /></div>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 200px" }}><label>First Name *</label><input className="input-box" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} required /></div>
+            <div style={{ flex: "1 1 200px" }}><label>Last Name *</label><input className="input-box" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} required /></div>
           </div>
-          <label>College Name</label><input className="input-box" value={form.collegeName} onChange={(e) => setForm({ ...form, collegeName: e.target.value })} required />
-          <label>Headline</label><input className="input-box" value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} />
-          <label>Bio</label><textarea className="input-box" rows={4} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
-          <label>Location</label><input className="input-box" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-          <label>Company</label><input className="input-box" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+          
+          <label>Headline / Current Role</label><input className="input-box" placeholder="e.g., Software Engineer at Google" value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} />
+          
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 200px" }}><label>College Name *</label><input className="input-box" value={form.collegeName} onChange={(e) => setForm({ ...form, collegeName: e.target.value })} required /></div>
+            <div style={{ flex: "1 1 200px" }}><label>Student ID / Roll No. (Optional)</label><input className="input-box" placeholder="e.g., 20CSE001" value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} /></div>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 200px" }}>
+              <label>Branch (Optional)</label>
+              <select className="input-box" value={form.branch} onChange={(e) => setForm({ ...form, branch: e.target.value })}>
+                <option value="">Select Branch</option>
+                <option value="CSE">Computer Science & Engineering (CSE)</option>
+                <option value="EE">Electrical Engineering (EE)</option>
+                <option value="ECE">Electronics & Communication (ECE)</option>
+                <option value="CE">Civil Engineering (CE)</option>
+                <option value="ME">Mechanical Engineering (ME)</option>
+              </select>
+            </div>
+            <div style={{ flex: "1 1 200px" }}>
+              <label>Networking Goals (I am open to...)</label>
+              <select className="input-box" value={form.openTo} onChange={(e) => setForm({ ...form, openTo: e.target.value })}>
+                <option value="">Select a goal</option>
+                <option value="Offering Referrals & Mentorship">Offering Referrals & Mentorship</option>
+                <option value="Looking for Opportunities">Looking for Opportunities</option>
+                <option value="Hiring for my Team">Hiring for my Team</option>
+                <option value="General Networking">General Networking</option>
+                <option value="Collaborating on Projects">Collaborating on Projects</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 200px" }}><label>Company (Optional)</label><input className="input-box" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} /></div>
+            <div style={{ flex: "1 1 200px" }}><label>Location (Optional)</label><input className="input-box" placeholder="e.g., Bangalore, India" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} /></div>
+          </div>
+
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 200px" }}><label>LinkedIn URL (Optional)</label><input type="url" className="input-box" placeholder="https://linkedin.com/in/..." value={form.linkedinUrl} onChange={(e) => setForm({ ...form, linkedinUrl: e.target.value })} /></div>
+            <div style={{ flex: "1 1 200px" }}><label>GitHub / Portfolio URL (Optional)</label><input type="url" className="input-box" placeholder="https://github.com/..." value={form.githubUrl} onChange={(e) => setForm({ ...form, githubUrl: e.target.value })} /></div>
+          </div>
+
+          <label>Mobile Number (Optional)</label>
+          <input className="input-box" type="tel" placeholder="+91 9876543210" value={form.mobileNo} onChange={(e) => setForm({ ...form, mobileNo: e.target.value })} />
+
+          <label>About / Bio (Optional)</label><textarea className="input-box" rows={4} placeholder="Tell the network about yourself..." value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} />
+          
           <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>Save Changes</button>
         </form>
       </div>
@@ -1989,7 +2073,6 @@ const NotFoundPage = () => {
 };
 
 // Smart routing: Shows Feed if logged in, Landing Page if not.
-// Smart routing: Shows Feed if logged in, Landing Page if not.
 const IndexRoute = () => {
   const { user, loading, login } = useAuth(); // <-- Make sure login is extracted here
   const [isGuestStarting, setIsGuestStarting] = useState(false);
@@ -2016,6 +2099,7 @@ const IndexRoute = () => {
 
   return <LandingPage onExploreAsGuest={handleSilentGuestLogin} />;
 };
+
 // ==============================
 // MAIN APP ROUTER
 // ==============================
@@ -2054,5 +2138,5 @@ function App() {
     </Router>
   );
 }
-export default App;
 
+export default App;
