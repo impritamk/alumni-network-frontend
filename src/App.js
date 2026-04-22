@@ -231,7 +231,33 @@ const PrivateLayout = ({ children }) => {
     </div>
   ); 
 };
-
+// ==============================
+// GLOBAL LOADING SKELETON
+// ==============================
+const PageSkeleton = () => {
+  return (
+    <div className="page-container">
+      {/* Search/Header Skeleton */}
+      <div className="card" style={{ marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="skeleton skeleton-title" style={{ width: "30%", height: "30px", margin: 0 }}></div>
+        <div className="skeleton" style={{ width: "100px", height: "35px", borderRadius: "6px" }}></div>
+      </div>
+      
+      {/* Grid of Skeleton Cards */}
+      <div className="grid-3">
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} className="card" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className="skeleton skeleton-title" style={{ width: "60%" }}></div>
+            <div className="skeleton skeleton-text" style={{ width: "40%" }}></div>
+            <div className="skeleton skeleton-text" style={{ marginTop: "10px", height: "10px" }}></div>
+            <div className="skeleton skeleton-text" style={{ height: "10px" }}></div>
+            <div className="skeleton" style={{ width: "100px", height: "30px", marginTop: "10px", borderRadius: "6px" }}></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 // ==============================
 // PUBLIC LANDING PAGE
 // ==============================
@@ -1071,8 +1097,8 @@ const JobsPage = () => {
   
   useEffect(() => { loadJobs(); }, [loadJobs]);
   
-  if (loading) return <div className="page-container"><div style={{ textAlign: "center", marginTop: "50px", color: "var(--text-muted)" }}><i className="fas fa-spinner fa-spin fa-2x"></i><p>Loading jobs...</p></div></div>;
-  
+  if (loading) return <PageSkeleton />;
+    
   return (
     <div className="page-container"><Toaster />
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
@@ -1135,8 +1161,8 @@ const ConnectionsPage = () => {
     } catch (err) { toast.error("Failed to reject"); } 
   };
 
-  if (loading) return <div className="page-container"><div style={{ textAlign: "center", marginTop: "50px", color: "var(--text-muted)" }}><i className="fas fa-spinner fa-spin fa-2x"></i><p>Loading network...</p></div></div>;
-  
+  if (loading) return <PageSkeleton />;
+    
   return (
     <div className="page-container"><Toaster /><h1>My Network</h1>
       <div style={{ display: "flex", gap: 10, marginBottom: 20, borderBottom: "2px solid var(--border-color)" }}>
@@ -1735,8 +1761,8 @@ const AdminPanel = () => {
           <input type="text" className="input-box" placeholder="Search by name, email, or batch..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} />
           <button type="submit" className="btn-primary">Search</button>
         </form>
-        {loading ? <p>Loading...</p> : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {loading ? <PageSkeleton /> : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {users.map(u => (
               <div key={u.id} style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", padding: "15px", borderBottom: "1px solid var(--border-color)", gap: "10px" }}>
                 <div>
@@ -1858,7 +1884,8 @@ const AlumniList = () => {
         {/* CHANGED PLACEHOLDER */}
         <form onSubmit={handleSearch} style={{ display: "flex", gap: "10px" }}><input type="text" className="input-box" placeholder="Search by name, email, or batch (e.g., 2026)..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ marginBottom: 0, flex: 1 }} /><button type="submit" className="btn-primary">Search</button></form>
       </div>
-      {loading ? <p>Loading...</p> : (
+      {loading ? <PageSkeleton /> : (
+        
         <div className="grid-3">
           {alumni.map((person) => (
             <div key={person.id} className="card"><h3 style={{ marginTop: 0 }}>{person.first_name} {person.last_name}</h3><p style={{ color: "var(--text-muted)" }}>{person.headline}</p><Link to={`/alumni/${person.id}`} className="btn-primary" style={{ textDecoration: "none", display: "inline-block" }}>View Profile</Link></div>
