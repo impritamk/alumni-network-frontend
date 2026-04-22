@@ -1532,17 +1532,61 @@ const ConnectionsPage = () => {
 };
 
 // ==============================
+// ISOLATED MESSAGE INPUT COMPONENT
+// ==============================
+// This tiny component handles all the typing state so the main page doesn't lag!
+const MessageInput = ({ activeRoom, user, socketRef, onMessageSent }) => {
+  const [newMessage, setNewMessage] = useState("");
+  const typingTimeoutRef = useRef(null);
+
+  const handleTyping = (e) => {
+    setNewMessage(e.target.value);
+
+    if (activeRoom && user?.email !== 'alumninetworkplatform@gmail.com' && socketRef.current) {
+      socketRef.current.emit("typing", activeRoom.id);
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+      typingTimeoutRef.current = setTimeout(() => {
+        socketRef.current.emit("stopTyping", activeRoom.id);
+      }, 2000);
+    }
+  };
+
+  const sendMessage = async (e) => { 
+    e.preventDefault(); 
+    if (!newMessage.trim() || !activeRoom) return; 
+    
+    if (user?.email === 'alumninetworkplatform@gmail.com') {
+      toast.error("🔒 Guest accounts cannot send messages.");
+      setNewMessage(""); 
+      return;
+    }
+    
+    try { 
+      const res = await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage }); 
+      onMessageSent(res.data.message); // Send the new message up to the parent
+      setNewMessage(""); // Clear the input box
+    } catch (err) { toast.error("Failed to send message"); } 
+  };
+
+  return (
+    <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", background: "var(--bg-color)", borderTop: "1px solid var(--border-color)" }}>
+      <input type="text" className="input-box" value={newMessage} onChange={handleTyping} placeholder="Type a message..." style={{ flex: 1, borderRadius: "24px", marginBottom: 0 }} />
+      <button type="submit" className="btn-primary" style={{ borderRadius: "50%", width: "45px", height: "45px", marginLeft: "10px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><i className="fas fa-paper-plane"></i></button>
+    </form>
+  );
+};
+
+// ==============================
 // MESSAGES PAGE
 // ==============================
 const MessagesPage = () => {
   const { user } = useAuth(); 
   const [isTyping, setIsTyping] = useState(false); 
-  const typingTimeoutRef = useRef(null); 
-  // 1. NEW: Create a reference to hold our single socket connection
   const socketRef = useRef(null); 
   
   const [messages, setMessages] = useState([]); 
-  const [newMessage, setNewMessage] = useState(""); 
   const [activeRoom, setActiveRoom] = useState(null); 
   const [chatPartner, setChatPartner] = useState(null); 
   const [inbox, setInbox] = useState([]); 
@@ -1572,24 +1616,18 @@ const MessagesPage = () => {
     } catch (err) { toast.error("Failed to start chat"); } 
   }, [fetchMessages]);
 
-// --- UPDATED SOCKET.IO REAL-TIME LISTENER ---
   useEffect(() => {
     if (activeRoom) {
-      // 2. NEW: Initialize the socket ONLY ONCE when they enter a room, and save it to the ref
       socketRef.current = io(API_URL);
       const socket = socketRef.current;
 
       socket.emit("joinRoom", activeRoom.id);
-      
-      // Tell the server we just opened the chat and read everything
       socket.emit("markAsRead", { roomId: activeRoom.id, userId: user.id });
 
       socket.on("receiveMessage", (newMsg) => {
         if (newMsg.sender_id !== user.id) {
           setMessages((prevMessages) => [...prevMessages, newMsg]);
           setIsTyping(false);
-          
-          // We are actively looking at the chat, so mark this new incoming message as read immediately
           socket.emit("markAsRead", { roomId: activeRoom.id, userId: user.id });
         }
       });
@@ -1597,10 +1635,8 @@ const MessagesPage = () => {
       socket.on("userTyping", () => setIsTyping(true));
       socket.on("userStoppedTyping", () => setIsTyping(false));
 
-      // Listen for the OTHER person reading OUR messages
       socket.on("messagesRead", ({ readerId }) => {
         if (readerId !== user.id) {
-          // Update all our sent messages to show the blue double tick
           setMessages(prev => prev.map(msg => 
             msg.sender_id === user.id ? { ...msg, read_status: 'read' } : msg
           ));
@@ -1608,7 +1644,6 @@ const MessagesPage = () => {
       });
 
       return () => {
-        // 3. NEW: Clean up the connection when we leave the chat room
         socket.disconnect();
         socketRef.current = null;
       };
@@ -1618,40 +1653,6 @@ const MessagesPage = () => {
   useEffect(() => { 
     if (targetUserId) { startChat(targetUserId); } else { loadInbox(); } 
   }, [targetUserId, startChat, loadInbox]);
-
-  const handleTyping = (e) => {
-    setNewMessage(e.target.value);
-
-    // 4. NEW: We use socketRef.current to send the typing indicator instead of creating a new connection!
-    if (activeRoom && user?.email !== 'alumninetworkplatform@gmail.com' && socketRef.current) {
-      
-      socketRef.current.emit("typing", activeRoom.id);
-
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-
-      typingTimeoutRef.current = setTimeout(() => {
-        socketRef.current.emit("stopTyping", activeRoom.id);
-      }, 2000);
-    }
-  };
-
-  const sendMessage = async (e) => { 
-    e.preventDefault(); 
-    if (!newMessage.trim() || !activeRoom) return; 
-    
-    if (user?.email === 'alumninetworkplatform@gmail.com') {
-      toast.error("🔒 Guest accounts cannot send messages.");
-      setNewMessage(""); 
-      return;
-    }
-    
-    try { 
-      const res = await axios.post(`/api/messages/${activeRoom.id}`, { message: newMessage }); 
-      
-      setMessages(prev => [...prev, res.data.message]);
-      setNewMessage(""); 
-    } catch (err) { toast.error("Failed to send message"); } 
-  };
 
   const deleteChat = async () => {
     if(window.confirm("Are you sure you want to permanently delete this entire chat history?")) {
@@ -1663,6 +1664,11 @@ const MessagesPage = () => {
         toast.success("Chat deleted");
       } catch(err) { toast.error("Failed to delete chat"); }
     }
+  };
+
+  // --- NEW: Helper function to receive the new message from our child component ---
+  const handleNewMessageSent = (newMsg) => {
+    setMessages(prev => [...prev, newMsg]);
   };
 
   return (
@@ -1704,7 +1710,6 @@ const MessagesPage = () => {
                 <div key={msg.id} className={isMe ? 'message-bubble message-mine' : 'message-bubble message-theirs'}>
                   <div>{msg.message}</div>
                   
-                  {/* --- UPDATED MESSAGE METADATA (TIME + CHECKMARKS) --- */}
                   <div style={{ 
                     fontSize: "10px", 
                     opacity: 0.8, 
@@ -1716,21 +1721,18 @@ const MessagesPage = () => {
                   }}>
                     {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     
-                    {/* Only show checkmarks if I sent the message */}
                     {isMe && (
                       <span style={{ fontSize: "11px", color: msg.read_status === 'read' ? "#3b82f6" : "inherit" }}>
                         {msg.read_status === 'read' ? (
-                          <i className="fas fa-check-double"></i> /* Blue Double Tick */
+                          <i className="fas fa-check-double"></i>
                         ) : msg.read_status === 'delivered' ? (
-                          <i className="fas fa-check-double"></i> /* Grey Double Tick */
+                          <i className="fas fa-check-double"></i>
                         ) : (
-                          <i className="fas fa-check"></i> /* Single Grey Tick */
+                          <i className="fas fa-check"></i>
                         )}
                       </span>
                     )}
                   </div>
-                  {/* ---------------------------------------------------- */}
-
                 </div>
               );
             })
@@ -1744,18 +1746,20 @@ const MessagesPage = () => {
                 {chatPartner.first_name} is typing...
               </div>
             )}
-            <form onSubmit={sendMessage} style={{ display: "flex", padding: "15px", background: "var(--bg-color)", borderTop: "1px solid var(--border-color)" }}>
-              <input type="text" className="input-box" value={newMessage} onChange={handleTyping} placeholder="Type a message..." style={{ flex: 1, borderRadius: "24px", marginBottom: 0 }} />
-              <button type="submit" className="btn-primary" style={{ borderRadius: "50%", width: "45px", height: "45px", marginLeft: "10px", padding: 0, display: "flex", alignItems: "center", justifyContent: "center" }}><i className="fas fa-paper-plane"></i></button>
-            </form>
+            
+            {/* --- NEW OPTIMIZED INPUT --- */}
+            <MessageInput 
+              activeRoom={activeRoom} 
+              user={user} 
+              socketRef={socketRef} 
+              onMessageSent={handleNewMessageSent} 
+            />
           </>
         )}
       </div>
     </div>
   );
 };
-
-
 // ==============================
 // DASHBOARD, ADMIN & EDIT PROFILE
 // ==============================
