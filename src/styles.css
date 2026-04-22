@@ -370,3 +370,22 @@ body.dark-mode .skeleton {
     justify-content: center; /* Centers the buttons perfectly */
   }
 }
+/* =========================================
+   MICROLINK DARK MODE FIX
+   ========================================= */
+body.dark-mode .microlink_card {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+}
+
+body.dark-mode .microlink_card__content_title {
+  color: var(--text-main) !important;
+}
+
+body.dark-mode .microlink_card__content_description {
+  color: var(--text-muted) !important;
+}
+
+body.dark-mode .microlink_card__content_url {
+  color: var(--primary) !important;
+}
