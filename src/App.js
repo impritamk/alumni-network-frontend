@@ -1164,13 +1164,24 @@ const JobCard = ({ job, onJobDeleted }) => {
             {job.salary_range && <span className="job-tag job-tag-green"><i className="fas fa-money-bill-wave"></i> {job.salary_range}</span>}
           </div>
           
-          {expanded && (
-            <div style={{ marginTop: 15, paddingTop: 15, borderTop: "1px solid var(--border-color)" }}>
-              <h4 style={{ marginTop: 0 }}>Description</h4><p style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{job.description}</p>
-              {job.requirements && <><h4 style={{ marginTop: 15 }}>Requirements</h4><p style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{job.requirements}</p></>}
-              <p style={{ color: "var(--text-muted)", fontSize: "14px", marginTop: 15 }}>Posted by: {job.first_name} {job.last_name}</p>
-            </div>
-          )}
+           {expanded && (
+              <div style={{ marginTop: 15, paddingTop: 15, borderTop: "1px solid var(--border-color)" }}>
+                <h4 style={{ marginTop: 0 }}>Description</h4><p style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{job.description}</p>
+                {job.requirements && <><h4 style={{ marginTop: 15 }}>Requirements</h4><p style={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{job.requirements}</p></>}
+                
+                {/* NEW: Show the Application Link when expanded */}
+                {job.apply_link && (
+                  <div style={{ marginTop: 15, padding: "10px", background: "var(--bg-color)", borderRadius: "6px" }}>
+                    <h4 style={{ margin: "0 0 5px 0", fontSize: "13px", color: "var(--text-muted)" }}>Application Link:</h4>
+                    <a href={job.apply_link} target="_blank" rel="noopener noreferrer" style={{ color: "var(--primary)", wordBreak: "break-all", fontSize: "14px" }}>
+                      {job.apply_link}
+                    </a>
+                  </div>
+                )}
+                
+                <p style={{ color: "var(--text-muted)", fontSize: "14px", marginTop: 15 }}>Posted by: {job.first_name} {job.last_name}</p>
+              </div>
+            )}
         </div>
       </div>
       <div style={{ display: "flex", gap: 10, marginTop: 15, flexWrap: "wrap" }}>
