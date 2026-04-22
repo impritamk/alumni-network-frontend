@@ -694,6 +694,22 @@ const AlumniProfile = () => {
   const [profileUser, setProfileUser] = useState(null); 
   const [loading, setLoading] = useState(true); 
   const [error, setError] = useState(null);
+  
+  // --- NEW: State for user's posts ---
+  const [userPosts, setUserPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+
+  // --- NEW: Function to fetch posts ---
+  const fetchUserPosts = useCallback(async () => {
+    try {
+      const res = await axios.get(`/api/users/${id}/posts`);
+      setUserPosts(res.data.posts);
+    } catch (err) {
+      console.error("Failed to load user posts");
+    } finally {
+      setPostsLoading(false);
+    }
+  }, [id]);
 
   useEffect(() => { 
     const fetchUser = async () => { 
@@ -708,13 +724,25 @@ const AlumniProfile = () => {
       } 
     }; 
     fetchUser(); 
-  }, [id]);
+    fetchUserPosts(); // <-- Call the posts fetcher here
+  }, [id, fetchUserPosts]);
+
+  // --- NEW: Function to handle deleting a post from the profile view ---
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm("Delete post?")) return; 
+    try { 
+      await axios.delete(`/api/posts/${postId}`); 
+      toast.success("Deleted"); 
+      fetchUserPosts(); 
+    } catch (err) { toast.error("Failed to delete"); } 
+  };
 
   if (loading) return <PageSkeleton />;
   if (error || !profileUser) return <div className="page-container"><Toaster /><div className="card" style={{ textAlign: "center" }}><h2><i className="fas fa-user-slash" style={{ color: "var(--danger)", marginRight: 10 }}></i>User Not Found</h2><p style={{ color: "var(--text-muted)", marginBottom: 15 }}>{error || "This user profile could not be found."}</p><Link to="/alumni" className="btn-primary" style={{ display: "inline-block" }}>Back to Alumni List</Link></div></div>;
   
   return (
-    <div className="page-container" style={{ maxWidth: 800 }}><Toaster />
+    <div className="page-container" style={{ maxWidth: 800 }}>
+      <Toaster />
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "15px" }}>
           <div>
@@ -775,11 +803,39 @@ const AlumniProfile = () => {
           </div>
         )}
       </div>
+      
+      {/* --- NEW: Recent Posts Section --- */}
+      <div style={{ marginTop: "30px" }}>
+        <h3 style={{ marginBottom: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <i className="fas fa-pencil-alt" style={{ color: "var(--primary)" }}></i> 
+          Recent Posts by {profileUser.first_name}
+        </h3>
+        
+        {postsLoading ? (
+           <p style={{ color: "var(--text-muted)" }}>Loading posts...</p>
+        ) : userPosts.length === 0 ? (
+           <div className="card" style={{ textAlign: "center", background: "transparent", border: "1px dashed var(--border-color)", boxShadow: "none" }}>
+             <p style={{ color: "var(--text-muted)", margin: 0 }}>This user hasn't posted anything yet.</p>
+           </div>
+        ) : (
+           <div style={{ display: "flex", flexDirection: "column" }}>
+             {userPosts.map(post => (
+               <PostItem 
+                 key={post.id} 
+                 post={post} 
+                 user={currentUser} 
+                 onDelete={handleDeletePost} 
+                 onRefresh={fetchUserPosts} 
+               />
+             ))}
+           </div>
+        )}
+      </div>
+
       <Link to="/alumni" className="text-blue" style={{ display: "inline-block", marginTop: 20, fontSize: "16px", fontWeight: "600" }}>← Back to Directory</Link>
     </div>
   );
 };
-
 // ==============================
 // COMMUNITY FEED & POSTS
 // ==============================
