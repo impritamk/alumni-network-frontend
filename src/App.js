@@ -768,10 +768,19 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
   const [commentText, setCommentText] = useState(""); 
   const [isLiking, setIsLiking] = useState(false);
   const navigate = useNavigate();
-
+  
   const urlRegex = /(https?:\/\/[^\s]+)/g;
   const urls = post.content.match(urlRegex);
   const firstUrl = urls ? urls[0] : null; 
+
+  // --- NEW: Check if the link is a YouTube video ---
+  const getYouTubeId = (url) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+  const ytId = firstUrl ? getYouTubeId(firstUrl) : null;
+  // -------------------------------------------------
 
   const handleLike = async () => { 
     if (isLiking) return; 
@@ -851,12 +860,25 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
       
       <p style={{ margin: "15px 0", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{post.content}</p>
       
-      {firstUrl && (
-        // NEW: Stop propagation if they click the link preview
+      {/* --- NEW: Smart Link Rendering --- */}
+      {firstUrl && ytId ? (
+        // If it's YouTube, render a responsive native video player!
+        <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: "15px", borderRadius: "8px", overflow: "hidden", position: "relative", paddingTop: "56.25%", border: "1px solid var(--border-color)" }}>
+          <iframe
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+            src={`https://www.youtube.com/embed/${ytId}`}
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+      ) : firstUrl ? (
+        // If it's a regular website, use Microlink!
         <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: "15px", overflow: "hidden", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
           <Microlink url={firstUrl} style={{ width: '100%', border: 'none', borderRadius: '8px' }} size="large" />
         </div>
-      )}
+      ) : null}
+      {/* --------------------------------- */}
       
       {/* NEW: Stop propagation on the whole action bar */}
       <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: "15px", borderTop: "1px solid var(--border-color)", paddingTop: "10px", flexWrap: "wrap" }}>
