@@ -1961,7 +1961,7 @@ const EditProfile = () => {
           
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
             <div style={{ flex: "1 1 200px" }}><label>College Name *</label><input className="input-box" value={form.collegeName} onChange={(e) => setForm({ ...form, collegeName: e.target.value })} required /></div>
-            <div style={{ flex: "1 1 200px" }}><label>Student ID / Roll No. (Optional)</label><input className="input-box" placeholder="e.g., 20CSE001" value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} /></div>
+           <div style={{ flex: "1 1 200px" }}><label>Student ID / Univ. Roll No. (Optional)</label><input className="input-box" placeholder="e.g., 239001001132" value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} /></div>
           </div>
 
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
