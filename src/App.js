@@ -1538,6 +1538,9 @@ const MessagesPage = () => {
   const { user } = useAuth(); 
   const [isTyping, setIsTyping] = useState(false); 
   const typingTimeoutRef = useRef(null); 
+  // 1. NEW: Create a reference to hold our single socket connection
+  const socketRef = useRef(null); 
+  
   const [messages, setMessages] = useState([]); 
   const [newMessage, setNewMessage] = useState(""); 
   const [activeRoom, setActiveRoom] = useState(null); 
@@ -1571,12 +1574,14 @@ const MessagesPage = () => {
 
 // --- UPDATED SOCKET.IO REAL-TIME LISTENER ---
   useEffect(() => {
-    const socket = io(API_URL);
-
     if (activeRoom) {
+      // 2. NEW: Initialize the socket ONLY ONCE when they enter a room, and save it to the ref
+      socketRef.current = io(API_URL);
+      const socket = socketRef.current;
+
       socket.emit("joinRoom", activeRoom.id);
       
-      // 1. Tell the server we just opened the chat and read everything
+      // Tell the server we just opened the chat and read everything
       socket.emit("markAsRead", { roomId: activeRoom.id, userId: user.id });
 
       socket.on("receiveMessage", (newMsg) => {
@@ -1584,7 +1589,7 @@ const MessagesPage = () => {
           setMessages((prevMessages) => [...prevMessages, newMsg]);
           setIsTyping(false);
           
-          // 2. We are actively looking at the chat, so mark this new incoming message as read immediately
+          // We are actively looking at the chat, so mark this new incoming message as read immediately
           socket.emit("markAsRead", { roomId: activeRoom.id, userId: user.id });
         }
       });
@@ -1592,7 +1597,7 @@ const MessagesPage = () => {
       socket.on("userTyping", () => setIsTyping(true));
       socket.on("userStoppedTyping", () => setIsTyping(false));
 
-      // 3. Listen for the OTHER person reading OUR messages
+      // Listen for the OTHER person reading OUR messages
       socket.on("messagesRead", ({ readerId }) => {
         if (readerId !== user.id) {
           // Update all our sent messages to show the blue double tick
@@ -1601,11 +1606,13 @@ const MessagesPage = () => {
           ));
         }
       });
-    }
 
-    return () => {
-      socket.disconnect();
-    };
+      return () => {
+        // 3. NEW: Clean up the connection when we leave the chat room
+        socket.disconnect();
+        socketRef.current = null;
+      };
+    }
   }, [activeRoom, user.id]);
 
   useEffect(() => { 
@@ -1615,14 +1622,15 @@ const MessagesPage = () => {
   const handleTyping = (e) => {
     setNewMessage(e.target.value);
 
-    if (activeRoom && user?.email !== 'alumninetworkplatform@gmail.com') {
-      const socket = io(API_URL);
-      socket.emit("typing", activeRoom.id);
+    // 4. NEW: We use socketRef.current to send the typing indicator instead of creating a new connection!
+    if (activeRoom && user?.email !== 'alumninetworkplatform@gmail.com' && socketRef.current) {
+      
+      socketRef.current.emit("typing", activeRoom.id);
 
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
       typingTimeoutRef.current = setTimeout(() => {
-        socket.emit("stopTyping", activeRoom.id);
+        socketRef.current.emit("stopTyping", activeRoom.id);
       }, 2000);
     }
   };
@@ -1746,6 +1754,7 @@ const MessagesPage = () => {
     </div>
   );
 };
+
 
 // ==============================
 // DASHBOARD, ADMIN & EDIT PROFILE
