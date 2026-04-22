@@ -261,8 +261,8 @@ const PageSkeleton = () => {
 // ==============================
 // PUBLIC LANDING PAGE
 // ==============================
-const LandingPage = () => {
-  // --- NEW: Theme state & toggle for guests ---
+const LandingPage = ({ onExploreAsGuest }) => {
+  // --- Theme state & toggle for guests ---
   const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
 
   const toggleDarkMode = () => { 
@@ -276,7 +276,6 @@ const LandingPage = () => {
       localStorage.setItem("theme", "light"); 
     }
   };
-  // --------------------------------------------
 
   return (
     <div className="page-container">
@@ -306,7 +305,13 @@ const LandingPage = () => {
         <p className="landing-subtitle">
           The exclusive networking platform built for the students and alumni of Chaibasa Engineering College to connect, share opportunities, and grow together.
         </p>
-        <Link to="/register" className="btn-primary" style={{ padding: "14px 28px", fontSize: "18px" }}>Join the Network</Link>
+        
+        <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
+          <Link to="/register" className="btn-primary" style={{ padding: "14px 28px", fontSize: "18px" }}>Join the Network</Link>
+          <button onClick={onExploreAsGuest} className="btn-secondary" style={{ padding: "14px 28px", fontSize: "18px" }}>
+            <i className="fas fa-eye" style={{ marginRight: "8px" }}></i> Explore as Guest
+          </button>
+        </div>
       </div>
 
       {/* Why I Built This */}
@@ -338,7 +343,6 @@ const LandingPage = () => {
     </div>
   );
 };
-
 // ==============================
 // AUTH PAGES (LOGIN / REGISTER / OTP)
 // ==============================
@@ -1915,16 +1919,33 @@ const NotFoundPage = () => {
 };
 
 // Smart routing: Shows Feed if logged in, Landing Page if not.
+// Smart routing: Shows Feed if logged in, Landing Page if not.
 const IndexRoute = () => {
-  const { user, loading } = useAuth();
+  const { user, loading, login } = useAuth(); // <-- Make sure login is extracted here
+  const [isGuestStarting, setIsGuestStarting] = useState(false);
   
-  if (loading) return null; // Wait for auth check to finish
+  // Use the new PageSkeleton while checking auth or logging in the guest
+  if (loading || isGuestStarting) return <PageSkeleton />; 
+
   if (user) {
     return <PrivateLayout><FeedPage /></PrivateLayout>;
   }
-  return <LandingPage />;
-};
 
+  // This function logs them in silently in the background
+  const handleSilentGuestLogin = async () => {
+    setIsGuestStarting(true);
+    try {
+      await login("alumninetworkplatform@gmail.com", "Guest123!");
+      toast.success("Welcome to the Guest Feed!");
+      // The state updates, user becomes true, and it automatically renders the FeedPage!
+    } catch (err) {
+      toast.error("Could not load guest feed.");
+      setIsGuestStarting(false);
+    }
+  };
+
+  return <LandingPage onExploreAsGuest={handleSilentGuestLogin} />;
+};
 // ==============================
 // MAIN APP ROUTER
 // ==============================
