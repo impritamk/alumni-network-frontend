@@ -839,32 +839,52 @@ const AlumniProfile = () => {
 // ==============================
 // COMMUNITY FEED & POSTS
 // ==============================
-const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false, isSingleView = false }) => {
-  const [showComments, setShowComments] = useState(defaultShowComments); 
+// ==============================
+// COMMUNITY FEED & POSTS
+// ==============================
+const PostItem = ({ post, user, onDelete, isSingleView = false }) => {
+  // 1. NEW: Give the post its own local memory so it doesn't need to refresh the whole feed!
+  const [currentPost, setCurrentPost] = useState(post);
+  
+  const [showComments, setShowComments] = useState(isSingleView); 
   const [commentText, setCommentText] = useState(""); 
   const [isLiking, setIsLiking] = useState(false);
   const navigate = useNavigate();
   
+  // Sync local state if the parent passes a brand new post prop
+  useEffect(() => { setCurrentPost(post); }, [post]);
+
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const urls = post.content.match(urlRegex);
+  const urls = currentPost.content.match(urlRegex);
   const firstUrl = urls ? urls[0] : null; 
 
-  // --- NEW: Check if the link is a YouTube video ---
   const getYouTubeId = (url) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   };
   const ytId = firstUrl ? getYouTubeId(firstUrl) : null;
-  // -------------------------------------------------
 
   const handleLike = async () => { 
     if (isLiking) return; 
     setIsLiking(true); 
+    
+    // 2. OPTIMISTIC UI: Instantly update the UI before the server even responds!
+    const wasLiked = currentPost.user_liked;
+    setCurrentPost(prev => ({
+      ...prev,
+      user_liked: !wasLiked,
+      like_count: wasLiked ? parseInt(prev.like_count) - 1 : parseInt(prev.like_count) + 1
+    }));
+
     try { 
-      await axios.post(`/api/posts/${post.id}/like`); 
-      onRefresh(); 
-    } catch (err) { toast.error("Failed to like post"); } 
+      await axios.post(`/api/posts/${currentPost.id}/like`); 
+      // We don't call onRefresh anymore! The local state already updated.
+    } catch (err) { 
+      // If the server fails, silently revert the heart back to normal
+      setCurrentPost(post);
+      toast.error("Failed to like post"); 
+    } 
     finally { setIsLiking(false); } 
   };
   
@@ -872,30 +892,53 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
     e.preventDefault(); 
     if (!commentText.trim()) return; 
     try { 
-      await axios.post(`/api/posts/${post.id}/comments`, { content: commentText }); 
+      const res = await axios.post(`/api/posts/${currentPost.id}/comments`, { content: commentText }); 
+      
+      // 3. OPTIMISTIC UI: Construct the new comment locally and push it to the array
+      const newComment = {
+        id: res.data.comment.id,
+        content: res.data.comment.content,
+        created_at: res.data.comment.created_at,
+        user_id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role
+      };
+
+      setCurrentPost(prev => ({
+        ...prev,
+        comments: [...(prev.comments || []), newComment]
+      }));
       setCommentText(""); 
-      onRefresh(); 
     } catch (err) { toast.error("Failed to post comment"); } 
   };
   
   const handleDeleteComment = async (commentId) => { 
     if (!window.confirm("Delete this comment?")) return; 
+    
+    // 4. OPTIMISTIC UI: Instantly hide the comment locally
+    setCurrentPost(prev => ({
+      ...prev,
+      comments: prev.comments.filter(c => c.id !== commentId)
+    }));
+
     try { 
       await axios.delete(`/api/posts/comments/${commentId}`); 
-      onRefresh(); 
-    } catch (err) { toast.error("Failed to delete comment"); } 
+    } catch (err) { 
+      setCurrentPost(post); // Revert if failed
+      toast.error("Failed to delete comment"); 
+    } 
   };
 
   const handleShare = () => {
-    const link = `${window.location.origin}/post/${post.id}`;
+    const link = `${window.location.origin}/post/${currentPost.id}`;
     navigator.clipboard.writeText(link);
     toast.success("Link copied to clipboard!");
   };
 
-  // NEW: Function to handle clicking the empty space of the card
   const handleCardClick = () => {
     if (!isSingleView) {
-      navigate(`/post/${post.id}`);
+      navigate(`/post/${currentPost.id}`);
     }
   };
   
@@ -903,42 +946,37 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
     <div 
       className="card" 
       onClick={handleCardClick}
-      // NEW: Add a pointer cursor if it's clickable
       style={{ marginBottom: "15px", cursor: !isSingleView ? "pointer" : "default", transition: "transform 0.2s" }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div 
           className="post-header" 
-          // NEW: Stop propagation so clicking the profile doesn't open the post
-          onClick={(e) => { e.stopPropagation(); navigate(`/alumni/${post.user_id}`); }}
+          onClick={(e) => { e.stopPropagation(); navigate(`/alumni/${currentPost.user_id}`); }}
           style={{ cursor: "pointer", display: "flex", gap: "10px" }}
         >
           <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-          {post.first_name[0]}
+          {currentPost.first_name[0]}
           </div>
           <div>
             <h4 style={{ margin: "0 0 2px 0", color: "inherit", display: "flex", alignItems: "center" }}>
-              {post.first_name} {post.last_name}
-              {post.role === 'admin' && <span className="admin-badge">ADMIN</span>}
+              {currentPost.first_name} {currentPost.last_name}
+              {currentPost.role === 'admin' && <span className="admin-badge">ADMIN</span>}
             </h4>
             <span className="college-display" style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Chaibasa Engineering College</span>
             <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "var(--text-muted)" }}>
-              {new Date(post.created_at).toLocaleDateString('en-GB')} at {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {new Date(currentPost.created_at).toLocaleDateString('en-GB')} at {new Date(currentPost.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </p>
           </div>
         </div>
         
-        {(user?.role === 'admin' || user?.id === post.user_id) && (
-          // NEW: Stop propagation on delete button
-          <button onClick={(e) => { e.stopPropagation(); onDelete(post.id); }} className="btn-danger" style={{ padding: "4px 10px", fontSize: "12px" }}><i className="fas fa-trash"></i></button>
+        {(user?.role === 'admin' || user?.id === currentPost.user_id) && (
+          <button onClick={(e) => { e.stopPropagation(); onDelete(currentPost.id); }} className="btn-danger" style={{ padding: "4px 10px", fontSize: "12px" }}><i className="fas fa-trash"></i></button>
         )}
       </div>
       
-      <p style={{ margin: "15px 0", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{post.content}</p>
+      <p style={{ margin: "15px 0", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>{currentPost.content}</p>
       
-      {/* --- NEW: Smart Link Rendering --- */}
       {firstUrl && ytId ? (
-        // If it's YouTube, render a responsive native video player!
         <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: "15px", borderRadius: "8px", overflow: "hidden", position: "relative", paddingTop: "56.25%", border: "1px solid var(--border-color)" }}>
           <iframe
             style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
@@ -949,36 +987,31 @@ const PostItem = ({ post, user, onDelete, onRefresh, defaultShowComments = false
           ></iframe>
         </div>
       ) : firstUrl ? (
-        // If it's a regular website, use Microlink!
         <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: "15px", overflow: "hidden", borderRadius: "8px", border: "1px solid var(--border-color)" }}>
           <Microlink url={firstUrl} style={{ width: '100%', border: 'none', borderRadius: '8px' }} size="large" />
         </div>
       ) : null}
-      {/* --------------------------------- */}
       
-      {/* NEW: Stop propagation on the whole action bar */}
       <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: "15px", borderTop: "1px solid var(--border-color)", paddingTop: "10px", flexWrap: "wrap" }}>
-        <button onClick={handleLike} disabled={isLiking} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: post.user_liked ? "var(--danger)" : "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
-          <i className={post.user_liked ? "fas fa-heart" : "far fa-heart"}></i> {post.like_count || 0} Likes
+        <button onClick={handleLike} disabled={isLiking} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: currentPost.user_liked ? "var(--danger)" : "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
+          <i className={currentPost.user_liked ? "fas fa-heart" : "far fa-heart"}></i> {currentPost.like_count || 0} Likes
         </button>
         <button onClick={() => setShowComments(!showComments)} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
-          <i className="far fa-comment"></i> {post.comments?.length || 0} Comments
+          <i className="far fa-comment"></i> {currentPost.comments?.length || 0} Comments
         </button>
         <button onClick={handleShare} style={{ background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", color: "var(--text-muted)", fontWeight: "bold", fontSize: "14px" }}>
           <i className="fas fa-share"></i> Share
         </button>
-        
       </div>
 
       {showComments && (
-        // NEW: Stop propagation on the comments container
         <div onClick={(e) => e.stopPropagation()} style={{ marginTop: "15px", background: "var(--bg-color)", padding: "15px", borderRadius: "8px" }}>
           <form onSubmit={handleComment} style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
             <input type="text" className="input-box" placeholder="Write a comment..." value={commentText} onChange={(e) => setCommentText(e.target.value)} style={{ marginBottom: 0, flex: 1 }} />
             <button type="submit" className="btn-primary" disabled={!commentText.trim()}>Post</button>
           </form>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {post.comments && post.comments.length > 0 ? (post.comments.map(c => (
+            {currentPost.comments && currentPost.comments.length > 0 ? (currentPost.comments.map(c => (
               <div key={c.id} style={{ display: "flex", justifyContent: "space-between", background: "var(--card-bg)", padding: "10px", borderRadius: "6px", border: "1px solid var(--border-color)" }}>
                 <div>
                   <strong 
