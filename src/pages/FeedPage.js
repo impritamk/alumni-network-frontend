@@ -94,25 +94,25 @@ const FeedPage = () => {
   if (loading) return <PageSkeleton />;
   
   return (
-    /* We widened the container from 700px to 1100px */
-    <div className="page-container" style={{ maxWidth: 1100 }}>
+    /* Center the main container itself */
+    <div className="page-container" style={{ maxWidth: 1100, margin: "0 auto" }}>
       <Toaster />
       {showPostModal && ( <CreatePostModal onClose={() => setShowPostModal(false)} onSuccess={() => { setShowPostModal(false); setPage(1); fetchPosts(1, true); }} /> )}
       
-      {/* TWO-COLUMN FLEXBOX LAYOUT */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "25px", alignItems: "flex-start" }}>
+      {/* TWO-COLUMN FLEXBOX LAYOUT (Added justifyContent: 'center' for mobile) */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "25px", alignItems: "flex-start", justifyContent: "center" }}>
         
         {/* ========================================================= */}
-        {/* COLUMN 1: THE MAIN FEED (Takes up remaining space up to 700px) */}
+        {/* COLUMN 1: THE MAIN FEED */}
         {/* ========================================================= */}
-        <div style={{ flex: "1 1 600px", maxWidth: "750px", width: "100%" }}>
+        <div style={{ flex: "1 1 600px", maxWidth: "700px", width: "100%" }}>
           
           <div style={{ marginBottom: "20px" }}>
             <h2 style={{ margin: "0 0 5px 0" }}>Welcome back, {user?.first_name || "Alumni"}! 👋</h2>
             <p style={{ margin: 0, color: "var(--text-muted)" }}>Here is what's happening in your community today.</p>
           </div>
 
-          {/* New Modern "Start a Post" UI */}
+          {/* Modern "Start a Post" UI */}
           <div className="card" onClick={() => setShowPostModal(true)} style={{ display: "flex", gap: "15px", alignItems: "center", padding: "15px 20px", marginBottom: "20px", cursor: "pointer", transition: "transform 0.2s" }} onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.02)"} onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}>
              <div style={{ width: 45, height: 45, borderRadius: "50%", background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "bold" }}>
                {user?.first_name ? user.first_name[0] : "A"}
@@ -120,7 +120,8 @@ const FeedPage = () => {
              <div style={{ flex: 1, background: "var(--bg-color)", padding: "14px 20px", borderRadius: "30px", color: "var(--text-muted)", border: "1px solid var(--border-color)", fontWeight: "500", fontSize: "15px" }}>
                Start a post or share an update...
              </div>
-             <i className="fas fa-image" style={{ color: "var(--primary)", fontSize: "20px" }}></i>
+             {/* Swapped to pencil icon! */}
+             <i className="fas fa-pencil-alt" style={{ color: "var(--primary)", fontSize: "20px" }}></i>
           </div>
 
           {/* Sort Dropdown */}
@@ -143,15 +144,13 @@ const FeedPage = () => {
 
 
         {/* ========================================================= */}
-        {/* COLUMN 2: THE STICKY SIDEBAR (Hugs the right side)         */}
+        {/* COLUMN 2: THE STICKY SIDEBAR (Added margin: '0 auto' for mobile centering) */}
         {/* ========================================================= */}
-        <div style={{ flex: "1 1 300px", maxWidth: "350px", width: "100%", position: "sticky", top: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
+        <div style={{ flex: "1 1 300px", maxWidth: "350px", width: "100%", position: "sticky", top: "20px", display: "flex", flexDirection: "column", gap: "20px", margin: "0 auto" }}>
           
           {/* Mini Profile Card */}
           <div className="card" style={{ padding: "25px 20px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-            {/* Decorative background header */}
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "60px", background: "linear-gradient(to right, var(--primary), #8b5cf6)" }}></div>
-            
             <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--bg-color)", border: "4px solid var(--card-bg)", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", fontWeight: "bold", margin: "20px auto 10px", position: "relative", zIndex: 2 }}>
               {user?.first_name ? user.first_name[0] : "A"}
             </div>
@@ -173,6 +172,17 @@ const FeedPage = () => {
                <Link to="/connections" style={{ textDecoration: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "12px", fontWeight: "500", transition: "color 0.2s" }} onMouseOver={(e) => e.currentTarget.style.color = "var(--primary)"} onMouseOut={(e) => e.currentTarget.style.color = "var(--text-muted)"}>
                  <i className="fas fa-user-friends" style={{ width: 24, fontSize: "18px" }}></i> My Connections
                </Link>
+             </div>
+          </div>
+
+          {/* Trending Topics Card */}
+          <div className="card" style={{ padding: "20px" }}>
+             <h4 style={{ margin: "0 0 15px 0", color: "var(--text-main)" }}>Trending Topics</h4>
+             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+               <span style={{ background: "var(--bg-color)", border: "1px solid var(--border-color)", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", color: "var(--text-muted)", cursor: "pointer" }}>#Placements2026</span>
+               <span style={{ background: "var(--bg-color)", border: "1px solid var(--border-color)", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", color: "var(--text-muted)", cursor: "pointer" }}>#TechTalks</span>
+               <span style={{ background: "var(--bg-color)", border: "1px solid var(--border-color)", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", color: "var(--text-muted)", cursor: "pointer" }}>#OffCampus</span>
+               <span style={{ background: "var(--bg-color)", border: "1px solid var(--border-color)", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", color: "var(--text-muted)", cursor: "pointer" }}>#Hackathon</span>
              </div>
           </div>
 
