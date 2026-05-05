@@ -9,6 +9,7 @@ import Microlink from '@microlink/react';
 
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 // ==============================
 // AXIOS CONFIG & INTERCEPTOR
 // ==============================
