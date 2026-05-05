@@ -1,6 +1,6 @@
 // src/pages/FeedPage.js
 import React, { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { useAuth, PageSkeleton } from "../App";
@@ -60,6 +60,11 @@ const FeedPage = () => {
   const [showPostModal, setShowPostModal] = useState(false); 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  
+  // --- NEW: State for the Sidebar Inbox ---
+  const [recentChats, setRecentChats] = useState([]);
+  const navigate = useNavigate();
+
   const LIMIT = 10;
   
   const fetchPosts = useCallback(async (pageNum = 1, isNewSort = false) => { 
@@ -71,6 +76,20 @@ const FeedPage = () => {
     } catch (err) { toast.error("Failed to load posts"); } 
     finally { setLoading(false); } 
   }, [sortOption]);
+  
+  // --- NEW: Fetch recent chats when the page loads ---
+  useEffect(() => {
+    const fetchSidebarInbox = async () => {
+      try {
+        const res = await axios.get("/api/inbox");
+        // Grab only the 3 most recent conversations for the sidebar
+        setRecentChats((res.data.rooms || []).slice(0, 3));
+      } catch (err) {
+        console.error("Failed to load sidebar inbox");
+      }
+    };
+    if (user) fetchSidebarInbox();
+  }, [user]);
   
   useEffect(() => { setPage(1); fetchPosts(1, true); }, [sortOption, fetchPosts]);
   
@@ -94,12 +113,10 @@ const FeedPage = () => {
   if (loading) return <PageSkeleton />;
   
   return (
-    /* Center the main container itself */
     <div className="page-container" style={{ maxWidth: 1100, margin: "0 auto" }}>
       <Toaster />
       {showPostModal && ( <CreatePostModal onClose={() => setShowPostModal(false)} onSuccess={() => { setShowPostModal(false); setPage(1); fetchPosts(1, true); }} /> )}
       
-      {/* TWO-COLUMN FLEXBOX LAYOUT (Added justifyContent: 'center' for mobile) */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "25px", alignItems: "flex-start", justifyContent: "center" }}>
         
         {/* ========================================================= */}
@@ -112,7 +129,6 @@ const FeedPage = () => {
             <p style={{ margin: 0, color: "var(--text-muted)" }}>Here is what's happening in your community today.</p>
           </div>
 
-          {/* Modern "Start a Post" UI */}
           <div className="card" onClick={() => setShowPostModal(true)} style={{ display: "flex", gap: "15px", alignItems: "center", padding: "15px 20px", marginBottom: "20px", cursor: "pointer", transition: "transform 0.2s" }} onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.02)"} onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}>
              <div style={{ width: 45, height: 45, borderRadius: "50%", background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "bold" }}>
                {user?.first_name ? user.first_name[0] : "A"}
@@ -120,11 +136,9 @@ const FeedPage = () => {
              <div style={{ flex: 1, background: "var(--bg-color)", padding: "14px 20px", borderRadius: "30px", color: "var(--text-muted)", border: "1px solid var(--border-color)", fontWeight: "500", fontSize: "15px" }}>
                Start a post or share an update...
              </div>
-             {/* Swapped to pencil icon! */}
              <i className="fas fa-pencil-alt" style={{ color: "var(--primary)", fontSize: "20px" }}></i>
           </div>
 
-          {/* Sort Dropdown */}
           {posts.length > 0 && (
             <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "15px" }}>
               <select className="input-box" value={sortOption} onChange={(e)=>setSortOption(e.target.value)} style={{ width: '140px', marginBottom: 0, padding: '8px 12px', background: "var(--card-bg)" }}>
@@ -133,7 +147,6 @@ const FeedPage = () => {
             </div>
           )}
           
-          {/* Post Items */}
           <div style={{ display: "flex", flexDirection: "column" }}>
             {posts.map(post => <PostItem key={post.id} post={post} user={user} onDelete={handleDelete} onRefresh={refreshAllLoadedPosts} />)}
             {posts.length === 0 && <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px" }}>No posts yet. Break the ice!</p>}
@@ -144,11 +157,10 @@ const FeedPage = () => {
 
 
         {/* ========================================================= */}
-        {/* COLUMN 2: THE STICKY SIDEBAR (Added margin: '0 auto' for mobile centering) */}
+        {/* COLUMN 2: THE STICKY SIDEBAR */}
         {/* ========================================================= */}
         <div style={{ flex: "1 1 300px", maxWidth: "350px", width: "100%", position: "sticky", top: "20px", display: "flex", flexDirection: "column", gap: "20px", margin: "0 auto" }}>
           
-          {/* Mini Profile Card */}
           <div className="card" style={{ padding: "25px 20px", textAlign: "center", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "60px", background: "linear-gradient(to right, var(--primary), #8b5cf6)" }}></div>
             <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--bg-color)", border: "4px solid var(--card-bg)", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", fontWeight: "bold", margin: "20px auto 10px", position: "relative", zIndex: 2 }}>
@@ -159,7 +171,6 @@ const FeedPage = () => {
             <Link to="/profile/edit" className="btn-secondary" style={{ display: "block", fontSize: "13px", padding: "8px" }}>Edit Profile</Link>
           </div>
 
-          {/* Quick Links Card */}
           <div className="card" style={{ padding: "20px" }}>
              <h4 style={{ margin: "0 0 15px 0", color: "var(--text-main)" }}>Explore Network</h4>
              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
@@ -175,18 +186,42 @@ const FeedPage = () => {
              </div>
           </div>
 
-          {/* Trending Topics Card */}
+          {/* --- NEW: RECENT CHATS CARD --- */}
           <div className="card" style={{ padding: "20px" }}>
-             <h4 style={{ margin: "0 0 15px 0", color: "var(--text-main)" }}>Trending Topics</h4>
-             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-               <span style={{ background: "var(--bg-color)", border: "1px solid var(--border-color)", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", color: "var(--text-muted)", cursor: "pointer" }}>#Placements2026</span>
-               <span style={{ background: "var(--bg-color)", border: "1px solid var(--border-color)", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", color: "var(--text-muted)", cursor: "pointer" }}>#TechTalks</span>
-               <span style={{ background: "var(--bg-color)", border: "1px solid var(--border-color)", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", color: "var(--text-muted)", cursor: "pointer" }}>#OffCampus</span>
-               <span style={{ background: "var(--bg-color)", border: "1px solid var(--border-color)", padding: "6px 12px", borderRadius: "20px", fontSize: "12px", color: "var(--text-muted)", cursor: "pointer" }}>#Hackathon</span>
+             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+               <h4 style={{ margin: 0, color: "var(--text-main)" }}>Recent Chats</h4>
+               <Link to="/messages" style={{ fontSize: "12px", color: "var(--primary)", textDecoration: "none", fontWeight: "600" }}>View All</Link>
+             </div>
+             
+             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+               {recentChats.length > 0 ? recentChats.map(chat => (
+                 <div 
+                    key={chat.room.id} 
+                    onClick={() => navigate(`/messages?userId=${chat.otherUser.id}`)}
+                    style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px", borderRadius: "8px", cursor: "pointer", transition: "background 0.2s" }} 
+                    onMouseOver={(e) => e.currentTarget.style.background = "var(--bg-color)"} 
+                    onMouseOut={(e) => e.currentTarget.style.background = "transparent"}
+                 >
+                   <div style={{ width: 38, height: 38, borderRadius: "50%", background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: "bold", position: "relative" }}>
+                     {chat.otherUser.first_name[0]}
+                     {chat.hasUnread && <span style={{ position: "absolute", top: -2, right: -2, width: 10, height: 10, background: "#ef4444", borderRadius: "50%", border: "2px solid var(--card-bg)" }}></span>}
+                   </div>
+                   <div style={{ flex: 1, overflow: "hidden" }}>
+                     <h5 style={{ margin: 0, fontSize: "14px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{chat.otherUser.first_name} {chat.otherUser.last_name}</h5>
+                     <p style={{ margin: 0, fontSize: "12px", color: chat.hasUnread ? "#ef4444" : "var(--text-muted)", fontWeight: chat.hasUnread ? "bold" : "normal" }}>
+                       {chat.hasUnread ? "New message!" : "Tap to chat"}
+                     </p>
+                   </div>
+                 </div>
+               )) : (
+                 <div style={{ textAlign: "center", padding: "10px 0" }}>
+                   <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted)" }}>No recent conversations.</p>
+                   <Link to="/connections" className="text-blue" style={{ fontSize: "12px", display: "block", marginTop: "5px" }}>Find someone to message</Link>
+                 </div>
+               )}
              </div>
           </div>
 
-          {/* Footer Snippet */}
           <div style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)", padding: "0 10px" }}>
             <p>ConnectAlumni is a private network for Chaibasa Engineering College.</p>
             <p>© {new Date().getFullYear()} All rights reserved.</p>
