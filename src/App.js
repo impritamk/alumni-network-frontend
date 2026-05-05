@@ -10,6 +10,9 @@ import Microlink from '@microlink/react';
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const VerifyOtp = lazy(() => import('./pages/VerifyOtp'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
 // ==============================
 // AXIOS CONFIG & INTERCEPTOR
 // ==============================
@@ -346,108 +349,6 @@ const LandingPage = ({ onExploreAsGuest }) => {
           <h3>Data Privacy</h3>
           <p style={{ color: "var(--text-muted)", fontSize: "14px", lineHeight: 1.6 }}>Your data stays within our network. Strict backend JWT verification and role-based access keeps the community safe.</p>
         </div>
-      </div>
-    </div>
-  );
-};
-
-// ==============================
-// AUTH PAGES (LOGIN / REGISTER / OTP)
-// ==============================
-
-const VerifyOtp = () => {
-  const [otp, setOtp] = useState(""); 
-  const [resending, setResending] = useState(false); 
-  const [canResend, setCanResend] = useState(true); 
-  const [countdown, setCountdown] = useState(0); 
-  const navigate = useNavigate();
-
-  useEffect(() => { 
-    if (countdown > 0) { 
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000); 
-      return () => clearTimeout(timer); 
-    } else { 
-      setCanResend(true); 
-    } 
-  }, [countdown]);
-
-  const submit = async (e) => { 
-    e.preventDefault(); 
-    try { 
-      const email = localStorage.getItem("pendingEmail"); 
-      if (!email) { toast.error("Email not found."); navigate("/register"); return; } 
-      await axios.post("/api/auth/verify-otp", { email, otp }); 
-      localStorage.removeItem("pendingEmail"); 
-      toast.success("Email verified! Please login."); 
-      navigate("/login"); 
-    } catch (err) { toast.error(err.response?.data?.message || "Invalid OTP"); } 
-  };
-
-  const handleResendOtp = async () => { 
-    if (!canResend || resending) return; 
-    setResending(true); 
-    try { 
-      const email = localStorage.getItem("pendingEmail"); 
-      if (!email) { toast.error("Email not found."); navigate("/register"); return; } 
-      await axios.post("/api/auth/resend-otp", { email }); 
-      toast.success("New OTP sent!"); 
-      setCanResend(false); setCountdown(60); setOtp(""); 
-    } catch (err) { toast.error("Failed to resend OTP"); } 
-    finally { setResending(false); } 
-  };
-
-  const email = localStorage.getItem("pendingEmail");
-
-  return (
-    <div className="page-container" style={{ maxWidth: 450 }}>
-      <Toaster />
-      <div className="card" style={{ marginTop: 60 }}>
-        <h2 className="heading" style={{ textAlign: "center" }}>Verify Email</h2>
-        {email && <p style={{ textAlign: "center", color: "var(--text-muted)", marginBottom: 20, background: "var(--bg-color)", padding: "10px", borderRadius: "8px" }}>OTP sent to: <strong>{email}</strong></p>}
-        <p style={{ textAlign: "center", color: "var(--text-muted)", marginBottom: 20 }}>Enter the 6-digit OTP sent to your email</p>
-        <form onSubmit={submit}>
-          <label>OTP Code</label>
-          <input className="input-box" type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} required maxLength={6} placeholder="123456" style={{ textAlign: "center", fontSize: "24px", letterSpacing: "8px", fontWeight: "bold" }} />
-          <button className="btn-primary" style={{ width: "100%", marginTop: 15 }}>Verify Email</button>
-        </form>
-        <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid var(--border-color)", textAlign: "center" }}>
-          <p style={{ color: "var(--text-muted)", marginBottom: 10 }}>Didn't receive the OTP?</p>
-          <button onClick={handleResendOtp} disabled={!canResend || resending} className="btn-secondary">
-            {resending ? "Sending..." : countdown > 0 ? `Resend OTP (${countdown}s)` : "Resend OTP"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ForgotPasswordPage = () => {
-  const [email, setEmail] = useState(""); const [submitted, setSubmitted] = useState(false); const [loading, setLoading] = useState(false); const navigate = useNavigate();
-  const submit = async (e) => { e.preventDefault(); setLoading(true); try { await axios.post("/api/auth/forgot-password", { email }); setSubmitted(true); toast.success("Reset link sent!"); } catch (err) { toast.error("Failed to send reset link"); setLoading(false); } };
-  if (submitted) return <div className="page-container" style={{ maxWidth: 450 }}><Toaster /><div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Check Your Email</h2><p style={{ textAlign: "center", color: "var(--text-muted)", marginBottom: 20 }}>We've sent a password reset link to:<br/><strong>{email}</strong></p><button className="btn-primary" onClick={() => navigate("/login")} style={{ width: "100%", marginTop: 20 }}>Back to Login</button></div></div>;
-  
-  return (
-    <div className="page-container" style={{ maxWidth: 450 }}><Toaster />
-      <div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Forgot Password?</h2>
-        <form onSubmit={submit}><label>Email</label><input className="input-box" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={loading} placeholder="your@email.com" /><button className="btn-primary" style={{ width: "100%" }} disabled={loading}>{loading ? "Sending..." : "Send Reset Link"}</button></form>
-      </div>
-    </div>
-  );
-};
-
-const ResetPasswordPage = () => {
-  const { token } = useParams(); const [password, setPassword] = useState(""); const [confirmPassword, setConfirmPassword] = useState(""); const [loading, setLoading] = useState(false); const [success, setSuccess] = useState(false); const [showPassword, setShowPassword] = useState(false); const navigate = useNavigate();
-  const submit = async (e) => { e.preventDefault(); if (password !== confirmPassword) { toast.error("Passwords do not match!"); return; } setLoading(true); try { await axios.post("/api/auth/reset-password", { token, password }); setSuccess(true); toast.success("Password reset successfully!"); setTimeout(() => navigate("/login"), 2000); } catch (err) { toast.error("Failed to reset password"); setLoading(false); } };
-  if (success) return <div className="page-container" style={{ maxWidth: 450 }}><Toaster /><div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center", color: "#15803d" }}>✅ Success!</h2><p style={{ textAlign: "center", color: "var(--text-muted)" }}>Redirecting to login...</p></div></div>;
-  
-  return (
-    <div className="page-container" style={{ maxWidth: 450 }}><Toaster />
-      <div className="card" style={{ marginTop: 60 }}><h2 className="heading" style={{ textAlign: "center" }}>Reset Password</h2>
-        <form onSubmit={submit}>
-          <label>New Password</label><div style={{ position: 'relative' }}><input className="input-box" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required disabled={loading} style={{ paddingRight: '40px' }} /><button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i></button></div>
-          <label>Confirm Password</label><div style={{ position: 'relative' }}><input className="input-box" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={loading} style={{ paddingRight: '40px' }} /></div>
-          <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={loading}>{loading ? "Resetting..." : "Reset Password"}</button>
-        </form>
       </div>
     </div>
   );
