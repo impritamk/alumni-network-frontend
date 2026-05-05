@@ -1,11 +1,14 @@
 import "./styles.css";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { io } from "socket.io-client";
 import Microlink from '@microlink/react';
 
+
+
+const LoginPage = lazy(() => import('./pages/LoginPage'));
 // ==============================
 // AXIOS CONFIG & INTERCEPTOR
 // ==============================
@@ -350,84 +353,6 @@ const LandingPage = ({ onExploreAsGuest }) => {
 // ==============================
 // AUTH PAGES (LOGIN / REGISTER / OTP)
 // ==============================
-const LoginPage = () => {
-  const { login } = useAuth(); 
-  const navigate = useNavigate();
-  
-  const [email, setEmail] = useState(""); 
-  const [password, setPassword] = useState(""); 
-  const [isLoading, setIsLoading] = useState(false); 
-  const [showPassword, setShowPassword] = useState(false);
-
-  const submit = async (e) => { 
-    e.preventDefault(); 
-    setIsLoading(true); 
-    try { 
-      await login(email, password); 
-      toast.success("Login successful!"); 
-      navigate("/");
-    } catch (err) { 
-      toast.error(err.response?.data?.message || "Login failed"); 
-      setIsLoading(false); 
-    } 
-  };
-
-  return (
-    <div className="page-container" style={{ maxWidth: 450 }}>
-      <Toaster />
-      <div className="card" style={{ marginTop: 60 }}>
-        <h2 className="heading" style={{ textAlign: "center" }}>Login</h2>
-        <form onSubmit={submit}>
-          <label>Email</label>
-          <input className="input-box" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} />
-          
-          <label>Password</label>
-          <div style={{ position: 'relative' }}>
-            <input className="input-box" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} style={{ paddingRight: '40px' }} />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
-              <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
-            </button>
-          </div>
-          
-          <button className="btn-primary" style={{ width: "100%", marginTop: "10px" }} disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
-          
-            {/* --- NEW GUEST LOGIN BUTTON --- */}
-            <button 
-              type="button" 
-              className="btn-secondary" 
-              style={{ width: "100%", marginTop: "10px" }} 
-              disabled={isLoading}
-              onClick={async (e) => {
-                e.preventDefault();
-                setIsLoading(true); // <-- This instantly disables the buttons and shows loading
-                try {
-                  await login("alumninetworkplatform@gmail.com", "Guest123!");
-                  toast.success("Welcome, Guest!");
-                  navigate("/"); // Instant transition!
-                } catch (err) {
-                  toast.error("Guest login failed.");
-                  setIsLoading(false); // Re-enable buttons if it fails
-                }
-              }}
-            >
-              {isLoading ? (
-                <><i className="fas fa-spinner fa-spin" style={{ marginRight: "8px" }}></i> Logging in...</>
-              ) : (
-                <><i className="fas fa-user-secret" style={{ marginRight: "8px" }}></i> Login as Guest</>
-              )}
-            </button>
-            {/* ------------------------------ */}
-        </form>
-        <p style={{ textAlign: "center", marginTop: 15, color: "var(--text-muted)" }}>
-          Don't have an account? <Link to="/register" className="text-blue">Register</Link> {" | "} <Link to="/forgot-password" className="text-blue">Forgot Password?</Link>
-        </p>
-      </div>
-    </div>
-  );
-};
-
 const RegisterPage = () => {
   const { register } = useAuth();
   const [form, setForm] = useState({ 
@@ -2401,36 +2326,39 @@ const IndexRoute = () => {
 // MAIN APP ROUTER
 // ==============================
 function App() {
-  // --- NEW: Global Theme Initialization ---
+  // --- Global Theme Initialization ---
   useEffect(() => {
     if (localStorage.getItem("theme") === "dark") {
       document.body.classList.add("dark-mode");
     }
   }, []);
-  // ----------------------------------------
 
   return (
     <Router>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-          
-          <Route path="/" element={<IndexRoute />} />
-          <Route path="/post/:id" element={<PrivateRoute><PrivateLayout><SinglePostPage /></PrivateLayout></PrivateRoute>} />
-          <Route path="/dashboard" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
-          <Route path="/admin" element={<PrivateRoute><PrivateLayout><AdminPanel /></PrivateLayout></PrivateRoute>} />
-          <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
-          <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
-          <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
-          <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
-          <Route path="/messages" element={<PrivateRoute><PrivateLayout><MessagesPage /></PrivateLayout></PrivateRoute>} />
-          <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        {/* ADD THIS SUSPENSE LINE */}
+        <Suspense fallback={<PageSkeleton />}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-otp" element={<VerifyOtp />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            
+            <Route path="/" element={<IndexRoute />} />
+            <Route path="/post/:id" element={<PrivateRoute><PrivateLayout><SinglePostPage /></PrivateLayout></PrivateRoute>} />
+            <Route path="/dashboard" element={<PrivateRoute><PrivateLayout><DashboardPage /></PrivateLayout></PrivateRoute>} />
+            <Route path="/admin" element={<PrivateRoute><PrivateLayout><AdminPanel /></PrivateLayout></PrivateRoute>} />
+            <Route path="/alumni" element={<PrivateRoute><PrivateLayout><AlumniList /></PrivateLayout></PrivateRoute>} />
+            <Route path="/alumni/:id" element={<PrivateRoute><PrivateLayout><AlumniProfile /></PrivateLayout></PrivateRoute>} />
+            <Route path="/connections" element={<PrivateRoute><PrivateLayout><ConnectionsPage /></PrivateLayout></PrivateRoute>} />
+            <Route path="/profile/edit" element={<PrivateRoute><PrivateLayout><EditProfile /></PrivateLayout></PrivateRoute>} />
+            <Route path="/messages" element={<PrivateRoute><PrivateLayout><MessagesPage /></PrivateLayout></PrivateRoute>} />
+            <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        {/* AND CLOSE IT HERE */}
+        </Suspense>
       </AuthProvider>
     </Router>
   );
