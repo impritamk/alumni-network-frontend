@@ -94,38 +94,99 @@ const FeedPage = () => {
   if (loading) return <PageSkeleton />;
   
   return (
-    <div className="page-container" style={{ maxWidth: 700 }}>
+    /* We widened the container from 700px to 1100px */
+    <div className="page-container" style={{ maxWidth: 1100 }}>
       <Toaster />
       {showPostModal && ( <CreatePostModal onClose={() => setShowPostModal(false)} onSuccess={() => { setShowPostModal(false); setPage(1); fetchPosts(1, true); }} /> )}
       
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 30, flexWrap: "wrap", gap: "15px" }}>
-        <div>
-          <h1 style={{ margin: "0 0 5px 0" }}>Welcome back, {user?.first_name || "Alumni"}! 👋</h1>
-          <p style={{ margin: 0, color: "var(--text-muted)" }}>Here is what's happening in your community today.</p>
+      {/* TWO-COLUMN FLEXBOX LAYOUT */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "25px", alignItems: "flex-start" }}>
+        
+        {/* ========================================================= */}
+        {/* COLUMN 1: THE MAIN FEED (Takes up remaining space up to 700px) */}
+        {/* ========================================================= */}
+        <div style={{ flex: "1 1 600px", maxWidth: "750px", width: "100%" }}>
+          
+          <div style={{ marginBottom: "20px" }}>
+            <h2 style={{ margin: "0 0 5px 0" }}>Welcome back, {user?.first_name || "Alumni"}! 👋</h2>
+            <p style={{ margin: 0, color: "var(--text-muted)" }}>Here is what's happening in your community today.</p>
+          </div>
+
+          {/* New Modern "Start a Post" UI */}
+          <div className="card" onClick={() => setShowPostModal(true)} style={{ display: "flex", gap: "15px", alignItems: "center", padding: "15px 20px", marginBottom: "20px", cursor: "pointer", transition: "transform 0.2s" }} onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.02)"} onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}>
+             <div style={{ width: 45, height: 45, borderRadius: "50%", background: "var(--primary)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: "bold" }}>
+               {user?.first_name ? user.first_name[0] : "A"}
+             </div>
+             <div style={{ flex: 1, background: "var(--bg-color)", padding: "14px 20px", borderRadius: "30px", color: "var(--text-muted)", border: "1px solid var(--border-color)", fontWeight: "500", fontSize: "15px" }}>
+               Start a post or share an update...
+             </div>
+             <i className="fas fa-image" style={{ color: "var(--primary)", fontSize: "20px" }}></i>
+          </div>
+
+          {/* Sort Dropdown */}
+          {posts.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "15px" }}>
+              <select className="input-box" value={sortOption} onChange={(e)=>setSortOption(e.target.value)} style={{ width: '140px', marginBottom: 0, padding: '8px 12px', background: "var(--card-bg)" }}>
+                <option value="latest">Latest</option><option value="top">Most Liked</option><option value="oldest">Oldest</option>
+              </select>
+            </div>
+          )}
+          
+          {/* Post Items */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {posts.map(post => <PostItem key={post.id} post={post} user={user} onDelete={handleDelete} onRefresh={refreshAllLoadedPosts} />)}
+            {posts.length === 0 && <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px" }}>No posts yet. Break the ice!</p>}
+            {hasMore && posts.length > 0 && ( <button onClick={loadMore} className="btn-secondary" style={{ width: '100%', marginTop: '15px', padding: '12px', fontWeight: 'bold' }}>Load More Posts</button> )}
+            {!hasMore && posts.length > 0 && ( <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px", fontSize: "14px" }}>You have reached the end of the feed.</p> )}
+          </div>
         </div>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <button onClick={() => setShowPostModal(true)} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "6px" }}><i className="fas fa-edit"></i> Create Post</button>
-          <Link to="/alumni" className="btn-secondary" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "6px" }}><i className="fas fa-search"></i> Alumni</Link>
-          <Link to="/jobs" className="btn-secondary" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "6px" }}><i className="fas fa-briefcase"></i> Jobs</Link>
+
+
+        {/* ========================================================= */}
+        {/* COLUMN 2: THE STICKY SIDEBAR (Hugs the right side)         */}
+        {/* ========================================================= */}
+        <div style={{ flex: "1 1 300px", maxWidth: "350px", width: "100%", position: "sticky", top: "20px", display: "flex", flexDirection: "column", gap: "20px" }}>
+          
+          {/* Mini Profile Card */}
+          <div className="card" style={{ padding: "25px 20px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+            {/* Decorative background header */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "60px", background: "linear-gradient(to right, var(--primary), #8b5cf6)" }}></div>
+            
+            <div style={{ width: 80, height: 80, borderRadius: "50%", background: "var(--bg-color)", border: "4px solid var(--card-bg)", color: "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", fontWeight: "bold", margin: "20px auto 10px", position: "relative", zIndex: 2 }}>
+              {user?.first_name ? user.first_name[0] : "A"}
+            </div>
+            <h3 style={{ margin: "0 0 5px 0", fontSize: "18px" }}>{user?.first_name} {user?.last_name}</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: "13px", margin: "0 0 15px 0", lineHeight: "1.4" }}>{user?.headline || "Add a headline to your profile so people know what you do!"}</p>
+            <Link to="/profile/edit" className="btn-secondary" style={{ display: "block", fontSize: "13px", padding: "8px" }}>Edit Profile</Link>
+          </div>
+
+          {/* Quick Links Card */}
+          <div className="card" style={{ padding: "20px" }}>
+             <h4 style={{ margin: "0 0 15px 0", color: "var(--text-main)" }}>Explore Network</h4>
+             <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+               <Link to="/alumni" style={{ textDecoration: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "12px", fontWeight: "500", transition: "color 0.2s" }} onMouseOver={(e) => e.currentTarget.style.color = "var(--primary)"} onMouseOut={(e) => e.currentTarget.style.color = "var(--text-muted)"}>
+                 <i className="fas fa-users" style={{ width: 24, fontSize: "18px" }}></i> Alumni Directory
+               </Link>
+               <Link to="/jobs" style={{ textDecoration: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "12px", fontWeight: "500", transition: "color 0.2s" }} onMouseOver={(e) => e.currentTarget.style.color = "var(--primary)"} onMouseOut={(e) => e.currentTarget.style.color = "var(--text-muted)"}>
+                 <i className="fas fa-briefcase" style={{ width: 24, fontSize: "18px" }}></i> Job Board
+               </Link>
+               <Link to="/connections" style={{ textDecoration: "none", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "12px", fontWeight: "500", transition: "color 0.2s" }} onMouseOver={(e) => e.currentTarget.style.color = "var(--primary)"} onMouseOut={(e) => e.currentTarget.style.color = "var(--text-muted)"}>
+                 <i className="fas fa-user-friends" style={{ width: 24, fontSize: "18px" }}></i> My Connections
+               </Link>
+             </div>
+          </div>
+
+          {/* Footer Snippet */}
+          <div style={{ textAlign: "center", fontSize: "12px", color: "var(--text-muted)", padding: "0 10px" }}>
+            <p>ConnectAlumni is a private network for Chaibasa Engineering College.</p>
+            <p>© {new Date().getFullYear()} All rights reserved.</p>
+            <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', marginTop: '10px' }}>
+              <i className="fas fa-arrow-up"></i> Back to top
+            </button>
+          </div>
+
         </div>
-      </div>
-      
-      {posts.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "15px" }}>
-          <select className="input-box" value={sortOption} onChange={(e)=>setSortOption(e.target.value)} style={{ width: '140px', marginBottom: 0, padding: '8px 12px', background: "var(--card-bg)" }}>
-            <option value="latest">Latest</option><option value="top">Most Liked</option><option value="oldest">Oldest</option>
-          </select>
-        </div>
-      )}
-      
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {posts.map(post => <PostItem key={post.id} post={post} user={user} onDelete={handleDelete} onRefresh={refreshAllLoadedPosts} />)}
-        {posts.length === 0 && <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px" }}>No posts yet. Break the ice!</p>}
-        {hasMore && posts.length > 0 && ( <button onClick={loadMore} className="btn-secondary" style={{ width: '100%', marginTop: '15px', padding: '12px', fontWeight: 'bold' }}>Load More Posts</button> )}
-        {!hasMore && posts.length > 0 && ( <p style={{ textAlign: "center", color: "var(--text-muted)", marginTop: "20px", fontSize: "14px" }}>You have reached the end of the feed.</p> )}
-        <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} style={{ marginTop: '30px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', width: '100%' }}>
-          <i className="fas fa-arrow-up"></i> Back to top
-        </button>
+
       </div>
     </div>
   );
