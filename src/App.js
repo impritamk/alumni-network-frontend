@@ -1,10 +1,8 @@
-
 import "./styles.css";
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import toast from "react-hot-toast"; // <-- Add this line right here!
-
+import toast, { Toaster } from "react-hot-toast";
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
@@ -24,7 +22,6 @@ const SinglePostPage = lazy(() => import('./pages/SinglePostPage'));
 const AlumniList = lazy(() => import('./pages/AlumniList'));
 const AlumniProfile = lazy(() => import('./pages/AlumniProfile'));
 
-
 // ==============================
 // AXIOS CONFIG & INTERCEPTOR
 // ==============================
@@ -34,11 +31,9 @@ axios.defaults.baseURL = API_URL;
 axios.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If the backend says the token is expired/invalid, log them out instantly
     if (error.response && error.response.status === 401) {
       localStorage.removeItem("token");
       delete axios.defaults.headers.common["Authorization"];
-      // Only redirect if they aren't already on the login page
       if (window.location.pathname !== "/login") {
         window.location.href = "/login?expired=true";
       }
@@ -114,11 +109,10 @@ const Navbar = () => {
   const navigate = useNavigate(); 
   const [menuOpen, setMenuOpen] = useState(false);
   const [indicators, setIndicators] = useState({ hasNewJobs: false, hasUnreadMessages: false });
-  // 1. Check local storage FIRST when the component loads
+  
   const [isDark, setIsDark] = useState(() => {
     const savedTheme = localStorage.getItem("theme");
     const isDarkMode = savedTheme === "dark";
-    // Apply the class immediately if they prefer dark mode
     if (isDarkMode) {
       document.body.classList.add("dark-mode");
     }
@@ -144,17 +138,16 @@ const Navbar = () => {
     navigate("/login"); 
   };
 
-  // 2. Update the toggle function to save their choice to long-term memory
   const toggleDarkMode = () => { 
     const newMode = !isDark;
     setIsDark(newMode);
     
     if (newMode) {
       document.body.classList.add("dark-mode");
-      localStorage.setItem("theme", "dark"); // Save to memory
+      localStorage.setItem("theme", "dark"); 
     } else {
       document.body.classList.remove("dark-mode");
-      localStorage.setItem("theme", "light"); // Save to memory
+      localStorage.setItem("theme", "light"); 
     }
   };
 
@@ -253,18 +246,15 @@ const PrivateLayout = ({ children }) => {
 };
 
 // ==============================
-// 404 NOT FOUND PAGE
+// GLOBAL LOADING SKELETON
 // ==============================
 export const PageSkeleton = () => {
   return (
     <div className="page-container">
-      {/* Search/Header Skeleton */}
       <div className="card" style={{ marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div className="skeleton skeleton-title" style={{ width: "30%", height: "30px", margin: 0 }}></div>
         <div className="skeleton" style={{ width: "100px", height: "35px", borderRadius: "6px" }}></div>
       </div>
-      
-      {/* Grid of Skeleton Cards */}
       <div className="grid-3">
         {[1, 2, 3, 4, 5, 6].map(i => (
           <div key={i} className="card" style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -279,25 +269,23 @@ export const PageSkeleton = () => {
     </div>
   );
 };
+
 // Smart routing: Shows Feed if logged in, Landing Page if not.
 const IndexRoute = () => {
-  const { user, loading, login } = useAuth(); // <-- Make sure login is extracted here
+  const { user, loading, login } = useAuth();
   const [isGuestStarting, setIsGuestStarting] = useState(false);
   
-  // Use the new PageSkeleton while checking auth or logging in the guest
   if (loading || isGuestStarting) return <PageSkeleton />; 
 
   if (user) {
     return <PrivateLayout><FeedPage /></PrivateLayout>;
   }
 
-  // This function logs them in silently in the background
   const handleSilentGuestLogin = async () => {
     setIsGuestStarting(true);
     try {
       await login("alumninetworkplatform@gmail.com", "Guest123!");
       toast.success("Welcome to the Guest Feed!");
-      // The state updates, user becomes true, and it automatically renders the FeedPage!
     } catch (err) {
       toast.error("Could not load guest feed.");
       setIsGuestStarting(false);
@@ -311,7 +299,6 @@ const IndexRoute = () => {
 // MAIN APP ROUTER
 // ==============================
 function App() {
-  // --- Global Theme Initialization ---
   useEffect(() => {
     if (localStorage.getItem("theme") === "dark") {
       document.body.classList.add("dark-mode");
@@ -321,7 +308,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        {/* ADD THIS SUSPENSE LINE */}
+        <Toaster />
         <Suspense fallback={<PageSkeleton />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -342,7 +329,6 @@ function App() {
             <Route path="/jobs" element={<PrivateRoute><PrivateLayout><JobsPage /></PrivateLayout></PrivateRoute>} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
-        {/* AND CLOSE IT HERE */}
         </Suspense>
       </AuthProvider>
     </Router>
