@@ -19,6 +19,8 @@ const JobsPage = lazy(() => import('./pages/JobsPage'));
 const ConnectionsPage = lazy(() => import('./pages/ConnectionsPage'));
 const MessagesPage = lazy(() => import('./pages/MessagesPage'));
 const AdminPanel = lazy(() => import('./pages/AdminPanel'));
+const EditProfile = lazy(() => import('./pages/EditProfile'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 // ==============================
 // AXIOS CONFIG & INTERCEPTOR
 // ==============================
