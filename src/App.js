@@ -1,8 +1,9 @@
+
 import "./styles.css";
 import React, { useState, useEffect, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import toast from "react-hot-toast"; // <-- Add this line right here!
 
 
 const LoginPage = lazy(() => import('./pages/LoginPage'));
