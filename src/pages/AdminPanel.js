@@ -77,27 +77,46 @@ const AdminPanel = () => {
 
   const handleSendBroadcast = async (e) => {
     e.preventDefault();
-    if (!emailForm.targetEmail.trim()) {
-      const confirmed = window.confirm("🚨 WARNING: You left the target email blank. This will send an email to EVERY verified user on the platform. Are you sure?");
-      if (!confirmed) return;
-    }
+    const target = emailForm.targetEmail.trim();
 
     setIsEmailing(true);
     try {
-      await axios.post("/api/admin/broadcast-email", {
-        targetEmail: emailForm.targetEmail.trim() || undefined,
+      // Step 1: Request preview & confirmation token from server
+      const previewRes = await axios.post("/api/admin/broadcast-email", {
+        targetEmail: target || undefined,
         subject: emailForm.subject,
-        message: emailForm.message
+        message: emailForm.message,
+        confirmed: false
       });
-      toast.success("Emails successfully sent!");
-      setEmailForm({ targetEmail: "", ...getRandomTemplate() });
+
+      if (previewRes.data.requiresConfirmation) {
+        const warningText = target
+          ? `Confirm sending this email to ${target}?\n\nSubject: ${emailForm.subject}`
+          : `🚨 WARNING: This will send an email to ALL ${previewRes.data.recipientCount} verified users!\n\nSubject: ${emailForm.subject}\n\nAre you sure?`;
+
+        if (!window.confirm(warningText)) {
+          setIsEmailing(false);
+          return;
+        }
+
+        // Step 2: Confirm & actually send
+        const sendRes = await axios.post("/api/admin/broadcast-email", {
+          targetEmail: target || undefined,
+          subject: emailForm.subject,
+          message: emailForm.message,
+          confirmed: true,
+          confirmationToken: previewRes.data.confirmationToken
+        });
+
+        toast.success(sendRes.data.message || "Emails successfully sent!");
+        setEmailForm({ targetEmail: "", ...getRandomTemplate() });
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to send emails");
     } finally {
       setIsEmailing(false);
     }
-  };
-  
+  };  
   if (user?.role !== 'admin') return <Navigate to="/" replace />;
   
   return (
