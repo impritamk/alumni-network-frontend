@@ -1,0 +1,9 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.alumni_network_frontend_sepia.twa",
+        "sha256_cert_fingerprints": ["67:90:F7:E7:B9:EA:CF:0C:A3:CE:B4:42:86:F5:21:54:5D:E4:4D:20:5E:14:A2:04:2A:B0:8D:B1:93:84:9F:1E"]
+      }
+    }]
+
