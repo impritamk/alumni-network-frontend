@@ -1,0 +1,9 @@
+{
+  "appId": "com.connectalumni.app",
+  "appName": "ConnectAlumni",
+  "webDir": "dist",
+  "server": {
+    "url": "https://alumni-network-frontend-sepia.vercel.app",
+    "cleartext": false
+  }
+}
